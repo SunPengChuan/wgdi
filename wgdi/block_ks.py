@@ -1,9 +1,10 @@
-import sys
 import re
+import sys
+
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 import wgdi.base as base
 
 
@@ -11,7 +12,7 @@ class block_ks():
     def __init__(self, options):
         self.wgd = 1
         self.markersize = 0.5
-        self.figsize = (10,10)
+        self.figsize = (10, 10)
         for k, v in options:
             setattr(self, str(k), v)
             print(str(k), ' = ', v)
