@@ -1,14 +1,16 @@
-import re
 import sys
-
-import matplotlib.patches as mpatches
-import matplotlib.pyplot as plt
+import re
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
 
 class align_dotplot():
     def __init__(self, options):
+        self.markersize = 0.5
+        self.colors = ['red', 'blue', 'green']
+        self.figsize = [10,10]
         for k, v in options:
             setattr(self, str(k), v)
             print(str(k), ' = ', v)
@@ -94,7 +96,7 @@ class align_dotplot():
         gene_loc_2 = self.gene_location(gff_2, lens_2, step2)
         alignment = pd.read_csv(self.alignment, sep='\t',
                                 header=None, index_col=0)
-        alignment.replace('\s+', '', inplace=True)
+        alignment.replace('\s+','',inplace=True)
         gene_loc_1 = self.gene_location(gff_1, lens_1, step1)
         gene_loc_2 = self.gene_location(gff_2, lens_2, step2)
         for k in alignment.columns:

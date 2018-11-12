@@ -4,14 +4,46 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import wgdi.base as base
 
 
-class dotplot():
+class block_ks():
     def __init__(self, options):
+        self.wgd = 1
+        self.markersize = 0.5
+        self.figsize = (10,10)
         for k, v in options:
             setattr(self, str(k), v)
-            print(k, ' = ', v)
-        self.figsize = [float(k) for k in self.figsize.split(',')]
+            print(str(k), ' = ', v)
+        self.main()
+
+    def main(self):
+        global gff_1, gff_2, ks, colinearity
+        colinearity = base.read_colinearscan(self.colinearity)
+        gff_1 = pd.read_csv(self.gff1, sep='\t', header=None)
+        gff_2 = pd.read_csv(self.gff2, sep='\t', header=None)
+        gff_1[0] = gff_1[0].astype(str)
+        gff_2[0] = gff_2[0].astype(str)
+        ks = base.read_ks(self.ks)
+
+    def block_positon(self, colinearity, loc1, loc2, ks):
+        pos = []
+        for block in colinearity:
+            a, b, blk_ks = [], [], []
+            if len(block[0]) < int(self.block_length):
+                continue
+            for k in block[0]:
+                if (k[0] not in loc1) or (k[2] not in loc2):
+                    continue
+                if k[0]+","+k[2] in ks.index:
+                    blk_ks.append(ks.at[str(k[0])+","+str(k[2]), 3])
+                a.append(loc1[k[0]])
+                b.append(loc2[k[2]])
+            if len(a) == 0:
+                continue
+            x, y, l, h = min(a), min(b), max(a)-min(a), max(b)-min(b)
+            pos.append([x, y, l, h, base.get_median(blk_ks)])
+        return pos
 
     def plot_chr1(self, lens, gl, gl2, step, mark, name):
         gl_start, n, start_x = 0.95, 0, 0.05
@@ -65,12 +97,8 @@ class dotplot():
         return loc_gene
 
     def run(self):
-        fig = plt.figure(figsize=tuple(self.figsize))
+        fig = plt.figure(figsize=self.figsize)
         plt.axis('off')
-        gff_1 = pd.read_csv(self.gff1, sep="\t", header=None)
-        gff_2 = pd.read_csv(self.gff2, sep="\t", header=None)
-        gff_1[0] = gff_1[0].astype('str')
-        gff_2[0] = gff_2[0].astype('str')
         lens_1 = pd.read_csv(self.lens1, sep="\t", header=None, index_col=0)
         lens_2 = pd.read_csv(self.lens2, sep="\t", header=None, index_col=0)
         gl1, gl2 = 0.92, 0.92
@@ -80,6 +108,10 @@ class dotplot():
         self.plot_chr2(lens_2, gl1, gl2, step2, '', self.genome2_name)
         gene_loc_1 = self.gene_location(gff_1, lens_1, step1)
         gene_loc_2 = self.gene_location(gff_2, lens_2, step2)
+        pos = self.block_positon(colinearity, gene_loc_1, gene_loc_2, ks)
+        for k in pos:
+            y, x = 0.95-k[0]-0.5*k[2], 0.05+k[1]+0.5*k[3]
+            plt.text(x, y, round(k[4], 2), color='red', fontsize=6)
         blast = pd.read_csv(self.blast, sep="\t", header=None)
         score, evalue, repnum = 200, 1e-5, 20
         blast = blast[(blast[11] >= score) & (

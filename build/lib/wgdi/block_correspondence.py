@@ -30,7 +30,7 @@ class block_correspondence():
 
     def colinearity_region(self, gff1, gff2, colinearity, cor):
         for k in colinearity:
-            if len(k[0]) <= self.block_len:
+            if len(k[0])<=self.block_len:
                 continue
             chr1, chr2 = gff1.loc[k[0][0][0], 0], gff2.loc[k[0][0][2], 0]
             array1, array2 = [float(i[1]) for i in k[0]], [
@@ -43,7 +43,7 @@ class block_correspondence():
                 for index, row in group.iterrows():
                     if (str(chr1) == row['chr1']) and (int(row['start1']) <= start1) and \
                         (int(row['end1']) >= end1) and (str(chr2) == row['chr2']) and \
-                            (int(row['start2']) <= start2) and (int(row['end2']) >= end2):
+                        (int(row['start2']) <= start2) and (int(row['end2']) >= end2):
                         index = gff1[(gff1[0] == chr1) & (gff1[5] >= start1) & (
                             gff1[5] <= end1) & (gff1[name] == '')].index
                         gff1.loc[index, name] = '.'

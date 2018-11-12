@@ -1,13 +1,13 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 import re
 import sys
-
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
 
 
 class retain():
     def __init__(self, options):
+        self.step = 50
         for k, v in options:
             setattr(self, str(k), v)
             print(str(k), ' = ', v)
