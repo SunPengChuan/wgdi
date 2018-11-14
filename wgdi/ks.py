@@ -1,13 +1,10 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-
-import pandas as pd
+import os
 import re
 import sys
-import os
-import wgdi.base as base
 from io import StringIO
+
+import pandas as pd
+import wgdi.base as base
 from Bio import AlignIO, SeqIO
 from Bio.Align.Applications import MafftCommandline, MuscleCommandline
 from Bio.Phylo.PAML import yn00
@@ -27,8 +24,7 @@ class ks():
             setattr(self, str(k), v)
         for k, v in options:
             setattr(self, str(k), v)
-            print(str(k),' = ',v)
-
+            print(str(k), ' = ', v)
 
     def auto_file(self):
         pairs = []
@@ -52,15 +48,20 @@ class ks():
 
     def run(self):
         data = []
-        path=os.getcwd()
+        path = os.getcwd()
         if self.pep_file == 'pep':
-            base.cds_to_pep(os.path.join(path,self.cds_file) , os.path.join(path,self.pep_file))
+            base.cds_to_pep(os.path.join(path, self.cds_file),
+                            os.path.join(path, self.pep_file))
         cds = SeqIO.to_dict(SeqIO.parse(self.cds_file, "fasta"))
         pep = SeqIO.to_dict(SeqIO.parse(self.pep_file, "fasta"))
         pairs = self.auto_file()
         for k in pairs:
             self.pair = str(k[0]+','+str(k[1]))
             if k[0] in cds.keys() and k[1] in cds.keys() and k[0] in pep.keys() and k[1] in pep.keys():
+                cds[k[0]].id = cds[k[0]].id.replace('.', '_')
+                cds[k[1]].id = cds[k[1]].id.replace('.', '_')
+                pep[k[0]].id = pep[k[0]].id.replace('.', '_')
+                pep[k[1]].id = pep[k[1]].id.replace('.', '_')
                 SeqIO.write([cds[k[0]], cds[k[1]]],
                             self.pair_cds_file, "fasta")
                 SeqIO.write([pep[k[0]], pep[k[1]]],
@@ -79,6 +80,7 @@ class ks():
             os.remove(file)
 
     def pair_kaks(self, k):
+        k[0], k[1] = k[0].replace('.', '_'), k[1].replace('.', '_')
         self.align()
         self.pal2nal()
         kaks = self.run_yn00()
