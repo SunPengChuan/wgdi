@@ -1,2 +1,4 @@
 pandas
+numpy
 biopython
+matplotlib
