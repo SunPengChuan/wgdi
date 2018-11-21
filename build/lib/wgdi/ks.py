@@ -47,7 +47,6 @@ class ks():
         return df.values.tolist()
 
     def run(self):
-        data = []
         path = os.getcwd()
         if self.pep_file == 'pep':
             base.cds_to_pep(os.path.join(path, self.cds_file),
@@ -55,7 +54,10 @@ class ks():
         cds = SeqIO.to_dict(SeqIO.parse(self.cds_file, "fasta"))
         pep = SeqIO.to_dict(SeqIO.parse(self.pep_file, "fasta"))
         pairs = self.auto_file()
-        for k in pairs:
+        ks_file = open(self.ks_file, 'w')
+        ks_file.write(
+            '\t'.join(['id1', 'id2', 'ka_NG86', 'ks_NG86', 'ka_YN00', 'ks_YN00'])+'\n')
+        for k in pairs[0:100]:
             self.pair = str(k[0]+','+str(k[1]))
             if k[0] in cds.keys() and k[1] in cds.keys() and k[0] in pep.keys() and k[1] in pep.keys():
                 cds[k[0]].id = cds[k[0]].id.replace('.', '_')
@@ -68,15 +70,12 @@ class ks():
                             self.pair_pep_file, "fasta")
             else:
                 continue
+            print(k)
             kaks = self.pair_kaks(k)
-            data.append(k+kaks)
-        df = pd.DataFrame(data)
-        if len(df) == 0:
-            print('nothing to do')
-            sys.exit(1)
-        df.to_csv(self.ks_file, sep='\t', index=None, header=[
-                  'id1', 'id2', 'ka_NG86', 'ks_NG86', 'ka_YN00', 'ks_YN00'])
-        for file in (self.pair_pep_file, self.pair_cds_file, self.pep_file, self.mrtrans, self.pair_yn, self.prot_align_file, '2YN.dN', '2YN.dS', '2YN.t', 'rst', 'rst1', 'yn00.ctl', 'rub'):
+            print(kaks)
+            ks_file.write('\t'.join([str(k) for k in kaks])+'\n')
+        for file in (self.pair_pep_file, self.pair_cds_file, self.pep_file, self.mrtrans, self.pair_yn, 
+            self.prot_align_file, '2YN.dN', '2YN.dS', '2YN.t', 'rst', 'rst1', 'yn00.ctl', 'rub'):
             os.remove(file)
 
     def pair_kaks(self, k):
@@ -84,20 +83,22 @@ class ks():
         self.align()
         self.pal2nal()
         kaks = self.run_yn00()
+        if kaks == None:
+            return []
         kaks_new = [kaks[k[0]][k[1]]['NG86']['dN'], kaks[k[0]][k[1]]['NG86']
                     ['dS'], kaks[k[0]][k[1]]['YN00']['dN'], kaks[k[0]][k[1]]['YN00']['dS']]
         return kaks_new
 
     def align(self):
-        if self.muscle_exe:
-            muscle_cline = MuscleCommandline(
-                cmd=self.muscle_exe, input=self.pair_pep_file, out=self.prot_align_file, seqtype="protein", clwstrict=True)
-            stdout, stderr = muscle_cline()
-        elif self.mafft_exe:
+        if self.mafft_exe:
             mafft_cline = MafftCommandline(
                 mafft_exe=self.mafft_exe, input=self.pair_pep_file, auto=True)
             stdout, stderr = mafft_cline()
             self.prot_align_file = AlignIO.read(StringIO(stdout), "fasta")
+        elif self.muscle_exe:
+            muscle_cline = MuscleCommandline(
+                cmd=self.muscle_exe, input=self.pair_pep_file, out=self.prot_align_file, seqtype="protein", clwstrict=True)
+            stdout, stderr = muscle_cline()
         else:
             print('No sequence alignment software')
 
@@ -111,6 +112,9 @@ class ks():
         yn = yn00.Yn00()
         yn.alignment = self.mrtrans
         yn.out_file = self.pair_yn
-        yn.set_options(icode=0, commonf3x4=0, weighting=0, verbose=0)
-        run_result = yn.run(command=self.yn00_exe)
+        yn.set_options(icode=0, commonf3x4=0, weighting=0, verbose=1)
+        try:
+            run_result = yn.run(command=self.yn00_exe)
+        except:
+            run_result = None
         return run_result
