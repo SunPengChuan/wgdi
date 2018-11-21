@@ -17,7 +17,7 @@ parser = argparse.ArgumentParser(
     prog='wgdi', usage='%(prog)s [options]', epilog="")
 parser.description = '''The sets of programs mainly packaged the most popular and professional methods
  to comparatively analyze the post Whole Genome Duplication, for revealing the regular of genome evolutionary. '''
-parser.add_argument("-v", "--version", action='version', version='0.1.6')
+parser.add_argument("-v", "--version", action='version', version='0.1.7')
 parser.add_argument("-d", "--dotplot",
                     help="""More information, try to use 'wgdi -d example'""")
 parser.add_argument("-c", "--correspondence",

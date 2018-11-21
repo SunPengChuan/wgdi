@@ -8,9 +8,6 @@ import matplotlib.patches as mpatches
 
 class dotplot():
     def __init__(self, options):
-        self.wgd = 1
-        self.figsize = [10,10]
-        self.markersize=0.5
         for k, v in options:
             setattr(self, str(k), v)
             print(k, ' = ', v)
