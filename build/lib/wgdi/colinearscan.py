@@ -9,6 +9,7 @@ import pandas as pd
 
 class colinearscan():
     def __init__(self, options):
+        self.partial = False
         for k, v in options:
             setattr(self, str(k), v)
             print(str(k), ' = ', v)
@@ -33,9 +34,14 @@ class colinearscan():
         lens_2.index = lens_2.index.astype('str')
         blast = pd.read_csv(self.blast, sep="\t", header=None)
         df = self.deal_blast(blast, gff_1, gff_2)
+        dict={}
         for (chr1, chr2), group in df.groupby(['chr1', 'chr2']):
+            if self.partial == True:
+                if chr1+'\t'+chr2 in dict:
+                    continue
             if str(chr1) not in lens_1.index or str(chr2) not in lens_2.index:
                 continue
+            dict[chr1+'\t'+chr2], dict[chr2+'\t'+chr1] = 1,1
             group = group.drop_duplicates()
             group = group.sort_values(by=['loc1', 'loc2'])
             dir1 = './'+self.dir+'/pair/'+str(chr1)+'.vs.'+str(chr2)+'.pair'

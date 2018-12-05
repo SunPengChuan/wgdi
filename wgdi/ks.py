@@ -104,6 +104,8 @@ class ks():
                 cmd=self.muscle_path, input=self.pair_pep_file, out=self.prot_align_file, seqtype="protein", clwstrict=True)
             stdout, stderr = muscle_cline()
 
+    
+
     # def pal2nal(self):
     #     args = ['perl', self.pal2nal_path, self.prot_align_file,
     #             self.pair_cds_file, '-output paml -nogap', '>'+self.mrtrans]

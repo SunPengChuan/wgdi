@@ -98,30 +98,32 @@ class ks():
             mafft_cline = MafftCommandline(
                 mafft_path=self.mafft_path, input=self.pair_pep_file, auto=True)
             stdout, stderr = mafft_cline()
-            self.prot_align_file = AlignIO.read(StringIO(stdout), "fasta")
+            self.prot_align_file = AlignIO.write(StringIO(stdout), "fasta")
         if self.align_software == 'muscle':
             muscle_cline = MuscleCommandline(
                 cmd=self.muscle_path, input=self.pair_pep_file, out=self.prot_align_file, seqtype="protein", clwstrict=True)
             stdout, stderr = muscle_cline()
 
-    def pal2nal(self):
-        args = ['perl', self.pal2nal_path, self.prot_align_file,
-                self.pair_cds_file, '-output paml -nogap', '>'+self.mrtrans]
-        command = ' '.join(args)
-        try:
-            os.system(command)
-        except:
-            return False
-        return True
+    
+
+    # def pal2nal(self):
+    #     args = ['perl', self.pal2nal_path, self.prot_align_file,
+    #             self.pair_cds_file, '-output paml -nogap', '>'+self.mrtrans]
+    #     command = ' '.join(args)
+    #     try:
+    #         os.system(command)
+    #     except:
+    #         return False
+    #     return True
 
 
-    def run_yn00(self):
-        yn = yn00.Yn00()
-        yn.alignment = self.mrtrans
-        yn.out_file = self.pair_yn
-        yn.set_options(icode=0, commonf3x4=0, weighting=0, verbose=1)
-        try:
-            run_result = yn.run(command=self.yn00_path)
-        except:
-            run_result = None
-        return run_result
+    # def run_yn00(self):
+    #     yn = yn00.Yn00()
+    #     yn.alignment = self.mrtrans
+    #     yn.out_file = self.pair_yn
+    #     yn.set_options(icode=0, commonf3x4=0, weighting=0, verbose=1)
+    #     try:
+    #         run_result = yn.run(command=self.yn00_path)
+    #     except:
+    #         run_result = None
+    #     return run_result

@@ -9,6 +9,7 @@ import pandas as pd
 
 class align_dotplot():
     def __init__(self, options):
+        self.position = 'order'
         for k, v in options:
             setattr(self, str(k), v)
             print(str(k), ' = ', v)
@@ -21,10 +22,11 @@ class align_dotplot():
             dict_chr[str(i)] = n
             n += float(lens.at[i, 1])
         for k in gff.index:
-            if gff.loc[k, 0] not in dict_chr:
+            if gff.loc[k, 'chr'] not in dict_chr:
                 continue
-            loc = (float(dict_chr[gff.loc[k, 0]])+float(gff.loc[k, 5]))*step
-            loc_gene[gff.loc[k, 1]] = loc
+            loc = (float(dict_chr[gff.loc[k, 'chr']]) +
+                   float(gff.loc[k, self.position])) * step
+            loc_gene[gff.loc[k, 'id']] = loc
         return loc_gene
 
     def pair_positon(self, alignment, loc1, loc2):
@@ -81,8 +83,12 @@ class align_dotplot():
         plt.axis('off')
         gff_1 = pd.read_csv(self.gff1, sep="\t", header=None)
         gff_2 = pd.read_csv(self.gff2, sep="\t", header=None)
-        gff_1[0] = gff_1[0].astype('str')
-        gff_2[0] = gff_2[0].astype('str')
+        gff_1.rename(columns={0: 'chr', 1: 'id', 2: 'start',
+                              3: 'end', 5: 'order'}, inplace=True)
+        gff_2.rename(columns={0: 'chr', 1: 'id', 2: 'start',
+                              3: 'end', 5: 'order'}, inplace=True)
+        gff_1['chr'] = gff_1['chr'].astype('str')
+        gff_2['chr'] = gff_2['chr'].astype('str')
         lens_1 = pd.read_csv(self.lens1, sep="\t", header=None, index_col=0)
         lens_2 = pd.read_csv(self.lens2, sep="\t", header=None, index_col=0)
         gl1, gl2 = 0.92, 0.92
@@ -101,7 +107,7 @@ class align_dotplot():
             y, x = self.pair_positon(alignment[k], gene_loc_1, gene_loc_2)
             cols = [self.colors[k-1]]*len(x)
             plt.scatter(x, y, s=float(self.markersize), c=cols, alpha=0.5,
-                        edgecolors=None, linewidths=0, marker=(9, 3, 30))
+                        edgecolors=None, linewidths=0, marker='o')
         plt.subplots_adjust(left=0.02, right=1, top=0.98, bottom=0)
         plt.savefig(self.savefile, dpi=500)
         sys.exit(0)

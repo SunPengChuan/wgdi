@@ -1,13 +1,18 @@
-import sys
 import re
+import sys
+
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 
 
 class dotplot():
     def __init__(self, options):
+        self.WGD = 1
+        self.markersize = 0.5
+        self.figsize = '10, 10'
+        self.position = 'order'
         for k, v in options:
             setattr(self, str(k), v)
             print(k, ' = ', v)
@@ -57,11 +62,11 @@ class dotplot():
             dict_chr[str(i)] = n
             n += float(lens.at[i, 1])
         for k in gff.index:
-            if gff.loc[k, 0] not in dict_chr:
+            if gff.loc[k, 'chr'] not in dict_chr:
                 continue
-            loc = (float(dict_chr[gff.loc[k, 0]]) +
-                   float(gff.loc[k, 5])) * step
-            loc_gene[gff.loc[k, 1]] = loc
+            loc = (float(dict_chr[gff.loc[k, 'chr']]) +
+                   float(gff.loc[k, self.position])) * step
+            loc_gene[gff.loc[k, 'id']] = loc
         return loc_gene
 
     def run(self):
@@ -69,8 +74,12 @@ class dotplot():
         plt.axis('off')
         gff_1 = pd.read_csv(self.gff1, sep="\t", header=None)
         gff_2 = pd.read_csv(self.gff2, sep="\t", header=None)
-        gff_1[0] = gff_1[0].astype('str')
-        gff_2[0] = gff_2[0].astype('str')
+        gff_1.rename(columns={0: 'chr', 1: 'id', 2: 'start',
+                              3: 'end', 5: 'order'}, inplace=True)
+        gff_2.rename(columns={0: 'chr', 1: 'id', 2: 'start',
+                              3: 'end', 5: 'order'}, inplace=True)
+        gff_1['chr'] = gff_1['chr'].astype('str')
+        gff_2['chr'] = gff_2['chr'].astype('str')
         lens_1 = pd.read_csv(self.lens1, sep="\t", header=None, index_col=0)
         lens_2 = pd.read_csv(self.lens2, sep="\t", header=None, index_col=0)
         gl1, gl2 = 0.92, 0.92
@@ -117,16 +126,3 @@ class dotplot():
                 pos2.append(x)
                 newcolor.append(color)
         return pos1, pos2, newcolor
-
-    def gene_location(self, gff, lens, step):
-        loc_gene, dict_chr, n = {}, {}, 0
-        for i in lens.index:
-            dict_chr[str(i)] = n
-            n += float(lens.at[i, 1])
-        for k in gff.index:
-            if gff.loc[k, 0] not in dict_chr:
-                continue
-            loc = (float(dict_chr[gff.loc[k, 0]]) +
-                   float(gff.loc[k, 5])) * step
-            loc_gene[gff.loc[k, 1]] = loc
-        return loc_gene

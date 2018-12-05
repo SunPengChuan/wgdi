@@ -14,24 +14,29 @@ from wgdi.ks import ks
 from wgdi.retain import retain
 
 parser = argparse.ArgumentParser(
-    prog='wgdi', usage='%(prog)s [options]', epilog="")
-parser.description = '''The sets of programs mainly packaged the most popular and professional methods
- to comparatively analyze the post Whole Genome Duplication, for revealing the regular of genome evolutionary. '''
-parser.add_argument("-v", "--version", action='version', version='0.1.7')
-parser.add_argument("-d", "--dotplot",
-                    help="""More information, try to use 'wgdi -d example'""")
-parser.add_argument("-c", "--correspondence",
-                    help="More information, try to use 'wgdi -c example'")
-parser.add_argument("-a", "--alignment",
-                    help="More information, try to use 'wgdi -a example'")
-parser.add_argument(
-    "-r", "--retain", help="More information, try to use 'wgdi -r example'")
-parser.add_argument(
-    "-bk", "--blkks", help="More information, try to use 'wgdi -bk example'")
-parser.add_argument(
-    "-ks", "--calks", help="More information, try to use 'wgdi -ks example'")
-parser.add_argument(
-    "-cl", "--cl", help="More information, try to use 'wgdi -cl example'")
+    prog='wgdi', usage='%(prog)s [options]', epilog="", formatter_class=argparse.RawDescriptionHelpFormatter,)
+parser.description = '''\
+This is a gold standard for complex genomic analysis,including the construction 
+of homologous gene dotplot, event-related genomic alignment, and synonymous 
+substitutions, and differences in different evolution rates, etc.
+
+    https://wgdi.readthedocs.io/en/latest/
+    -------------------------------------- '''
+parser.add_argument("-v", "--version", action='version', version='0.1.8')
+parser.add_argument("-d", dest="dotplot",
+                    help="Show homologous gene dotplot")
+parser.add_argument("-c", dest="correspondence",
+                    help="Extract event-related genomic alignment")
+parser.add_argument("-a", dest="alignment",
+                    help="Show event-related genomic alignment in a dotplot")
+parser.add_argument("-r", dest="retain",
+                    help="Show subgenomes in gene retention or genome fractionation")
+parser.add_argument("-bk", dest="blockks",
+                    help="Show Ks of blocks in a dotplot")
+parser.add_argument("-ks", dest="calks",
+                    help="Calculate Ka/Ks for homologous gene pairs by Comdel")
+parser.add_argument("-cl", dest="collinearity",
+                    help="A simple way to run ColinearScan")
 
 args = parser.parse_args()
 
@@ -70,6 +75,7 @@ def run_cal_ks():
     options = base.load_conf(args.calks, 'ks')
     calks = ks(options)
     calks.run()
+
 
 def run_colinearscan():
     options = base.load_conf(args.cl, 'colinearscan')
