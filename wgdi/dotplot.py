@@ -24,10 +24,10 @@ class dotplot():
         align = dict(family='Times New Roman', style='normal',
                      horizontalalignment="center", verticalalignment="center")
         for k in lens.index:
-            n += float(lens.at[k, 1])
+            n += float(lens[k])
             mark_new = str(mark) + str(k)
             x = gl_start - float(n) * step
-            mark_x = x + 0.5 * float(lens.at[k, 1]) * step
+            mark_x = x + 0.5 * float(lens[k]) * step
             plt.plot([start_x, start_x + gl2], [x, x],
                      linestyle='-', color='black', linewidth=0.5)
             plt.text(mark_y, mark_x, mark_new, color='black',
@@ -43,10 +43,10 @@ class dotplot():
         align = dict(family='Times New Roman', style='normal',
                      horizontalalignment="center", verticalalignment="center")
         for k in lens.index:
-            n += float(lens.at[k, 1])
+            n += float(lens[k])
             mark_new = str(mark) + str(k)
             x = gl_start + float(n) * step
-            mark_x = x - 0.5 * float(lens.at[k, 1]) * step
+            mark_x = x - 0.5 * float(lens[k]) * step
             plt.plot([x, x], [start_x, start_x - gl2],
                      linestyle='-', color='black', linewidth=0.5)
             plt.text(mark_x, mark_y, mark_new, color='black',
@@ -60,7 +60,7 @@ class dotplot():
         loc_gene, dict_chr, n = {}, {}, 0
         for i in lens.index:
             dict_chr[str(i)] = n
-            n += float(lens.at[i, 1])
+            n += float(lens[i])
         for k in gff.index:
             if gff.loc[k, 'chr'] not in dict_chr:
                 continue
@@ -83,8 +83,14 @@ class dotplot():
         lens_1 = pd.read_csv(self.lens1, sep="\t", header=None, index_col=0)
         lens_2 = pd.read_csv(self.lens2, sep="\t", header=None, index_col=0)
         gl1, gl2 = 0.92, 0.92
-        step1 = gl1 / float(lens_1[1].sum())
-        step2 = gl2 / float(lens_2[1].sum())
+        if self.position == 'order':
+            lens_1 = lens_1[2]
+            lens_2 = lens_2[2]
+        else:
+            lens_1 = lens_1[1]
+            lens_2 = lens_1[1]
+        step1 = gl1 / float(lens_1.sum())
+        step2 = gl2 / float(lens_2.sum())
         self.plot_chr1(lens_1, gl1, gl2, step1, '', self.genome1_name)
         self.plot_chr2(lens_2, gl1, gl2, step2, '', self.genome2_name)
         gene_loc_1 = self.gene_location(gff_1, lens_1, step1)
