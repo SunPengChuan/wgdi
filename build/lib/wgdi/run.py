@@ -78,7 +78,7 @@ def run_cal_ks():
 
 
 def run_colinearscan():
-    options = base.load_conf(args.cl, 'colinearscan')
+    options = base.load_conf(args.collinearity, 'colinearscan')
     col = colinearscan(options)
     col.run()
 
@@ -91,7 +91,7 @@ def module_to_run(argument):
         'retain': run_retain,
         'blkks': run_block_ks,
         'calks': run_cal_ks,
-        'cl': run_colinearscan
+        'collinearity': run_colinearscan
     }
     return switcher.get(argument)()
 
@@ -104,7 +104,7 @@ def main():
                'retain': 'retain.conf',
                'blkks': 'blkks.conf',
                'calks': 'ks.conf',
-               'cl': 'colinearscan.conf'}
+               'collinearity': 'colinearscan.conf'}
     for arg in vars(args):
         value = getattr(args, arg)
         if value is not None:

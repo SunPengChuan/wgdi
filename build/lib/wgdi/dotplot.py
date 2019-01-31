@@ -88,7 +88,7 @@ class dotplot():
             lens_2 = lens_2[2]
         else:
             lens_1 = lens_1[1]
-            lens_2 = lens_1[1]
+            lens_2 = lens_2[1]
         step1 = gl1 / float(lens_1.sum())
         step2 = gl2 / float(lens_2.sum())
         self.plot_chr1(lens_1, gl1, gl2, step1, '', self.genome1_name)
