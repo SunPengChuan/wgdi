@@ -61,6 +61,7 @@ class colinearscan():
             blast[10] <= float(self.evalue)) & (blast[1] != blast[0])]
         n = 5
         array = []
+        blast = blast.drop_duplicates()
         for name, group in blast.groupby([0]):
             index = group.index[n:]
             array += index.tolist()

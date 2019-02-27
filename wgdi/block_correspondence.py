@@ -8,10 +8,11 @@ import wgdi.base as base
 class block_correspondence():
     def __init__(self, options):
         self.block_len = 0
+        self.correspondence =  'all'
         for k, v in options:
             setattr(self, str(k), v)
             print(k, ' = ', v)
-
+        self.homo =  [float(k) for k in self.homo.split(',')]
     def run(self):
         colinearity = base.read_colinearscan(self.colinearity)
         gff1 = pd.read_csv(self.gff1, sep='\t', header=None, index_col=1)
@@ -19,8 +20,19 @@ class block_correspondence():
         gff1[0] = gff1[0].astype(str)
         gff2[0] = gff2[0].astype(str)
         homopairs = self.deal_blast(gff1, gff2)
-        cor = pd.read_csv(self.correspondence, sep='\t|:|\-',
-                          header=None, engine='python')
+        lens_1 = pd.read_csv(self.lens1, sep="\t", header=None, index_col=0)
+        lens_2 = pd.read_csv(self.lens2, sep="\t", header=None, index_col=0)
+        if self.correspondence == 'all':
+
+            cor = gff1
+        else:
+            
+            
+
+
+
+
+
         cor[1] = cor[1].astype(str)
         cor[4] = cor[4].astype(str)
         cols = cor[0].drop_duplicates().values
@@ -74,7 +86,7 @@ class block_correspondence():
                                 continue
                             if block[0]+","+block[2] in homopairs.keys():
                                 homo += homopairs[block[0]+","+block[2]]
-                        if homo <= float(self.homo):
+                        if homo >= float(self.homo[0]) or homo <= float(self.homo[1]):
                             continue
                         index = gff1[(gff1[0] == chr1) & (gff1[5] >= start1) & (
                             gff1[5] <= end1)].index
