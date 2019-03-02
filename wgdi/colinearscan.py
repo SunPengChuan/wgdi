@@ -59,9 +59,9 @@ class colinearscan():
     def deal_blast(self, blast, gff1, gff2):
         blast = blast[(blast[11] >= float(self.score)) & (
             blast[10] <= float(self.evalue)) & (blast[1] != blast[0])]
+        blast.drop_duplicates(subset=[0,1],keep='first',inplace=True)
         n = 5
         array = []
-        blast = blast.drop_duplicates()
         for name, group in blast.groupby([0]):
             index = group.index[n:]
             array += index.tolist()

@@ -101,6 +101,7 @@ class dotplot():
             blast[10] < evalue) & (blast[1] != blast[0])]
         blast = blast[(blast[0].isin(gene_loc_1.keys())) &
                       (blast[1].isin(gene_loc_2.keys()))]
+        # blast.drop_duplicates(subset=[0,1],keep='first',inplace=True)
         homopairs = []
         for name, group in blast.groupby([0])[1]:
             newgroup = group.values.tolist()
@@ -110,7 +111,7 @@ class dotplot():
         x, y, colors = self.pair_positon(
             homopairs, gene_loc_1, gene_loc_2, hitnum, colors)
         plt.scatter(x, y, s=float(self.markersize), c=colors,
-                    alpha=0.5, edgecolors=None, linewidths=0, marker=(9, 3, 30))
+                    alpha=0.5, edgecolors=None, linewidths=0, marker='o')
         plt.subplots_adjust(left=0.02, right=1, top=0.98, bottom=0)
         plt.savefig(self.savefile, dpi=500)
         sys.exit(0)

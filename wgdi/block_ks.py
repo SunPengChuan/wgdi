@@ -119,6 +119,7 @@ class block_ks():
             blast[10] < evalue) & (blast[1] != blast[0])]
         blast = blast[(blast[0].isin(gene_loc_1.keys())) &
                       (blast[1].isin(gene_loc_2.keys()))]
+        blast.drop_duplicates(subset=[0,1],keep='first',inplace=True)
         homopairs = []
         for name, group in blast.groupby([0])[1]:
             newgroup = group.values.tolist()
