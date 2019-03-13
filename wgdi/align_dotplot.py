@@ -10,17 +10,17 @@ import pandas as pd
 class align_dotplot():
     def __init__(self, options):
         self.position = 'order'
+        self.figsize = 'default'
         for k, v in options:
             setattr(self, str(k), v)
             print(str(k), ' = ', v)
         self.colors = [str(k) for k in self.colors.split(',')]
-        self.figsize = [float(k) for k in self.figsize.split(',')]
 
     def gene_location(self, gff, lens, step):
         loc_gene, dict_chr, n = {}, {}, 0
         for i in lens.index:
             dict_chr[str(i)] = n
-            n += float(lens.at[i, 1])
+            n += float(lens[i])
         for k in gff.index:
             if gff.loc[k, 'chr'] not in dict_chr:
                 continue
@@ -39,25 +39,25 @@ class align_dotplot():
             pos1.append(gl_start1 - loc1[index])
             pos2.append(gl_start2 + loc2[alignment[index]])
         return pos1, pos2
-
+    
     def plot_chr1(self, lens, gl, gl2, step, mark, name):
         gl_start, n, start_x = 0.95, 0, 0.05
         mark_y = 0.04
         align = dict(family='Times New Roman', style='normal',
                      horizontalalignment="center", verticalalignment="center")
         for k in lens.index:
-            n += float(lens.at[k, 1])
-            mark_new = str(mark)+str(k)
-            x = gl_start-float(n)*step
-            mark_x = x+0.5*float(lens.at[k, 1])*step
-            plt.plot([start_x, start_x+gl2], [x, x],
+            n += float(lens[k])
+            mark_new = str(mark) + str(k)
+            x = gl_start - float(n) * step
+            mark_x = x + 0.5 * float(lens[k]) * step
+            plt.plot([start_x, start_x + gl2], [x, x],
                      linestyle='-', color='black', linewidth=0.5)
             plt.text(mark_y, mark_x, mark_new, color='black',
                      fontsize=12, rotation=90, weight='semibold', **align)
-        plt.plot([start_x, start_x+gl2], [gl_start, gl_start],
+        plt.plot([start_x, start_x + gl2], [gl_start, gl_start],
                  linestyle='-', color='black', linewidth=1)
-        plt.text(mark_y-0.02, 0.5*(2*gl_start-gl), name, color='black',
-                 fontsize=18, rotation=90, weight='semibold', **align)
+        plt.text(mark_y - 0.02, 0.5 * (2 * gl_start - gl), name, color='black', fontsize=18, rotation=90,
+                 weight='semibold', **align)
 
     def plot_chr2(self, lens, gl, gl2, step, mark, name):
         gl_start, n, start_x = 0.05, 0, 0.95
@@ -65,22 +65,20 @@ class align_dotplot():
         align = dict(family='Times New Roman', style='normal',
                      horizontalalignment="center", verticalalignment="center")
         for k in lens.index:
-            n += float(lens.at[k, 1])
-            mark_new = str(mark)+str(k)
-            x = gl_start+float(n)*step
-            mark_x = x-0.5*float(lens.at[k, 1])*step
-            plt.plot([x, x], [start_x, start_x-gl2],
+            n += float(lens[k])
+            mark_new = str(mark) + str(k)
+            x = gl_start + float(n) * step
+            mark_x = x - 0.5 * float(lens[k]) * step
+            plt.plot([x, x], [start_x, start_x - gl2],
                      linestyle='-', color='black', linewidth=0.5)
             plt.text(mark_x, mark_y, mark_new, color='black',
                      fontsize=12, rotation=0, weight='semibold', **align)
-        plt.plot([gl_start, gl_start], [start_x, start_x-gl2],
+        plt.plot([gl_start, gl_start], [start_x, start_x - gl2],
                  linestyle='-', color='black', linewidth=1)
-        plt.text(0.5*(2*gl_start+gl), mark_y+0.02, name, color='black',
-                 fontsize=18, rotation=0, weight='semibold', **align)
+        plt.text(0.5 * (2 * gl_start + gl), mark_y + 0.02, name, color='black', fontsize=18, rotation=0,
+                 weight='semibold', **align)
 
     def run(self):
-        fig = plt.figure(figsize=tuple(self.figsize))
-        plt.axis('off')
         gff_1 = pd.read_csv(self.gff1, sep="\t", header=None)
         gff_2 = pd.read_csv(self.gff2, sep="\t", header=None)
         gff_1.rename(columns={0: 'chr', 1: 'id', 2: 'start',
@@ -92,12 +90,24 @@ class align_dotplot():
         lens_1 = pd.read_csv(self.lens1, sep="\t", header=None, index_col=0)
         lens_2 = pd.read_csv(self.lens2, sep="\t", header=None, index_col=0)
         gl1, gl2 = 0.92, 0.92
-        step1 = gl1 / float(lens_1[1].sum())
-        step2 = gl2 / float(lens_2[1].sum())
+        if self.position == 'order':
+            lens_1 = lens_1[2]
+            lens_2 = lens_2[2]
+
+        else:
+            lens_1 = lens_1[1]
+            lens_2 = lens_2[1]
+        if re.search('\d', self.figsize):
+            self.figsize = [float(k) for k in self.figsize.split(',')]
+        else:
+            self.figsize = np.array(
+                [1, float(lens_1.sum())/float(lens_2.sum())])*10
+        step1 = gl1 / float(lens_1.sum())
+        step2 = gl2 / float(lens_2.sum())
+        fig = plt.figure(figsize=tuple(self.figsize))
+        plt.axis('off')
         self.plot_chr1(lens_1, gl1, gl2, step1, '', self.genome1_name)
         self.plot_chr2(lens_2, gl1, gl2, step2, '', self.genome2_name)
-        gene_loc_1 = self.gene_location(gff_1, lens_1, step1)
-        gene_loc_2 = self.gene_location(gff_2, lens_2, step2)
         alignment = pd.read_csv(self.alignment, sep='\t',
                                 header=None, index_col=0)
         alignment.replace('\s+', '', inplace=True)

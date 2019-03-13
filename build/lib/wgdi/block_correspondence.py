@@ -10,7 +10,7 @@ class block_correspondence():
     def __init__(self, options):
         self.block_len = 0
         self.correspondence = 'all'
-        self.tanderm = True
+        self.tandem = True
         for k, v in options:
             setattr(self, str(k), v)
             print(k, ' = ', v)
@@ -40,7 +40,7 @@ class block_correspondence():
         cor['chr2'] = cor['chr2'].astype(str)
         gff1 = pd.concat([gff1, pd.DataFrame(columns=list('L'+str(i)
                                                           for i in range(1, int(self.wgd)+1)))], sort=True)
-        if self.tanderm == True:
+        if self.tandem == True or self.tandem == 'true' or self.tandem == 1:
             colinearity = self.remove_tandem(colinearity, gff1, gff2)
         align = self.colinearity_region(
             gff1, gff2, colinearity, cor, homopairs)

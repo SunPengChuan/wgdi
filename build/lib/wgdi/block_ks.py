@@ -12,7 +12,7 @@ class block_ks():
     def __init__(self, options):
         self.wgd = 1
         self.markersize = 0.5
-        self.figsize = (10, 10)
+        self.figsize = 'default'
         for k, v in options:
             setattr(self, str(k), v)
             print(str(k), ' = ', v)
@@ -98,13 +98,26 @@ class block_ks():
         return loc_gene
 
     def run(self):
-        fig = plt.figure(figsize=self.figsize)
-        plt.axis('off')
+
         lens_1 = pd.read_csv(self.lens1, sep="\t", header=None, index_col=0)
         lens_2 = pd.read_csv(self.lens2, sep="\t", header=None, index_col=0)
         gl1, gl2 = 0.92, 0.92
-        step1 = gl1 / float(lens_1[1].sum())
-        step2 = gl2 / float(lens_2[1].sum())
+        if self.position == 'order':
+            lens_1 = lens_1[2]
+            lens_2 = lens_2[2]
+
+        else:
+            lens_1 = lens_1[1]
+            lens_2 = lens_2[1]
+        if re.search('\d', self.figsize):
+            self.figsize = [float(k) for k in self.figsize.split(',')]
+        else:
+            self.figsize = np.array(
+                [1, float(lens_1.sum())/float(lens_2.sum())])*10
+        step1 = gl1 / float(lens_1.sum())
+        step2 = gl2 / float(lens_2.sum())
+        fig = plt.figure(figsize=self.figsize)
+        plt.axis('off')
         self.plot_chr1(lens_1, gl1, gl2, step1, '', self.genome1_name)
         self.plot_chr2(lens_2, gl1, gl2, step2, '', self.genome2_name)
         gene_loc_1 = self.gene_location(gff_1, lens_1, step1)
@@ -119,7 +132,7 @@ class block_ks():
             blast[10] < evalue) & (blast[1] != blast[0])]
         blast = blast[(blast[0].isin(gene_loc_1.keys())) &
                       (blast[1].isin(gene_loc_2.keys()))]
-        blast.drop_duplicates(subset=[0,1],keep='first',inplace=True)
+        blast.drop_duplicates(subset=[0, 1], keep='first', inplace=True)
         homopairs = []
         for name, group in blast.groupby([0])[1]:
             newgroup = group.values.tolist()
@@ -129,7 +142,7 @@ class block_ks():
         x, y, colors = self.pair_positon(
             homopairs, gene_loc_1, gene_loc_2, hitnum, colors)
         plt.scatter(x, y, s=float(self.markersize), c=colors,
-                    alpha=0.5, edgecolors=None, linewidths=0, marker=(9, 3, 30))
+                    alpha=0.5, edgecolors=None, linewidths=0, marker='o')
         plt.subplots_adjust(left=0.02, right=1, top=0.98, bottom=0)
         plt.savefig(self.savefile, dpi=500)
         sys.exit(0)

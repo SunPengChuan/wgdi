@@ -1,6 +1,3 @@
-# usr/bin/env python
-# coding:utf-8
-
 import configparser
 import os
 import re
@@ -101,6 +98,7 @@ def tendem(chr1, chr2, loc1, loc2):
     if (chr1 == chr2) and (abs(float(loc1)-float(loc2)) < 200):
         return True
     return False
+
 
 if __name__ == "__main__":
     config()

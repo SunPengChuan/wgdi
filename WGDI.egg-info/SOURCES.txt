@@ -16,6 +16,7 @@ wgdi/colinearscan.py
 wgdi/conf.ini
 wgdi/dotplot.py
 wgdi/ks.py
+wgdi/pindex.py
 wgdi/retain.py
 wgdi/run.py
 wgdi/example/__init__.py

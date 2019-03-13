@@ -11,12 +11,11 @@ class dotplot():
     def __init__(self, options):
         self.WGD = 1
         self.markersize = 0.5
-        self.figsize = '10, 10'
+        self.figsize = 'default'
         self.position = 'order'
         for k, v in options:
             setattr(self, str(k), v)
             print(k, ' = ', v)
-        self.figsize = [float(k) for k in self.figsize.split(',')]
 
     def plot_chr1(self, lens, gl, gl2, step, mark, name):
         gl_start, n, start_x = 0.95, 0, 0.05
@@ -70,8 +69,7 @@ class dotplot():
         return loc_gene
 
     def run(self):
-        fig = plt.figure(figsize=tuple(self.figsize))
-        plt.axis('off')
+
         gff_1 = pd.read_csv(self.gff1, sep="\t", header=None)
         gff_2 = pd.read_csv(self.gff2, sep="\t", header=None)
         gff_1.rename(columns={0: 'chr', 1: 'id', 2: 'start',
@@ -86,11 +84,19 @@ class dotplot():
         if self.position == 'order':
             lens_1 = lens_1[2]
             lens_2 = lens_2[2]
+
         else:
             lens_1 = lens_1[1]
             lens_2 = lens_2[1]
+        if re.search('\d', self.figsize):
+            self.figsize = [float(k) for k in self.figsize.split(',')]
+        else:
+            self.figsize = np.array(
+                [1, float(lens_1.sum())/float(lens_2.sum())])*10
         step1 = gl1 / float(lens_1.sum())
         step2 = gl2 / float(lens_2.sum())
+        fig = plt.figure(figsize=(tuple(self.figsize)))
+        plt.axis('off')
         self.plot_chr1(lens_1, gl1, gl2, step1, '', self.genome1_name)
         self.plot_chr2(lens_2, gl1, gl2, step2, '', self.genome2_name)
         gene_loc_1 = self.gene_location(gff_1, lens_1, step1)
@@ -101,7 +107,7 @@ class dotplot():
             blast[10] < evalue) & (blast[1] != blast[0])]
         blast = blast[(blast[0].isin(gene_loc_1.keys())) &
                       (blast[1].isin(gene_loc_2.keys()))]
-        # blast.drop_duplicates(subset=[0,1],keep='first',inplace=True)
+        blast.drop_duplicates(subset=[0, 1], keep='first', inplace=True)
         homopairs = []
         for name, group in blast.groupby([0])[1]:
             newgroup = group.values.tolist()
