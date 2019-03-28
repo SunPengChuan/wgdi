@@ -100,5 +100,39 @@ def tendem(chr1, chr2, loc1, loc2):
     return False
 
 
-if __name__ == "__main__":
-    config()
+def newgff(file):
+    gff = pd.read_csv(file, sep="\t", header=None)
+    gff.rename(columns={0: 'chr', 1: 'id', 2: 'start',
+                        3: 'end', 5: 'order'}, inplace=True)
+    gff['chr'] = gff['chr'].astype(str)
+    gff['id'] = gff['id'].astype(str)
+    gff['start'] = gff['start'].astype(float)
+    gff['start'] = gff['end'].astype(float)
+    gff['order'] = gff['order'].astype(int)
+    return gff
+
+
+def newlens(file, position):
+    lens = pd.read_csv(file, sep="\t", header=None, index_col=0)
+    lens.index = lens.index.astype(str)
+    if position == 'order':
+        lens = lens[2]
+    if position == 'end':
+        lens = lens[1]
+    return lens
+
+
+def gene_location(gff, lens, step, position):
+    loc_gene, dict_chr, n = {}, {}, 0
+    for i in lens.index:
+        dict_chr[i] = n
+        n += lens[i]
+    for k in gff.index:
+        if gff.loc[k, 'chr'] not in dict_chr:
+            continue
+        loc = (dict_chr[gff.loc[k, 'chr']] + gff.loc[k, position]) * step
+        loc_gene[gff.loc[k, 'id']]=loc
+    return loc_gene
+
+# if __name__ == "__main__":
+#     config()

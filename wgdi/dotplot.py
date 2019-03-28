@@ -69,7 +69,6 @@ class dotplot():
         return loc_gene
 
     def run(self):
-
         gff_1 = pd.read_csv(self.gff1, sep="\t", header=None)
         gff_2 = pd.read_csv(self.gff2, sep="\t", header=None)
         gff_1.rename(columns={0: 'chr', 1: 'id', 2: 'start',

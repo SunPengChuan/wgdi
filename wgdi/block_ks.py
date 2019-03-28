@@ -10,25 +10,16 @@ import wgdi.base as base
 
 class block_ks():
     def __init__(self, options):
-        self.wgd = 1
-        self.markersize = 0.5
+        self.markersize = 0.8
         self.figsize = 'default'
+        self.area = [0,3]
         for k, v in options:
             setattr(self, str(k), v)
             print(str(k), ' = ', v)
-        self.main()
+        self.area = [float(k) for k in self.area.split(',')]
 
-    def main(self):
-        global gff_1, gff_2, ks, colinearity
-        colinearity = base.read_colinearscan(self.colinearity)
-        gff_1 = pd.read_csv(self.gff1, sep='\t', header=None)
-        gff_2 = pd.read_csv(self.gff2, sep='\t', header=None)
-        gff_1[0] = gff_1[0].astype(str)
-        gff_2[0] = gff_2[0].astype(str)
-        ks = base.read_ks(self.ks)
-
-    def block_positon(self, colinearity, loc1, loc2, ks):
-        pos = []
+    def block_position(self, colinearity, loc1, loc2, ks):
+        pos,pairs = [],[]
         for block in colinearity:
             a, b, blk_ks = [], [], []
             if len(block[0]) < int(self.block_length):
@@ -37,143 +28,69 @@ class block_ks():
                 if (k[0] not in loc1) or (k[2] not in loc2):
                     continue
                 if k[0]+","+k[2] in ks.index:
-                    blk_ks.append(ks.at[str(k[0])+","+str(k[2]), 3])
-                a.append(loc1[k[0]])
-                b.append(loc2[k[2]])
-            if len(a) == 0:
+                    pair_ks = ks.at[str(k[0])+","+str(k[2]), 3]
+                    blk_ks.append(pair_ks)
+                    a.append(loc1[k[0]])
+                    b.append(loc2[k[2]])
+                    pairs.append([k[0],k[2],loc1[k[0]],loc2[k[2]],pair_ks])
+            if len(block[0]) < int(self.block_length) or len(a) == 0:
                 continue
             x, y, l, h = min(a), min(b), max(a)-min(a), max(b)-min(b)
             pos.append([x, y, l, h, base.get_median(blk_ks)])
-        return pos
+        return pos,pairs
 
-    def plot_chr1(self, lens, gl, gl2, step, mark, name):
-        gl_start, n, start_x = 0.95, 0, 0.05
-        mark_y = 0.04
+    def frame(self,fig,ax,lens1,lens2,step1,step2):
+        for k in lens1.cumsum()[:-1]*step1:
+            ax.axhline(y=k, alpha=1, color='black', lw=0.5)
+        for k in lens2.cumsum()[:-1]*step2:
+            ax.axvline(x=k, alpha=1, color='black', lw=0.5)
         align = dict(family='Times New Roman', style='normal',
-                     horizontalalignment="center", verticalalignment="center")
-        for k in lens.index:
-            n += float(lens.at[k, 1])
-            mark_new = str(mark) + str(k)
-            x = gl_start - float(n) * step
-            mark_x = x + 0.5 * float(lens.at[k, 1]) * step
-            plt.plot([start_x, start_x + gl2], [x, x],
-                     linestyle='-', color='black', linewidth=0.5)
-            plt.text(mark_y, mark_x, mark_new, color='black',
-                     fontsize=12, rotation=90, weight='semibold', **align)
-        plt.plot([start_x, start_x + gl2], [gl_start, gl_start],
-                 linestyle='-', color='black', linewidth=1)
-        plt.text(mark_y - 0.02, 0.5 * (2 * gl_start - gl), name, color='black', fontsize=18, rotation=90,
-                 weight='semibold', **align)
-
-    def plot_chr2(self, lens, gl, gl2, step, mark, name):
-        gl_start, n, start_x = 0.05, 0, 0.95
-        mark_y = 0.96
-        align = dict(family='Times New Roman', style='normal',
-                     horizontalalignment="center", verticalalignment="center")
-        for k in lens.index:
-            n += float(lens.at[k, 1])
-            mark_new = str(mark) + str(k)
-            x = gl_start + float(n) * step
-            mark_x = x - 0.5 * float(lens.at[k, 1]) * step
-            plt.plot([x, x], [start_x, start_x - gl2],
-                     linestyle='-', color='black', linewidth=0.5)
-            plt.text(mark_x, mark_y, mark_new, color='black',
-                     fontsize=12, rotation=0, weight='semibold', **align)
-        plt.plot([gl_start, gl_start], [start_x, start_x - gl2],
-                 linestyle='-', color='black', linewidth=1)
-        plt.text(0.5 * (2 * gl_start + gl), mark_y + 0.02, name, color='black', fontsize=18, rotation=0,
-                 weight='semibold', **align)
-
-    def gene_location(self, gff, lens, step):
-        loc_gene, dict_chr, n = {}, {}, 0
-        for i in lens.index:
-            dict_chr[str(i)] = n
-            n += float(lens.at[i, 1])
-        for k in gff.index:
-            if gff.loc[k, 0] not in dict_chr:
-                continue
-            loc = (float(dict_chr[gff.loc[k, 0]]) +
-                   float(gff.loc[k, 5])) * step
-            loc_gene[gff.loc[k, 1]] = loc
-        return loc_gene
+                    horizontalalignment="center", verticalalignment="center")
+        my_yticks = lens1.cumsum()*step1-0.5*lens1*step1
+        plt.yticks(my_yticks.values, lens1.index, fontsize=12, **align)
+        my_xticks = lens2.cumsum()*step2-0.5*lens2*step2
+        plt.xticks(my_xticks.values, lens2.index, fontsize=12, **align)
+        ax.xaxis.set_ticks_position('none')
+        ax.yaxis.set_ticks_position('none')
+        ax.axis([0, 1, 1, 0])
+        ax.set_ylabel("Test title",labelpad = 12.5,fontsize=18, **align)
+        fig.suptitle('Test title', fontsize=18, **align)
+        
 
     def run(self):
-
-        lens_1 = pd.read_csv(self.lens1, sep="\t", header=None, index_col=0)
-        lens_2 = pd.read_csv(self.lens2, sep="\t", header=None, index_col=0)
-        gl1, gl2 = 0.92, 0.92
-        if self.position == 'order':
-            lens_1 = lens_1[2]
-            lens_2 = lens_2[2]
-
-        else:
-            lens_1 = lens_1[1]
-            lens_2 = lens_2[1]
+        lens1 = base.newlens(self.lens1, self.position)
+        lens2 = base.newlens(self.lens2, self.position)
         if re.search('\d', self.figsize):
             self.figsize = [float(k) for k in self.figsize.split(',')]
         else:
             self.figsize = np.array(
-                [1, float(lens_1.sum())/float(lens_2.sum())])*10
-        step1 = gl1 / float(lens_1.sum())
-        step2 = gl2 / float(lens_2.sum())
-        fig = plt.figure(figsize=self.figsize)
-        plt.axis('off')
-        self.plot_chr1(lens_1, gl1, gl2, step1, '', self.genome1_name)
-        self.plot_chr2(lens_2, gl1, gl2, step2, '', self.genome2_name)
-        gene_loc_1 = self.gene_location(gff_1, lens_1, step1)
-        gene_loc_2 = self.gene_location(gff_2, lens_2, step2)
-        pos = self.block_positon(colinearity, gene_loc_1, gene_loc_2, ks)
-        for k in pos:
-            y, x = 0.95-k[0]-0.5*k[2], 0.05+k[1]+0.5*k[3]
-            plt.text(x, y, round(k[4], 2), color='red', fontsize=6)
-        blast = pd.read_csv(self.blast, sep="\t", header=None)
-        score, evalue, repnum = 200, 1e-5, 20
-        blast = blast[(blast[11] >= score) & (
-            blast[10] < evalue) & (blast[1] != blast[0])]
-        blast = blast[(blast[0].isin(gene_loc_1.keys())) &
-                      (blast[1].isin(gene_loc_2.keys()))]
-        blast.drop_duplicates(subset=[0, 1], keep='first', inplace=True)
-        homopairs = []
-        for name, group in blast.groupby([0])[1]:
-            newgroup = group.values.tolist()
-            homopairs.append([name] + newgroup[:repnum])
+                [1, float(lens1.sum())/float(lens2.sum())])*10
+        step1 = 1 / float(lens1.sum())
+        step2 = 1 / float(lens2.sum())
+        fig, ax = plt.subplots(figsize=self.figsize)
+        ax.xaxis.set_ticks_position('top')
+        self.frame(fig,ax,lens1,lens2,step1,step2)
+        gff_1 = base.newgff(self.gff1)
+        gff_2 = base.newgff(self.gff2)
+        gene_loc_1 = base.gene_location(gff_1, lens1, step1, self.position)
+        gene_loc_2 = base.gene_location(gff_2, lens2, step2, self.position)
+        colinearity = base.read_colinearscan(self.colinearity)
+        ks = base.read_ks(self.ks)
+        pos,pairs = self.block_position(colinearity, gene_loc_1, gene_loc_2, ks)
         colors = ['red', 'blue', 'grey']
-        hitnum = 4+int(self.wgd)
-        x, y, colors = self.pair_positon(
-            homopairs, gene_loc_1, gene_loc_2, hitnum, colors)
-        plt.scatter(x, y, s=float(self.markersize), c=colors,
-                    alpha=0.5, edgecolors=None, linewidths=0, marker='o')
-        plt.subplots_adjust(left=0.02, right=1, top=0.98, bottom=0)
+        cm = plt.cm.get_cmap('RdYlBu')
+        df = pd.DataFrame(pairs,columns=['id1','id2','loc1','loc2','ks'])
+        df.drop_duplicates(inplace=True)
+        for k in pos:
+            x,y =k[0]+0.5*k[2], k[1]+0.5*k[3]
+            plt.text(y, x, round(k[4], 2), color='red', fontsize=6)
+        sc=plt.scatter(df['loc2'], df['loc1'], s=float(self.markersize), c=df['ks'],
+                    alpha=0.8, edgecolors=None, linewidths=0, marker='o',vmin=self.area[0],vmax=self.area[1],cmap=cm)
+        cbar = fig.colorbar(sc, shrink=0.5,pad=0.03,frameon=False)
+        align = dict(family='Times New Roman', style='normal',
+                     horizontalalignment="center", verticalalignment="center")
+        cbar.set_label('Ks',labelpad = 12.5,fontsize=18,**align)
+        plt.subplots_adjust(left=0.06, right=1, top=0.95, bottom=0.05)
         plt.savefig(self.savefile, dpi=500)
+        plt.show()
         sys.exit(0)
-
-    def pair_positon(self, data, loc1, loc2, hitnum, colors):
-        pos1, pos2, newcolor = [], [], []
-        gl_start1, gl_start2 = 0.95, 0.05
-        for k in data:
-            x = gl_start1 - loc1[k[0]]
-            for i in range(1, len(k)):
-                if i <= int(self.wgd):
-                    color = colors[0]
-                elif i <= hitnum:
-                    color = colors[1]
-                else:
-                    color = colors[2]
-                y = gl_start2 + loc2[k[i]]
-                pos1.append(y)
-                pos2.append(x)
-                newcolor.append(color)
-        return pos1, pos2, newcolor
-
-    def gene_location(self, gff, lens, step):
-        loc_gene, dict_chr, n = {}, {}, 0
-        for i in lens.index:
-            dict_chr[str(i)] = n
-            n += float(lens.at[i, 1])
-        for k in gff.index:
-            if gff.loc[k, 0] not in dict_chr:
-                continue
-            loc = (float(dict_chr[gff.loc[k, 0]]) +
-                   float(gff.loc[k, 5])) * step
-            loc_gene[gff.loc[k, 1]] = loc
-        return loc_gene

@@ -10,6 +10,7 @@ from wgdi.block_correspondence import block_correspondence
 from wgdi.block_ks import block_ks
 from wgdi.colinearscan import colinearscan
 from wgdi.dotplot import dotplot
+from wgdi.circos import circos
 from wgdi.ks import ks
 from wgdi.retain import retain
 
@@ -37,6 +38,8 @@ parser.add_argument("-ks", dest="calks",
                     help="Calculate Ka/Ks for homologous gene pairs by Comdel")
 parser.add_argument("-cl", dest="collinearity",
                     help="A simple way to run ColinearScan")
+parser.add_argument("-circos", dest="circos",
+                    help="A simple way to run circos")
 
 args = parser.parse_args()
 
@@ -46,6 +49,10 @@ def run_dotplot():
     dot = dotplot(options)
     dot.run()
 
+def run_circos():
+    options = base.load_conf(args.circos, 'circos')
+    cir = circos(options)
+    cir.run()
 
 def run_align_dotplot():
     options = base.load_conf(args.alignment, 'alignment')
@@ -66,7 +73,7 @@ def run_retain():
 
 
 def run_block_ks():
-    options = base.load_conf(args.blkks, 'blkks')
+    options = base.load_conf(args.blockks, 'blockks')
     blockks = block_ks(options)
     blockks.run()
 
@@ -89,9 +96,10 @@ def module_to_run(argument):
         'correspondence': run_align_correspondence,
         'alignment': run_align_dotplot,
         'retain': run_retain,
-        'blkks': run_block_ks,
+        'blockks': run_block_ks,
         'calks': run_cal_ks,
-        'collinearity': run_colinearscan
+        'collinearity': run_colinearscan,
+        'circos': run_circos
     }
     return switcher.get(argument)()
 
@@ -102,9 +110,10 @@ def main():
                'correspondence': 'corr.conf',
                'alignment': 'align.conf',
                'retain': 'retain.conf',
-               'blkks': 'blkks.conf',
+               'blockks': 'blockks.conf',
                'calks': 'ks.conf',
-               'collinearity': 'colinearscan.conf'}
+               'collinearity': 'colinearscan.conf',
+               'circos': 'circos.conf'}
     for arg in vars(args):
         value = getattr(args, arg)
         if value is not None:
