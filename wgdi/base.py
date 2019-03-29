@@ -100,6 +100,15 @@ def tendem(chr1, chr2, loc1, loc2):
     return False
 
 
+def newblast(file, score, evalue, gene_loc1, gene_loc2):
+    blast = pd.read_csv(file, sep="\t", header=None)
+    blast = blast[(blast[11] >= score) & (
+        blast[10] < evalue) & (blast[1] != blast[0])]
+    blast = blast[(blast[0].isin(gene_loc1)) & (blast[1].isin(gene_loc2))]
+    blast.drop_duplicates(subset=[0, 1], keep='first', inplace=True)
+    return blast.head(100)
+
+
 def newgff(file):
     gff = pd.read_csv(file, sep="\t", header=None)
     gff.rename(columns={0: 'chr', 1: 'id', 2: 'start',
@@ -131,8 +140,27 @@ def gene_location(gff, lens, step, position):
         if gff.loc[k, 'chr'] not in dict_chr:
             continue
         loc = (dict_chr[gff.loc[k, 'chr']] + gff.loc[k, position]) * step
-        loc_gene[gff.loc[k, 'id']]=loc
+        loc_gene[gff.loc[k, 'id']] = loc
     return loc_gene
+
+def dotplot_frame(fig,ax,lens1,lens2,step1,step2,genome1_name,genome2_name):
+    for k in lens1.cumsum()[:-1]*step1:
+        ax.axhline(y=k, alpha=1, color='black', lw=0.5)
+    for k in lens2.cumsum()[:-1]*step2:
+        ax.axvline(x=k, alpha=1, color='black', lw=0.5)
+    align = dict(family='Times New Roman', style='normal',
+                horizontalalignment="center", verticalalignment="center")
+    yticks = lens1.cumsum()*step1-0.5*lens1*step1
+    ax.set_yticks(yticks) 
+    ax.set_yticklabels(lens1.index, fontsize=12, **align)
+    xticks = lens2.cumsum()*step2-0.5*lens2*step2
+    ax.set_xticks(xticks) 
+    ax.set_xticklabels(lens2.index, fontsize=12, **align)
+    ax.xaxis.set_ticks_position('none')
+    ax.yaxis.set_ticks_position('none')
+    ax.axis([0, 1, 1, 0])
+    ax.set_ylabel(genome1_name,labelpad = 8,weight='semibold',fontsize=18, **align)
+    fig.suptitle(genome2_name, weight='semibold',fontsize=18, **align)
 
 # if __name__ == "__main__":
 #     config()

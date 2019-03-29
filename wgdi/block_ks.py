@@ -1,7 +1,6 @@
 import re
 import sys
 
-import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -70,13 +69,13 @@ class block_ks():
         fig, ax = plt.subplots(figsize=self.figsize)
         ax.xaxis.set_ticks_position('top')
         self.frame(fig,ax,lens1,lens2,step1,step2)
-        gff_1 = base.newgff(self.gff1)
-        gff_2 = base.newgff(self.gff2)
-        gene_loc_1 = base.gene_location(gff_1, lens1, step1, self.position)
-        gene_loc_2 = base.gene_location(gff_2, lens2, step2, self.position)
+        gff1 = base.newgff(self.gff1)
+        gff2 = base.newgff(self.gff2)
+        gene_loc1 = base.gene_location(gff1, lens1, step1, self.position)
+        gene_loc2 = base.gene_location(gff2, lens2, step2, self.position)
         colinearity = base.read_colinearscan(self.colinearity)
         ks = base.read_ks(self.ks)
-        pos,pairs = self.block_position(colinearity, gene_loc_1, gene_loc_2, ks)
+        pos,pairs = self.block_position(colinearity, gene_loc1, gene_loc2, ks)
         colors = ['red', 'blue', 'grey']
         cm = plt.cm.get_cmap('RdYlBu')
         df = pd.DataFrame(pairs,columns=['id1','id2','loc1','loc2','ks'])

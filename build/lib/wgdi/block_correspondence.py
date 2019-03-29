@@ -26,16 +26,16 @@ class block_correspondence():
         lens_1 = pd.read_csv(self.lens1, sep="\t", header=None, index_col=0)
         lens_2 = pd.read_csv(self.lens2, sep="\t", header=None, index_col=0)
         if self.correspondence == 'all':
-            cor = [[k, i, 0, lens_1.at[i, 2], j, 0, lens_2.at[j, 2]]
+            cor = [[k, i, 0, lens_1.at[i, 2], j, 0, lens_2.at[j, 2],float(self.homo[0]),float(self.homo[1])]
                    for k in range(1, int(self.wgd)+1) for i in lens_1.index for j in lens_2.index]
             cor = pd.DataFrame(
-                cor, columns=['sub', 'chr1', 'start1', 'end1', 'chr2', 'start2', 'end2'])
+                cor, columns=['sub', 'chr1', 'start1', 'end1', 'chr2', 'start2', 'end2','homo1','homo2'])
             cor.to_csv('all.coor.txt', header=None, index=False)
         else:
             cor = pd.read_csv(self.correspondence, sep=',',
                               header=None, engine='python')
             cor.columns = ['sub', 'chr1', 'start1',
-                           'end1', 'chr2', 'start2', 'end2']
+                           'end1', 'chr2', 'start2', 'end2','homo1','homo2']
         cor['chr1'] = cor['chr1'].astype(str)
         cor['chr2'] = cor['chr2'].astype(str)
         gff1 = pd.concat([gff1, pd.DataFrame(columns=list('L'+str(i)
@@ -96,6 +96,8 @@ class block_correspondence():
                 float(i[3]) for i in k[0]]
             start1, end1 = min(array1), max(array1)
             start2, end2 = min(array2), max(array2)
+            if (end1-start1)/len(array1)<=0.05 or (end2-start2)/len(array2)<=0.05:
+                continue
             newcor = cor[(cor['chr1'] == str(chr1)) &
                          (cor['chr2'] == str(chr2))]
             group = newcor.drop_duplicates(
@@ -109,7 +111,7 @@ class block_correspondence():
                         if block[0]+","+block[2] in homopairs.keys():
                             homo += homopairs[block[0]+","+block[2]]
                     homo = homo/len(k[0])
-                    if homo <= float(self.homo[0]) or homo >= float(self.homo[1]):
+                    if homo <= float(row['homo1']) or homo >= float(row['homo2']):
                         continue
                     index = gff1[(gff1[0] == chr1) & (gff1[5] >= start1) & (
                         gff1[5] <= end1)].index

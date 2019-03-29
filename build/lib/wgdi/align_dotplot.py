@@ -39,7 +39,7 @@ class align_dotplot():
             pos1.append(gl_start1 - loc1[index])
             pos2.append(gl_start2 + loc2[alignment[index]])
         return pos1, pos2
-    
+
     def plot_chr1(self, lens, gl, gl2, step, mark, name):
         gl_start, n, start_x = 0.95, 0, 0.05
         mark_y = 0.04
