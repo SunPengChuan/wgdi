@@ -24,6 +24,12 @@ substitutions, and differences in different evolution rates, etc.
     https://wgdi.readthedocs.io/en/latest/
     -------------------------------------- '''
 parser.add_argument("-v", "--version", action='version', version='0.1.8')
+parser.add_argument("-cl", dest="collinearity",
+                    help="A simple way to run ColinearScan")
+parser.add_argument("-ks", dest="calks",
+                    help="Calculate Ka/Ks for homologous gene pairs by Comdel")
+parser.add_argument("-bk", dest="blockks",
+                    help="Show Ks of blocks in a dotplot")
 parser.add_argument("-d", dest="dotplot",
                     help="Show homologous gene dotplot")
 parser.add_argument("-c", dest="correspondence",
@@ -32,12 +38,6 @@ parser.add_argument("-a", dest="alignment",
                     help="Show event-related genomic alignment in a dotplot")
 parser.add_argument("-r", dest="retain",
                     help="Show subgenomes in gene retention or genome fractionation")
-parser.add_argument("-bk", dest="blockks",
-                    help="Show Ks of blocks in a dotplot")
-parser.add_argument("-ks", dest="calks",
-                    help="Calculate Ka/Ks for homologous gene pairs by Comdel")
-parser.add_argument("-cl", dest="collinearity",
-                    help="A simple way to run ColinearScan")
 parser.add_argument("-circos", dest="circos",
                     help="A simple way to run circos")
 

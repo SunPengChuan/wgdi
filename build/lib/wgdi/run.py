@@ -8,9 +8,9 @@ import wgdi.base as base
 from wgdi.align_dotplot import align_dotplot
 from wgdi.block_correspondence import block_correspondence
 from wgdi.block_ks import block_ks
+from wgdi.circos import circos
 from wgdi.colinearscan import colinearscan
 from wgdi.dotplot import dotplot
-from wgdi.circos import circos
 from wgdi.ks import ks
 from wgdi.retain import retain
 
@@ -24,6 +24,12 @@ substitutions, and differences in different evolution rates, etc.
     https://wgdi.readthedocs.io/en/latest/
     -------------------------------------- '''
 parser.add_argument("-v", "--version", action='version', version='0.1.8')
+parser.add_argument("-cl", dest="collinearity",
+                    help="A simple way to run ColinearScan")
+parser.add_argument("-ks", dest="calks",
+                    help="Calculate Ka/Ks for homologous gene pairs by Comdel")
+parser.add_argument("-bk", dest="blockks",
+                    help="Show Ks of blocks in a dotplot")
 parser.add_argument("-d", dest="dotplot",
                     help="Show homologous gene dotplot")
 parser.add_argument("-c", dest="correspondence",
@@ -32,15 +38,8 @@ parser.add_argument("-a", dest="alignment",
                     help="Show event-related genomic alignment in a dotplot")
 parser.add_argument("-r", dest="retain",
                     help="Show subgenomes in gene retention or genome fractionation")
-parser.add_argument("-bk", dest="blockks",
-                    help="Show Ks of blocks in a dotplot")
-parser.add_argument("-ks", dest="calks",
-                    help="Calculate Ka/Ks for homologous gene pairs by Comdel")
-parser.add_argument("-cl", dest="collinearity",
-                    help="A simple way to run ColinearScan")
 parser.add_argument("-circos", dest="circos",
                     help="A simple way to run circos")
-
 args = parser.parse_args()
 
 
@@ -49,10 +48,12 @@ def run_dotplot():
     dot = dotplot(options)
     dot.run()
 
+
 def run_circos():
     options = base.load_conf(args.circos, 'circos')
     cir = circos(options)
     cir.run()
+
 
 def run_align_dotplot():
     options = base.load_conf(args.alignment, 'alignment')
