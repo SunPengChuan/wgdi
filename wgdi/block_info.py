@@ -8,23 +8,11 @@ import pandas as pd
 import wgdi.base as base
 
 
-class colinearscan():
+class block_info():
     def __init__(self, options):
-        self.repnum = 20
-        self.score = 200
-        self.evalue = 1e-5
         for k, v in options:
             setattr(self, str(k), v)
             print(str(k), ' = ', v)
-        if hasattr(self, 'mg'):
-            self.mg = self.mg.split(',')
-        else:
-            self.mg = [50, 50]
-        if os.path.exists(self.dir):
-            shutil.rmtree(self.dir)
-        os.makedirs(self.dir)
-        os.makedirs(self.dir+'/pair/')
-        os.makedirs(self.dir+'/block/')
 
     def run(self):
         lens1 = base.newlens(self.lens1, self.position)
@@ -35,6 +23,9 @@ class colinearscan():
         gff2 = gff2[gff2['chr'].isin(lens2.index)]
         blast = base.newblast(self.blast, int(self.score),
                               float(self.evalue), gff1, gff2)
+        colinearity = base.read_colinearscan(self.colinearity)
+
+        
         df = self.deal_blast(blast, gff1, gff2, int(self.repnum))
         for (chr1, chr2), group in df.groupby(['chr1', 'chr2']):
             group = group.sort_values(by=['loc1', 'loc2'])

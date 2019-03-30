@@ -3,6 +3,7 @@ import os
 import re
 
 import pandas as pd
+import numpy as np
 import wgdi
 from Bio import Seq, SeqIO, SeqRecord
 
@@ -20,27 +21,24 @@ def load_conf(file, section):
 
 
 def read_colinearscan(file):
-    data, b, flag = [], [], 0
-    with open(file) as f1:
-        for line in f1.readlines():
+    data, b, flag, num= [], [], 0, 1
+    with open(file) as f:
+        for line in f.readlines():
             line = line.strip()
-            if re.match(r"MAXIMUM GAP", line):
-                continue
             if re.match(r"the", line):
+                num = re.search('\d+',line).group()
                 b = []
                 flag = 1
                 continue
-            if flag == 0:
-                continue
             if re.match(r"\>LOCALE", line):
                 flag = 0
-                if len(b) == 0:
-                    continue
                 p = re.split(':', line)
-                data.append([b, p[1]])
+                data.append([num,b,p[1]])
                 b = []
-            a = re.split(r"\s", line)
-            b.append(a)
+                continue
+            if flag == 1:
+                a = re.split(r"\s", line)
+                b.append(a)
     return data
 
 
@@ -104,19 +102,19 @@ def newblast(file, score, evalue, gene_loc1, gene_loc2):
     blast = pd.read_csv(file, sep="\t", header=None)
     blast = blast[(blast[11] >= score) & (
         blast[10] < evalue) & (blast[1] != blast[0])]
-    blast = blast[(blast[0].isin(gene_loc1)) & (blast[1].isin(gene_loc2))]
+    blast = blast[(blast[0].isin(gene_loc1.index)) & (blast[1].isin(gene_loc2.index))]
     blast.drop_duplicates(subset=[0, 1], keep='first', inplace=True)
-    return blast.head(100)
+    return blast
 
 
 def newgff(file):
-    gff = pd.read_csv(file, sep="\t", header=None)
-    gff.rename(columns={0: 'chr', 1: 'id', 2: 'start',
-                        3: 'end', 5: 'order'}, inplace=True)
+    gff = pd.read_csv(file, sep="\t", header=None,index_col=1)
+    gff.rename(columns={0: 'chr', 2: 'start',
+                        3: 'end', 4: 'stand', 5: 'order'}, inplace=True)
     gff['chr'] = gff['chr'].astype(str)
-    gff['id'] = gff['id'].astype(str)
     gff['start'] = gff['start'].astype(float)
-    gff['start'] = gff['end'].astype(float)
+    gff['end'] = gff['end'].astype(float)
+    gff['stand'] = gff['stand'].astype(str)
     gff['order'] = gff['order'].astype(int)
     return gff
 
@@ -133,34 +131,33 @@ def newlens(file, position):
 
 def gene_location(gff, lens, step, position):
     loc_gene, dict_chr, n = {}, {}, 0
-    for i in lens.index:
-        dict_chr[i] = n
-        n += lens[i]
-    for k in gff.index:
-        if gff.loc[k, 'chr'] not in dict_chr:
-            continue
-        loc = (dict_chr[gff.loc[k, 'chr']] + gff.loc[k, position]) * step
-        loc_gene[gff.loc[k, 'id']] = loc
-    return loc_gene
+    gff = gff[gff['chr'].isin(lens.index)]
+    dict_chr=dict(zip(lens.index, np.append(np.array([0]),lens.cumsum()[:-1].values)))
+    gff['loc']=''
+    for name, group in gff.groupby(['chr']):
+        gff.loc[group.index,'loc'] = (dict_chr[name]+group[position])*step
+    return gff
 
-def dotplot_frame(fig,ax,lens1,lens2,step1,step2,genome1_name,genome2_name):
+
+def dotplot_frame(fig, ax, lens1, lens2, step1, step2, genome1_name, genome2_name):
     for k in lens1.cumsum()[:-1]*step1:
         ax.axhline(y=k, alpha=1, color='black', lw=0.5)
     for k in lens2.cumsum()[:-1]*step2:
         ax.axvline(x=k, alpha=1, color='black', lw=0.5)
     align = dict(family='Times New Roman', style='normal',
-                horizontalalignment="center", verticalalignment="center")
+                 horizontalalignment="center", verticalalignment="center")
     yticks = lens1.cumsum()*step1-0.5*lens1*step1
-    ax.set_yticks(yticks) 
+    ax.set_yticks(yticks)
     ax.set_yticklabels(lens1.index, fontsize=12, **align)
     xticks = lens2.cumsum()*step2-0.5*lens2*step2
-    ax.set_xticks(xticks) 
+    ax.set_xticks(xticks)
     ax.set_xticklabels(lens2.index, fontsize=12, **align)
     ax.xaxis.set_ticks_position('none')
     ax.yaxis.set_ticks_position('none')
     ax.axis([0, 1, 1, 0])
-    ax.set_ylabel(genome1_name,labelpad = 8,weight='semibold',fontsize=18, **align)
-    fig.suptitle(genome2_name, weight='semibold',fontsize=18, **align)
+    ax.set_ylabel(genome1_name, labelpad=8,
+                  weight='semibold', fontsize=18, **align)
+    fig.suptitle(genome2_name, weight='semibold', fontsize=18, **align)
 
 # if __name__ == "__main__":
 #     config()

@@ -18,13 +18,11 @@ class block_correspondence():
 
     def run(self):
         colinearity = base.read_colinearscan(self.colinearity)
-        gff1 = pd.read_csv(self.gff1, sep='\t', header=None, index_col=1)
-        gff2 = pd.read_csv(self.gff2, sep='\t', header=None, index_col=1)
-        gff1[0] = gff1[0].astype(str)
-        gff2[0] = gff2[0].astype(str)
+        lens1 = base.newlens(self.lens1, self.position)
+        lens2 = base.newlens(self.lens2, self.position)
+        gff1 = base.newgff(self.gff1)
+        gff2 = base.newgff(self.gff2)
         homopairs = self.deal_blast(gff1, gff2)
-        lens_1 = pd.read_csv(self.lens1, sep="\t", header=None, index_col=0)
-        lens_2 = pd.read_csv(self.lens2, sep="\t", header=None, index_col=0)
         if self.correspondence == 'all':
             cor = [[k, i, 0, lens_1.at[i, 2], j, 0, lens_2.at[j, 2],float(self.homo[0]),float(self.homo[1])]
                    for k in range(1, int(self.wgd)+1) for i in lens_1.index for j in lens_2.index]
@@ -48,6 +46,7 @@ class block_correspondence():
               ].to_csv(self.savefile, sep='\t', header=None)
 
     def deal_blast(self, gff1, gff2):
+        blast = base.newblast(self.blast, int(self.score), float(self.evalue), gene_loc1, gene_loc2)
         blast = pd.read_csv(self.blast, sep="\t", header=None)
         score, evalue, repnum = 200, 1e-5, 20
         blast = blast[(blast[11] >= score) & (

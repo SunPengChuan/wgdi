@@ -88,8 +88,7 @@ class circos():
         for name, group in newalignment.groupby([0]):
             if str(name) not in loc_chr:
                 continue
-            group['rad'] = loc_chr[str(name)][0]+angle * group['loc']
-            newalignment.loc[group.index,'rad']=group['rad']
+            newalignment.loc[group.index,'rad']=loc_chr[str(name)][0]+angle * group['loc']
         return newalignment
 
     def run(self):
