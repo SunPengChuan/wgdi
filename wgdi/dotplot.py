@@ -52,7 +52,7 @@ class dotplot():
         blast['color'] = ''
         blast['loc1'] = blast[0].map(gff1['loc'])
         blast['loc2'] = blast[1].map(gff2['loc'])
-        bluenum = 4+rednum
+        bluenum = 5+rednum
         index = [group[:repnum].index.tolist()
                  for name, group in blast.groupby([0])]
         redindex = np.concatenate(np.array([k[:rednum] for k in index]))

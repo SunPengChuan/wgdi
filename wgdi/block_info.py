@@ -1,8 +1,3 @@
-import os
-import re
-import shutil
-import sys
-
 import numpy as np
 import pandas as pd
 import wgdi.base as base
@@ -10,6 +5,7 @@ import wgdi.base as base
 
 class block_info():
     def __init__(self, options):
+        self.repnum = 20
         for k, v in options:
             setattr(self, str(k), v)
             print(str(k), ' = ', v)
@@ -19,109 +15,66 @@ class block_info():
         lens2 = base.newlens(self.lens2, self.position)
         gff1 = base.newgff(self.gff1)
         gff2 = base.newgff(self.gff2)
-        # gff1 = gff1[gff1['chr'].isin(lens1.index)]
-        # gff2 = gff2[gff2['chr'].isin(lens2.index)]
+        gff1 = gff1[gff1['chr'].isin(lens1.index)]
+        gff2 = gff2[gff2['chr'].isin(lens2.index)]
         blast = base.newblast(self.blast, int(self.score),
                               float(self.evalue), gff1, gff2)
+        blast = self.blast_homo(blast, gff1, gff2, int(self.repnum))
+        blast.index = blast[0]+','+blast[1]
         colinearity = base.read_colinearscan(self.colinearity)
         ks = base.read_ks(self.ks)
+        data = self.block_position(colinearity, blast, gff1, gff2, ks)
 
-    def block_position(self, colinearity, gff1, gff2, ks):
-        pos,pairs = [],[]
+    def block_position(self, colinearity, blast, gff1, gff2, ks):
+        data = []
+        print(len(blast))
         for block in colinearity:
-            a, b, blk_ks = [], [], []
-            chr1, chr2 = gff1.loc[block[1][0][0], 'chr'], gff2.loc[block[1][0][2], 'chr']
-            if (chr1 is not in lens1.index) or (chr2 is not in lens2.index):
+            blk_homo, blk_ks = [],  []
+            print(len(block[1]))
+            if len(block[1])==0:
                 continue
-            array1, array2 = [float(i[1]) for i in k[0]], [float(i[3]) for i in k[0]]
+            if block[1][0][0] not in gff1.index or block[1][0][2] not in gff2.index:
+                continue
+            chr1, chr2 = gff1.loc[block[1][0][0],
+                                  'chr'], gff2.loc[block[1][0][2], 'chr']
+            array1, array2 = [float(i[1]) for i in block[1]], [
+                float(i[3]) for i in block[1]]
             start1, end1 = min(array1), max(array1)
             start2, end2 = min(array2), max(array2)
-            n = 0
             for k in block[1]:
+                if k[0]+","+k[2] not in blast.index:
+                    continue
+                blk_homo.append(
+                    blast.loc[k[0]+","+k[2], ['homo'+str(i) for i in range(1, 6)]].values.tolist())
                 if k[0]+","+k[2] in ks.index:
                     pair_ks = ks.at[str(k[0])+","+str(k[2]), 3]
                     blk_ks.append(pair_ks)
-            pairs.append([k[0],k[2],loc1[k[0]],loc2[k[2]],pair_ks])
-            x, y, l, h = min(a), min(b), max(a)-min(a), max(b)-min(b)
-            pos.append([x, y, l, h, base.get_median(blk_ks)])
-        return pos,pairs
+            blkks = ','.join([str(k) for k in blk_ks])
+            df = pd.DataFrame(blk_homo)
+            homo = df.mean().values
+            if len(homo)==0:
+                continue
+            data.append([block[0], chr1, chr2, start1, end1, start2, end2, len(
+                block[1]), base.get_median(blk_ks), homo[0], homo[1], homo[2], homo[3], homo[4], blkks])
+        data = pd.DataFrame(data, columns=['id', 'chr1', 'chr2', 'start1', 'end1', 'start2',
+                                           'end2', 'length', 'ks_median', 'homo1', 'homo2', 'homo3', 'homo4', 'homo5', 'ks'])
+        data.to_csv(self.savefile, index=None)
+        return data
 
-
-        
-        # df = self.deal_blast(blast, gff1, gff2, int(self.repnum))
-        # for (chr1, chr2), group in df.groupby(['chr1', 'chr2']):
-        #     group = group.sort_values(by=['loc1', 'loc2'])
-        #     # print(group.head())
-        #     dir1 = './'+self.dir+'/pair/'+str(chr1)+'.vs.'+str(chr2)+'.pair'
-        #     dir2 = './'+self.dir+'/block/'+str(chr1)+'.vs.'+str(chr2)+'.blk'
-        #     group[[0, 'stand1', 'loc1', 1, 'stand2', 'loc2']].to_csv(
-        #         dir1, sep=' ', index=None, header=None)
-        #     args = ['blockscan', '-chr1len', lens1[str(chr1)], '-chr2len', lens2[str(
-        #         chr2)], '-mg1', self.mg[0], '-mg2', self.mg[1], dir1, '>'+dir2]
-        #     command = ' '.join([str(k) for k in args])
-        #     # os.system(command)
-        # args = ['cat', self.dir+'/block/*.blk', '>', self.dir+'.block.txt']
-        # command = ' '.join([str(k) for k in args])
-        # # os.system(command)
-        # self.rewriteblock(sys.argv[1],sys.argv[2])
-
-    def deal_blast(self, blast, gff1, gff2, repnum):
+    def blast_homo(self, blast, gff1, gff2, repnum):
         index = [group[:repnum].index.tolist()
                  for name, group in blast.groupby([0])]
-        index = np.concatenate(np.array(index))
-        blast = blast.loc[index, [0, 1]]
-        gff1 = gff1[['chr','stand','order']]
-        gff2 = gff2[['chr','stand','order']]
-        gff1.columns = ['chr1', 'stand1', 'loc1']
-        gff2.columns = ['chr2', 'stand2', 'loc2']
-        blast = pd.merge(blast, gff1, left_on=0,right_on=gff1.index)
-        blast = pd.merge(blast, gff2, left_on=1,right_on=gff2.index)
-        blast.replace({'+': '1', '-': '-1'}, inplace=True)
+        blast = blast.loc[np.concatenate(
+            np.array([k[:repnum] for k in index])), [0, 1]]
+        blast = blast.assign(homo1=np.nan, homo2=np.nan,
+                             homo3=np.nan, homo4=np.nan, homo5=np.nan)
+        for i in range(1, 6):
+            bluenum = i+5
+            redindex = np.concatenate(np.array([k[:i] for k in index]))
+            blueindex = np.concatenate(np.array([k[i:bluenum] for k in index]))
+            grayindex = np.concatenate(
+                np.array([k[bluenum:repnum] for k in index]))
+            blast.loc[redindex, 'homo'+str(i)] = 1
+            blast.loc[blueindex, 'homo'+str(i)] = 0
+            blast.loc[grayindex, 'homo'+str(i)] = -1
         return blast
-
-
-
-for block in colinearity:
-    if len(block[0]) ==0:
-        continue
-    for k in block[0]:
-        ges_1.append(k[0])
-blast = blast[(blast[0].isin(set(ges_1)))]
-homopairs = {}
-for name, group in blast.groupby([0])[1]:
-    newgroup = group.values.tolist()[:repnum]
-    for i, el in enumerate(newgroup, start=1):
-        if i <= dupnum:
-            homopairs[name+","+el] = 1
-        elif i <= hitnum:
-            homopairs[name+","+el] = 0
-        else:
-            homopairs[name+","+el] = -1
-pos = []
-blocks=[]
-for block in colinearity:
-    a, b, blk_ks, homo = [], [], [], 0
-    if len(block[0]) == 0:
-        continue
-    for k in block[0]:
-        if (k[0] not in gff_1.index) or (k[2] not in gff_2.index):
-            continue
-        if k[0]+","+k[2] in ks.index:
-            blk_ks.append(ks.at[k[0]+","+k[2], 3])
-        if k[0]+","+k[2] in homopairs.keys():
-            homo += homopairs[k[0]+","+k[2]]
-    print(homo)
-    homo = homo/len(block[0])
-    print(homo, len(block[0]))
-    strand = sum([int(k[4]) for k in block[0]])
-    array1 = [float(k[1]) for k in block[0]]
-    array2 = [float(k[3]) for k in block[0]]
-    chr1, chr2 = gff_1.at[block[0][0][0], 0], gff_2.at[block[0][0][2], 0]
-    y1, x1, y2, x2 = min(array1), min(array2), max(array1), max(array2)
-    pos.append([chr1, chr2, x1, x2, y1, y2, len(block[0]),
-                strand, base.get_median(blk_ks), homo])
-    blocks.append(block)
-df = pd.DataFrame(pos, columns=['chr1', 'chr2', 'x1', 'x2',
-                                'y1', 'y2', 'length', 'strand', 'ks', 'homo'])
-df.insert(0, 'id', range(1, len(df)+1))
-df.to_csv('block_info.new.csv')

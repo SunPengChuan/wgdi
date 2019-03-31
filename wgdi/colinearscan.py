@@ -79,47 +79,47 @@ class colinearscan():
 
 
 
-for block in colinearity:
-    if len(block[0]) ==0:
-        continue
-    for k in block[0]:
-        ges_1.append(k[0])
-blast = blast[(blast[0].isin(set(ges_1)))]
-homopairs = {}
-for name, group in blast.groupby([0])[1]:
-    newgroup = group.values.tolist()[:repnum]
-    for i, el in enumerate(newgroup, start=1):
-        if i <= dupnum:
-            homopairs[name+","+el] = 1
-        elif i <= hitnum:
-            homopairs[name+","+el] = 0
-        else:
-            homopairs[name+","+el] = -1
-pos = []
-blocks=[]
-for block in colinearity:
-    a, b, blk_ks, homo = [], [], [], 0
-    if len(block[0]) == 0:
-        continue
-    for k in block[0]:
-        if (k[0] not in gff_1.index) or (k[2] not in gff_2.index):
-            continue
-        if k[0]+","+k[2] in ks.index:
-            blk_ks.append(ks.at[k[0]+","+k[2], 3])
-        if k[0]+","+k[2] in homopairs.keys():
-            homo += homopairs[k[0]+","+k[2]]
-    print(homo)
-    homo = homo/len(block[0])
-    print(homo, len(block[0]))
-    strand = sum([int(k[4]) for k in block[0]])
-    array1 = [float(k[1]) for k in block[0]]
-    array2 = [float(k[3]) for k in block[0]]
-    chr1, chr2 = gff_1.at[block[0][0][0], 0], gff_2.at[block[0][0][2], 0]
-    y1, x1, y2, x2 = min(array1), min(array2), max(array1), max(array2)
-    pos.append([chr1, chr2, x1, x2, y1, y2, len(block[0]),
-                strand, base.get_median(blk_ks), homo])
-    blocks.append(block)
-df = pd.DataFrame(pos, columns=['chr1', 'chr2', 'x1', 'x2',
-                                'y1', 'y2', 'length', 'strand', 'ks', 'homo'])
-df.insert(0, 'id', range(1, len(df)+1))
-df.to_csv('block_info.new.csv')
+# for block in colinearity:
+#     if len(block[0]) ==0:
+#         continue
+#     for k in block[0]:
+#         ges_1.append(k[0])
+# blast = blast[(blast[0].isin(set(ges_1)))]
+# homopairs = {}
+# for name, group in blast.groupby([0])[1]:
+#     newgroup = group.values.tolist()[:repnum]
+#     for i, el in enumerate(newgroup, start=1):
+#         if i <= dupnum:
+#             homopairs[name+","+el] = 1
+#         elif i <= hitnum:
+#             homopairs[name+","+el] = 0
+#         else:
+#             homopairs[name+","+el] = -1
+# pos = []
+# blocks=[]
+# for block in colinearity:
+#     a, b, blk_ks, homo = [], [], [], 0
+#     if len(block[0]) == 0:
+#         continue
+#     for k in block[0]:
+#         if (k[0] not in gff_1.index) or (k[2] not in gff_2.index):
+#             continue
+#         if k[0]+","+k[2] in ks.index:
+#             blk_ks.append(ks.at[k[0]+","+k[2], 3])
+#         if k[0]+","+k[2] in homopairs.keys():
+#             homo += homopairs[k[0]+","+k[2]]
+#     print(homo)
+#     homo = homo/len(block[0])
+#     print(homo, len(block[0]))
+#     strand = sum([int(k[4]) for k in block[0]])
+#     array1 = [float(k[1]) for k in block[0]]
+#     array2 = [float(k[3]) for k in block[0]]
+#     chr1, chr2 = gff_1.at[block[0][0][0], 0], gff_2.at[block[0][0][2], 0]
+#     y1, x1, y2, x2 = min(array1), min(array2), max(array1), max(array2)
+#     pos.append([chr1, chr2, x1, x2, y1, y2, len(block[0]),
+#                 strand, base.get_median(blk_ks), homo])
+#     blocks.append(block)
+# df = pd.DataFrame(pos, columns=['chr1', 'chr2', 'x1', 'x2',
+#                                 'y1', 'y2', 'length', 'strand', 'ks', 'homo'])
+# df.insert(0, 'id', range(1, len(df)+1))
+# df.to_csv('block_info.new.csv')

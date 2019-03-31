@@ -78,7 +78,7 @@ def read_ks(file):
 
 def get_median(data):
     if len(data) == 0:
-        return None
+        return 0
     data.sort()
     half = len(data) // 2
     return (data[half] + data[~half]) / 2
@@ -104,6 +104,8 @@ def newblast(file, score, evalue, gene_loc1, gene_loc2):
         blast[10] < evalue) & (blast[1] != blast[0])]
     blast = blast[(blast[0].isin(gene_loc1.index)) & (blast[1].isin(gene_loc2.index))]
     blast.drop_duplicates(subset=[0, 1], keep='first', inplace=True)
+    blast[0] = blast[0].astype(str)
+    blast[1] = blast[1].astype(str)
     return blast
 
 

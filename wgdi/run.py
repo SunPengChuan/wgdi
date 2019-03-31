@@ -8,6 +8,7 @@ import wgdi.base as base
 from wgdi.align_dotplot import align_dotplot
 from wgdi.block_correspondence import block_correspondence
 from wgdi.block_ks import block_ks
+from wgdi.block_info import block_info
 from wgdi.colinearscan import colinearscan
 from wgdi.dotplot import dotplot
 from wgdi.circos import circos
@@ -30,6 +31,8 @@ parser.add_argument("-ks", dest="calks",
                     help="Calculate Ka/Ks for homologous gene pairs by Comdel")
 parser.add_argument("-bk", dest="blockks",
                     help="Show Ks of blocks in a dotplot")
+parser.add_argument("-bi", dest="blockinfo",
+                    help="Collinearity and Ks speculate whole genome duplication")
 parser.add_argument("-d", dest="dotplot",
                     help="Show homologous gene dotplot")
 parser.add_argument("-c", dest="correspondence",
@@ -48,6 +51,12 @@ def run_dotplot():
     options = base.load_conf(args.dotplot, 'dotplot')
     dot = dotplot(options)
     dot.run()
+
+def run_block_info():
+    options = base.load_conf(args.blockinfo, 'blockinfo')
+    blockinfo = block_info(options)
+    blockinfo.run()
+
 
 def run_circos():
     options = base.load_conf(args.circos, 'circos')
@@ -97,6 +106,7 @@ def module_to_run(argument):
         'alignment': run_align_dotplot,
         'retain': run_retain,
         'blockks': run_block_ks,
+        'blockinfo': run_block_info,
         'calks': run_cal_ks,
         'collinearity': run_colinearscan,
         'circos': run_circos
@@ -111,6 +121,7 @@ def main():
                'alignment': 'align.conf',
                'retain': 'retain.conf',
                'blockks': 'blockks.conf',
+               'blockinfo': 'blockinfo.conf',
                'calks': 'ks.conf',
                'collinearity': 'colinearscan.conf',
                'circos': 'circos.conf'}
