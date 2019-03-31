@@ -19,29 +19,51 @@ class block_info():
         lens2 = base.newlens(self.lens2, self.position)
         gff1 = base.newgff(self.gff1)
         gff2 = base.newgff(self.gff2)
-        gff1 = gff1[gff1['chr'].isin(lens1.index)]
-        gff2 = gff2[gff2['chr'].isin(lens2.index)]
+        # gff1 = gff1[gff1['chr'].isin(lens1.index)]
+        # gff2 = gff2[gff2['chr'].isin(lens2.index)]
         blast = base.newblast(self.blast, int(self.score),
                               float(self.evalue), gff1, gff2)
         colinearity = base.read_colinearscan(self.colinearity)
+        ks = base.read_ks(self.ks)
+
+    def block_position(self, colinearity, gff1, gff2, ks):
+        pos,pairs = [],[]
+        for block in colinearity:
+            a, b, blk_ks = [], [], []
+            chr1, chr2 = gff1.loc[block[1][0][0], 'chr'], gff2.loc[block[1][0][2], 'chr']
+            if (chr1 is not in lens1.index) or (chr2 is not in lens2.index):
+                continue
+            array1, array2 = [float(i[1]) for i in k[0]], [float(i[3]) for i in k[0]]
+            start1, end1 = min(array1), max(array1)
+            start2, end2 = min(array2), max(array2)
+            n = 0
+            for k in block[1]:
+                if k[0]+","+k[2] in ks.index:
+                    pair_ks = ks.at[str(k[0])+","+str(k[2]), 3]
+                    blk_ks.append(pair_ks)
+            pairs.append([k[0],k[2],loc1[k[0]],loc2[k[2]],pair_ks])
+            x, y, l, h = min(a), min(b), max(a)-min(a), max(b)-min(b)
+            pos.append([x, y, l, h, base.get_median(blk_ks)])
+        return pos,pairs
+
 
         
-        df = self.deal_blast(blast, gff1, gff2, int(self.repnum))
-        for (chr1, chr2), group in df.groupby(['chr1', 'chr2']):
-            group = group.sort_values(by=['loc1', 'loc2'])
-            # print(group.head())
-            dir1 = './'+self.dir+'/pair/'+str(chr1)+'.vs.'+str(chr2)+'.pair'
-            dir2 = './'+self.dir+'/block/'+str(chr1)+'.vs.'+str(chr2)+'.blk'
-            group[[0, 'stand1', 'loc1', 1, 'stand2', 'loc2']].to_csv(
-                dir1, sep=' ', index=None, header=None)
-            args = ['blockscan', '-chr1len', lens1[str(chr1)], '-chr2len', lens2[str(
-                chr2)], '-mg1', self.mg[0], '-mg2', self.mg[1], dir1, '>'+dir2]
-            command = ' '.join([str(k) for k in args])
-            # os.system(command)
-        args = ['cat', self.dir+'/block/*.blk', '>', self.dir+'.block.txt']
-        command = ' '.join([str(k) for k in args])
-        # os.system(command)
-        self.rewriteblock(sys.argv[1],sys.argv[2])
+        # df = self.deal_blast(blast, gff1, gff2, int(self.repnum))
+        # for (chr1, chr2), group in df.groupby(['chr1', 'chr2']):
+        #     group = group.sort_values(by=['loc1', 'loc2'])
+        #     # print(group.head())
+        #     dir1 = './'+self.dir+'/pair/'+str(chr1)+'.vs.'+str(chr2)+'.pair'
+        #     dir2 = './'+self.dir+'/block/'+str(chr1)+'.vs.'+str(chr2)+'.blk'
+        #     group[[0, 'stand1', 'loc1', 1, 'stand2', 'loc2']].to_csv(
+        #         dir1, sep=' ', index=None, header=None)
+        #     args = ['blockscan', '-chr1len', lens1[str(chr1)], '-chr2len', lens2[str(
+        #         chr2)], '-mg1', self.mg[0], '-mg2', self.mg[1], dir1, '>'+dir2]
+        #     command = ' '.join([str(k) for k in args])
+        #     # os.system(command)
+        # args = ['cat', self.dir+'/block/*.blk', '>', self.dir+'.block.txt']
+        # command = ' '.join([str(k) for k in args])
+        # # os.system(command)
+        # self.rewriteblock(sys.argv[1],sys.argv[2])
 
     def deal_blast(self, blast, gff1, gff2, repnum):
         index = [group[:repnum].index.tolist()
@@ -56,17 +78,6 @@ class block_info():
         blast = pd.merge(blast, gff2, left_on=1,right_on=gff2.index)
         blast.replace({'+': '1', '-': '-1'}, inplace=True)
         return blast
-
-    def rewriteblock(self,file,fout):
-        num = 1
-        fout = open(fout,'w')
-        with open(file) as f:
-            for line in f.readlines():
-                if re.match(r"the", line):
-                    line = line.replace(re.search('\d+',line).group(),str(num),1)
-                    num+=1
-                fout.write(line)
-        f.close()
 
 
 
