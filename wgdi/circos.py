@@ -6,11 +6,12 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+# from wgdi.base import base
 
 
 class circos():
     def __init__(self, options):
-        self.figsize = 'default'
+        self.figsize = '10,10'
         self.position = 'order'
         for k, v in options:
             setattr(self, str(k), v)
@@ -18,10 +19,10 @@ class circos():
         self.figsize = [float(k) for k in self.figsize.split(',')]
         self.ring_width = float(self.ring_width)
 
-    def loc_real(self, rad, r):
-        x = float(r) * np.cos(float(rad))
-        y = float(r) * np.sin(float(rad))
-        return x, y
+    # def loc_real(self, rad, r):
+    #     x = float(r) * np.cos(float(rad))
+    #     y = float(r) * np.sin(float(rad))
+    #     return x, y
 
     def plot_circle(self, loc_chr, radius, color='black', lw=1, alpha=1, linestyle='-'):
         for k in loc_chr:
@@ -71,10 +72,10 @@ class circos():
             loc_chr[k] = [float(start), float(end)]
         return loc_chr
 
-    def Rectangle(self, ax, loc, heigt, width, color, alpha):
-        p = mpatches.Rectangle(
-            loc, width, heigt, edgecolor="black", facecolor=color, alpha=alpha)
-        ax.add_patch(p)
+    # def Rectangle(self, ax, loc, heigt, width, color, alpha):
+    #     p = mpatches.Rectangle(
+    #         loc, width, heigt, edgecolor="black", facecolor=color, alpha=alpha)
+    #     ax.add_patch(p)
 
     def deal_alignment(self, alignment, gff, lens, loc_chr, angle):
         alignment.replace('\s+', '', inplace=True)
@@ -95,12 +96,7 @@ class circos():
         fig = plt.figure(figsize=(tuple(self.figsize)))
         root = plt.axes([0, 0, 1, 1])
         mpl.rcParams['agg.path.chunksize'] = 100000000
-        lens = pd.read_csv(self.lens, header=None, sep="\t", index_col=0)
-        lens.index = lens.index.astype('str')
-        if self.position == 'order':
-            lens = lens[2]
-        else:
-            lens = lens[1]
+        lens = base.newlens(self.lens1, self.position)
         radius, angle_gap = float(self.radius), float(self.angle_gap)
         angle = (2 * np.pi - (int(len(lens))) * angle_gap) / (int(lens.sum()))
         loc_chr = self.chr_loction(lens, angle_gap, angle)

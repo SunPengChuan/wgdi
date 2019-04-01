@@ -135,7 +135,7 @@ def gene_location(gff, lens, step, position):
     loc_gene, dict_chr, n = {}, {}, 0
     gff = gff[gff['chr'].isin(lens.index)]
     dict_chr=dict(zip(lens.index, np.append(np.array([0]),lens.cumsum()[:-1].values)))
-    gff['loc']=''
+    gff.loc[:,'loc']=''
     for name, group in gff.groupby(['chr']):
         gff.loc[group.index,'loc'] = (dict_chr[name]+group[position])*step
     return gff
