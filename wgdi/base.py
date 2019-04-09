@@ -33,7 +33,8 @@ def read_colinearscan(file):
             if re.match(r"\>LOCALE", line):
                 flag = 0
                 p = re.split(':', line)
-                data.append([num,b,p[1]])
+                if len(b)>0:
+                    data.append([num,b,p[1]])
                 b = []
                 continue
             if flag == 1:
@@ -92,7 +93,7 @@ def cds_to_pep(cds_file, pep_file, fmt='fasta'):
     return True
 
 
-def tendem(chr1, chr2, loc1, loc2):
+def tandem(chr1, chr2, loc1, loc2):
     if (chr1 == chr2) and (abs(float(loc1)-float(loc2)) < 200):
         return True
     return False
@@ -142,10 +143,10 @@ def gene_location(gff, lens, step, position):
 
 
 def dotplot_frame(fig, ax, lens1, lens2, step1, step2, genome1_name, genome2_name):
-    for k in lens1.cumsum()[:-1]*step1:
-        ax.axhline(y=k, alpha=1, color='black', lw=0.5)
-    for k in lens2.cumsum()[:-1]*step2:
-        ax.axvline(x=k, alpha=1, color='black', lw=0.5)
+    # for k in lens1.cumsum()[:-1]*step1:
+    #     ax.axhline(y=k, alpha=1, color='black', lw=0.5)
+    # for k in lens2.cumsum()[:-1]*step2:
+    #     ax.axvline(x=k, alpha=1, color='black', lw=0.5)
     align = dict(family='Times New Roman', style='normal',
                  horizontalalignment="center", verticalalignment="center")
     yticks = lens1.cumsum()*step1-0.5*lens1*step1

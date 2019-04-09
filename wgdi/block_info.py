@@ -27,12 +27,8 @@ class block_info():
 
     def block_position(self, colinearity, blast, gff1, gff2, ks):
         data = []
-        print(len(blast))
         for block in colinearity:
             blk_homo, blk_ks = [],  []
-            print(len(block[1]))
-            if len(block[1])==0:
-                continue
             if block[1][0][0] not in gff1.index or block[1][0][2] not in gff2.index:
                 continue
             chr1, chr2 = gff1.loc[block[1][0][0],
@@ -49,6 +45,8 @@ class block_info():
                 if k[0]+","+k[2] in ks.index:
                     pair_ks = ks.at[str(k[0])+","+str(k[2]), 3]
                     blk_ks.append(pair_ks)
+                else:
+                    blk_ks.append(0) 
             blkks = ','.join([str(k) for k in blk_ks])
             df = pd.DataFrame(blk_homo)
             homo = df.mean().values
