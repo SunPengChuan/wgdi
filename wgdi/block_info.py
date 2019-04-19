@@ -10,21 +10,6 @@ class block_info():
             setattr(self, str(k), v)
             print(str(k), ' = ', v)
 
-    def run(self):
-        lens1 = base.newlens(self.lens1, self.position)
-        lens2 = base.newlens(self.lens2, self.position)
-        gff1 = base.newgff(self.gff1)
-        gff2 = base.newgff(self.gff2)
-        gff1 = gff1[gff1['chr'].isin(lens1.index)]
-        gff2 = gff2[gff2['chr'].isin(lens2.index)]
-        blast = base.newblast(self.blast, int(self.score),
-                              float(self.evalue), gff1, gff2)
-        blast = self.blast_homo(blast, gff1, gff2, int(self.repnum))
-        blast.index = blast[0]+','+blast[1]
-        colinearity = base.read_colinearscan(self.colinearity)
-        ks = base.read_ks(self.ks)
-        data = self.block_position(colinearity, blast, gff1, gff2, ks)
-
     def block_position(self, colinearity, blast, gff1, gff2, ks):
         data = []
         for block in colinearity:
@@ -46,11 +31,11 @@ class block_info():
                     pair_ks = ks.at[str(k[0])+","+str(k[2]), 3]
                     blk_ks.append(pair_ks)
                 else:
-                    blk_ks.append(0) 
+                    blk_ks.append(0)
             blkks = ','.join([str(k) for k in blk_ks])
             df = pd.DataFrame(blk_homo)
             homo = df.mean().values
-            if len(homo)==0:
+            if len(homo) == 0:
                 continue
             data.append([block[0], chr1, chr2, start1, end1, start2, end2, len(
                 block[1]), base.get_median(blk_ks), homo[0], homo[1], homo[2], homo[3], homo[4], blkks])
@@ -76,3 +61,18 @@ class block_info():
             blast.loc[blueindex, 'homo'+str(i)] = 0
             blast.loc[grayindex, 'homo'+str(i)] = -1
         return blast
+
+    def run(self):
+        lens1 = base.newlens(self.lens1, self.position)
+        lens2 = base.newlens(self.lens2, self.position)
+        gff1 = base.newgff(self.gff1)
+        gff2 = base.newgff(self.gff2)
+        gff1 = gff1[gff1['chr'].isin(lens1.index)]
+        gff2 = gff2[gff2['chr'].isin(lens2.index)]
+        blast = base.newblast(self.blast, int(self.score),
+                              float(self.evalue), gff1, gff2)
+        blast = self.blast_homo(blast, gff1, gff2, int(self.repnum))
+        blast.index = blast[0]+','+blast[1]
+        colinearity = base.read_colinearscan(self.colinearity)
+        ks = base.read_ks(self.ks)
+        data = self.block_position(colinearity, blast, gff1, gff2, ks)

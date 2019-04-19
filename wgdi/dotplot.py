@@ -9,7 +9,7 @@ import wgdi.base as base
 
 class dotplot():
     def __init__(self, options):
-        self.wgd = 1
+        self.multiple  = 1
         self.score = 200
         self.evalue = 1e-5
         self.repnum = 20
@@ -19,6 +19,23 @@ class dotplot():
         for k, v in options:
             setattr(self, str(k), v)
             print(k, ' = ', v)
+    
+    def pair_positon(self, blast, gff1, gff2, rednum, repnum):
+        blast['color'] = ''
+        blast['loc1'] = blast[0].map(gff1['loc'])
+        blast['loc2'] = blast[1].map(gff2['loc'])
+        bluenum = 5+rednum
+        index = [group[:repnum].index.tolist()
+                 for name, group in blast.groupby([0])]
+        redindex = np.concatenate(np.array([k[:rednum] for k in index]))
+        blueindex = np.concatenate(
+            np.array([k[rednum:bluenum] for k in index]))
+        grayindex = np.concatenate(
+            np.array([k[bluenum:repnum] for k in index]))
+        blast.loc[redindex, 'color'] = 'red'
+        blast.loc[blueindex, 'color'] = 'blue'
+        blast.loc[grayindex, 'color'] = 'gray'
+        return blast[blast['color'].str.contains('\w')]
 
     def run(self):
         if re.search('\d', self.figsize):
@@ -41,26 +58,9 @@ class dotplot():
         blast = base.newblast(self.blast, int(self.score),
                               float(self.evalue), gff1, gff2)
         df = self.pair_positon(blast, gff1, gff2,
-                               int(self.wgd), int(self.repnum))
+                               int(self.multiple ), int(self.repnum))
         plt.scatter(df['loc2'], df['loc1'], s=float(self.markersize), c=df['color'],
                     alpha=0.5, edgecolors=None, linewidths=0, marker='o')
         plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.05)
         plt.savefig(self.savefile, dpi=500)
         sys.exit(0)
-
-    def pair_positon(self, blast, gff1, gff2, rednum, repnum):
-        blast['color'] = ''
-        blast['loc1'] = blast[0].map(gff1['loc'])
-        blast['loc2'] = blast[1].map(gff2['loc'])
-        bluenum = 5+rednum
-        index = [group[:repnum].index.tolist()
-                 for name, group in blast.groupby([0])]
-        redindex = np.concatenate(np.array([k[:rednum] for k in index]))
-        blueindex = np.concatenate(
-            np.array([k[rednum:bluenum] for k in index]))
-        grayindex = np.concatenate(
-            np.array([k[bluenum:repnum] for k in index]))
-        blast.loc[redindex, 'color'] = 'red'
-        blast.loc[blueindex, 'color'] = 'blue'
-        blast.loc[grayindex, 'color'] = 'gray'
-        return blast[blast['color'].str.contains('\w')]

@@ -6,7 +6,7 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-# from wgdi.base import base
+import wgdi.base as base
 
 
 class circos():
@@ -18,11 +18,6 @@ class circos():
             print(k, ' = ', v)
         self.figsize = [float(k) for k in self.figsize.split(',')]
         self.ring_width = float(self.ring_width)
-
-    # def loc_real(self, rad, r):
-    #     x = float(r) * np.cos(float(rad))
-    #     y = float(r) * np.sin(float(rad))
-    #     return x, y
 
     def plot_circle(self, loc_chr, radius, color='black', lw=1, alpha=1, linestyle='-'):
         for k in loc_chr:
@@ -49,7 +44,7 @@ class circos():
 
     def plot_bar(self, df, radius, length, lw, color, alpha):
         for k in df[df.columns[0]].drop_duplicates().values:
-            if k in ['',np.nan]:
+            if k in ['', np.nan]:
                 continue
             df_chr = df.groupby(df.columns[0]).get_group(k)
             x1, y1 = radius * \
@@ -72,11 +67,6 @@ class circos():
             loc_chr[k] = [float(start), float(end)]
         return loc_chr
 
-    # def Rectangle(self, ax, loc, heigt, width, color, alpha):
-    #     p = mpatches.Rectangle(
-    #         loc, width, heigt, edgecolor="black", facecolor=color, alpha=alpha)
-    #     ax.add_patch(p)
-
     def deal_alignment(self, alignment, gff, lens, loc_chr, angle):
         alignment.replace('\s+', '', inplace=True)
         alignment.replace('.', '', inplace=True)
@@ -84,12 +74,13 @@ class circos():
         newalignment['loc'] = alignment[0].replace(gff[self.position])
         newalignment[0] = newalignment[0].astype('str')
         newalignment['loc'] = newalignment['loc'].astype('float')
-        newalignment = newalignment[newalignment[0].isin(lens.index)==True]
+        newalignment = newalignment[newalignment[0].isin(lens.index) == True]
         newalignment['rad'] = np.nan
         for name, group in newalignment.groupby([0]):
             if str(name) not in loc_chr:
                 continue
-            newalignment.loc[group.index,'rad']=loc_chr[str(name)][0]+angle * group['loc']
+            newalignment.loc[group.index, 'rad'] = loc_chr[str(
+                name)][0]+angle * group['loc']
         return newalignment
 
     def run(self):
@@ -100,24 +91,25 @@ class circos():
         radius, angle_gap = float(self.radius), float(self.angle_gap)
         angle = (2 * np.pi - (int(len(lens))) * angle_gap) / (int(lens.sum()))
         loc_chr = self.chr_loction(lens, angle_gap, angle)
-        list_colors = [str(k).strip() for k in re.split(',|:',self.colors)]
-        chr_color =  dict(zip(list_colors[::2],list_colors[1::2]))
+        list_colors = [str(k).strip() for k in re.split(',|:', self.colors)]
+        chr_color = dict(zip(list_colors[::2], list_colors[1::2]))
         for k in loc_chr:
             start, end = loc_chr[k]
             self.Wedge(root, (0.0, 0.0), radius + 0.03, start * 180 /
-                  np.pi, end * 180 / np.pi, 0.03, chr_color[k], 0.9)
+                       np.pi, end * 180 / np.pi, 0.03, chr_color[k], 0.9)
         gff = pd.read_csv(self.gff, sep='\t', header=None, index_col=1)
         gff.rename(columns={0: 'chr', 1: 'id', 2: 'start',
-                              3: 'end', 5: 'order'}, inplace=True)
+                            3: 'end', 5: 'order'}, inplace=True)
         alignment = pd.read_csv(self.alignment, sep='\t', header=None)
         newalignment = self.deal_alignment(
             alignment, gff, lens, loc_chr, angle)
         for k, v in enumerate(newalignment.columns[1:-2]):
             r = radius + self.ring_width*(k+1)
             self.plot_circle(loc_chr, r, lw=0.5, alpha=0.5, color='grey')
-            self.plot_bar(newalignment[[v, 'rad']], r + self.ring_width*0.15, self.ring_width*0.7, 0.15, chr_color, 0.9)
+            self.plot_bar(newalignment[[v, 'rad']], r + self.ring_width *
+                          0.15, self.ring_width*0.7, 0.15, chr_color, 0.9)
         labels = self.chr_label + lens.index
-        labels = dict(zip(lens.index,labels))
+        labels = dict(zip(lens.index, labels))
         self.plot_labels(labels, loc_chr, radius - 0.03, fontsize=9)
         root.set_xlim(-1, 1)
         root.set_ylim(-1.05, 0.95)

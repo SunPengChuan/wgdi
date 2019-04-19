@@ -10,76 +10,93 @@ class block_correspondence():
     def __init__(self, options):
         self.block_len = 0
         self.correspondence = 'all'
-        self.position = 'order'
-        self.tandem = "True"
+        self.tandem = True
         for k, v in options:
             setattr(self, str(k), v)
             print(k, ' = ', v)
         self.homo = [float(k) for k in self.homo.split(',')]
 
     def run(self):
-        lens1 = base.newlens(self.lens1, self.position)
-        lens2 = base.newlens(self.lens2, self.position)
-        gff1 = base.newgff(self.gff1)
-        gff2 = base.newgff(self.gff2)
-        gff1 = gff1[gff1['chr'].isin(lens1.index)]
-        gff2 = gff2[gff2['chr'].isin(lens2.index)]
         colinearity = base.read_colinearscan(self.colinearity)
+        gff1 = pd.read_csv(self.gff1, sep='\t', header=None, index_col=1)
+        gff2 = pd.read_csv(self.gff2, sep='\t', header=None, index_col=1)
+        gff1[0] = gff1[0].astype(str)
+        gff2[0] = gff2[0].astype(str)
+        homopairs = self.deal_blast(gff1, gff2)
+        lens_1 = pd.read_csv(self.lens1, sep="\t", header=None, index_col=0)
+        lens_2 = pd.read_csv(self.lens2, sep="\t", header=None, index_col=0)
         if self.correspondence == 'all':
-            cor = [[k, i, 0, lens1[i], j, 0, lens2[j], float(self.homo[0]), float(self.homo[1])]
-                   for k in range(1, int(self.wgd)+1) for i in lens1.index for j in lens2.index]
+            cor = [[k, i, 0, lens_1.at[i, 2], j, 0, lens_2.at[j, 2],float(self.homo[0]),float(self.homo[1])]
+                   for k in range(1, int(self.wgd)+1) for i in lens_1.index for j in lens_2.index]
             cor = pd.DataFrame(
-                cor, columns=['sub', 'chr1', 'start1', 'end1', 'chr2', 'start2', 'end2', 'homo1', 'homo2'])
+                cor, columns=['sub', 'chr1', 'start1', 'end1', 'chr2', 'start2', 'end2','homo1','homo2'])
             cor.to_csv('all.coor.txt', header=None, index=False)
         else:
             cor = pd.read_csv(self.correspondence, sep=',',
                               header=None, engine='python')
             cor.columns = ['sub', 'chr1', 'start1',
-                           'end1', 'chr2', 'start2', 'end2', 'homo1', 'homo2']
+                           'end1', 'chr2', 'start2', 'end2','homo1','homo2']
         cor['chr1'] = cor['chr1'].astype(str)
         cor['chr2'] = cor['chr2'].astype(str)
         gff1 = pd.concat([gff1, pd.DataFrame(columns=list('L'+str(i)
                                                           for i in range(1, int(self.wgd)+1)))], sort=True)
-        if self.tandem in ['True', 'true', '1']:
-            colinearity,rm_tandem = self.remove_tandem(colinearity, gff1, gff2)
-        a=[[colinearity[i][0],rm_tandem[i]] for i in range(len(colinearity)) if len(rm_tandem[i])>0]
-        print(a)
-        # align = self.colinearity_region(
-        #     gff1, gff2, colinearity, cor, homopairs)
-        # align[gff1.columns[-int(self.wgd):]
-        #       ].to_csv(self.savefile, sep='\t', header=None)
+        if self.tandem == True or self.tandem == 'true' or self.tandem == 1:
+            colinearity = self.remove_tandem(colinearity, gff1, gff2)
+        align = self.colinearity_region(
+            gff1, gff2, colinearity, cor, homopairs)
+        align[gff1.columns[-int(self.wgd):]
+              ].to_csv(self.savefile, sep='\t', header=None)
+
+    def deal_blast(self, gff1, gff2):
+        blast = pd.read_csv(self.blast, sep="\t", header=None)
+        score, evalue, repnum = 200, 1e-5, 20
+        blast = blast[(blast[11] >= score) & (
+            blast[10] < evalue) & (blast[1] != blast[0])]
+        blast = blast[(blast[0].isin(gff1.index.values)) &
+                      (blast[1].isin(gff2.index.values))]
+        blast.drop_duplicates(subset=[0, 1], keep='first', inplace=True)
+        homopairs = {}
+        dupnum = int(self.wgd)
+        hitnum = dupnum+4
+        for name, group in blast.groupby([0])[1]:
+            newgroup = group.values.tolist()[:repnum]
+            for i, el in enumerate(newgroup, start=1):
+                if i <= dupnum:
+                    homopairs[name+","+el] = 1
+                elif i <= hitnum:
+                    homopairs[name+","+el] = 0
+                else:
+                    homopairs[name+","+el] = -1
+        return homopairs
 
     def remove_tandem(self, colinearity, gff1, gff2):
-        newcolinearity, rm_tandem = [], []
+        newcolinearity = []
         for k in colinearity:
-            block, tandem_loc, n = [], [], -1
-            if k[1][0][0] not in gff1.index or k[1][0][2] not in gff2.index:
-                continue
-            chr1, chr2 = gff1.loc[k[1][0][0], 'chr'], gff2.loc[k[1][0][2], 'chr']
+            block = []
+            chr1, chr2 = gff1.loc[k[1][0][0], 0], gff2.loc[k[1][0][2], 0]
             if chr1 != chr2:
                 newcolinearity.append(k)
-                rm_tandem.append([])
                 continue
             for v in k[1]:
-                n += 1
-                if base.tandem(chr1, chr2, v[1], v[3]):
-                    tandem_loc.append(n)
+                if base.tendem(chr1, chr2, v[1], v[3]):
                     continue
                 block.append(v)
-            rm_tandem.append(tandem_loc)
-            newcolinearity.append([k[0],block,k[1]])
-        return newcolinearity, rm_tandem
+            if len(block) == 0:
+                continue
+            k[1] = block
+            newcolinearity.append(k)
+        return newcolinearity
 
     def colinearity_region(self, gff1, gff2, colinearity, cor, homopairs):
         for k in colinearity:
-            if len(k[0]) <= int(self.block_len):
+            if len(k[1]) <= int(self.block_len):
                 continue
-            chr1, chr2 = gff1.loc[k[0][0][0], 0], gff2.loc[k[0][0][2], 0]
-            array1, array2 = [float(i[1]) for i in k[0]], [
-                float(i[3]) for i in k[0]]
+            chr1, chr2 = gff1.loc[k[1][0][0], 0], gff2.loc[k[1][0][2], 0]
+            array1, array2 = [float(i[1]) for i in k[1]], [
+                float(i[3]) for i in k[1]]
             start1, end1 = min(array1), max(array1)
             start2, end2 = min(array2), max(array2)
-            if (end1-start1)/len(array1) <= 0.05 or (end2-start2)/len(array2) <= 0.05:
+            if (end1-start1)/len(array1)<=0.05 or (end2-start2)/len(array2)<=0.05:
                 continue
             newcor = cor[(cor['chr1'] == str(chr1)) &
                          (cor['chr2'] == str(chr2))]
@@ -88,17 +105,17 @@ class block_correspondence():
             for index, row in group.iterrows():
                 if (int(row['start1']) <= start1) and (int(row['end1']) >= end1) and (int(row['start2']) <= start2) and (int(row['end2']) >= end2):
                     homo = 0
-                    for block in k[0]:
+                    for block in k[1]:
                         if (block[0] not in gff1.index) or (block[2] not in gff2.index):
                             continue
                         if block[0]+","+block[2] in homopairs.keys():
                             homo += homopairs[block[0]+","+block[2]]
-                    homo = homo/len(k[0])
+                    homo = homo/len(k[1])
                     if homo <= float(row['homo1']) or homo >= float(row['homo2']):
                         continue
                     index = gff1[(gff1[0] == chr1) & (gff1[5] >= start1) & (
                         gff1[5] <= end1)].index
-                    new_index = [i[0] for i in k[0]]
+                    new_index = [i[0] for i in k[1]]
                     for i in range(1, int(self.wgd)+1):
                         name = 'L'+str(i)
                         old_index = gff1[gff1.index.isin(
@@ -108,6 +125,6 @@ class block_correspondence():
                             continue
                         gff1.loc[gff1.index.isin(
                             index) & gff1[name].isnull(), name] = '.'
-                        gff1.loc[new_index, name] = [i[2] for i in k[0]]
+                        gff1.loc[new_index, name] = [i[2] for i in k[1]]
                         break
         return gff1

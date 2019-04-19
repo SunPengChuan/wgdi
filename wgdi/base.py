@@ -143,10 +143,10 @@ def gene_location(gff, lens, step, position):
 
 
 def dotplot_frame(fig, ax, lens1, lens2, step1, step2, genome1_name, genome2_name):
-    # for k in lens1.cumsum()[:-1]*step1:
-    #     ax.axhline(y=k, alpha=1, color='black', lw=0.5)
-    # for k in lens2.cumsum()[:-1]*step2:
-    #     ax.axvline(x=k, alpha=1, color='black', lw=0.5)
+    for k in lens1.cumsum()[:-1]*step1:
+        ax.axhline(y=k, alpha=0.8, color='black', lw=0.5)
+    for k in lens2.cumsum()[:-1]*step2:
+        ax.axvline(x=k, alpha=0.8, color='black', lw=0.5)
     align = dict(family='Times New Roman', style='normal',
                  horizontalalignment="center", verticalalignment="center")
     yticks = lens1.cumsum()*step1-0.5*lens1*step1

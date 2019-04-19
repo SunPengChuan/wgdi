@@ -12,6 +12,7 @@ class block_ks():
         self.markersize = 0.8
         self.figsize = 'default'
         self.area = [0, 3]
+        self.position = 'order'
         for k, v in options:
             setattr(self, str(k), v)
             print(str(k), ' = ', v)
@@ -60,15 +61,14 @@ class block_ks():
         colinearity = base.read_colinearscan(self.colinearity)
         ks = base.read_ks(self.ks)
         pos, pairs = self.block_position(colinearity, gff1, gff2, ks)
-        colors = ['red', 'blue', 'grey']
-        cm = plt.cm.get_cmap('RdYlBu')
+        cm = plt.cm.get_cmap('gist_rainbow')
         df = pd.DataFrame(pairs, columns=['id1', 'id2', 'loc1', 'loc2', 'ks'])
         df.drop_duplicates(inplace=True)
         for k in pos:
             x, y = k[0]+0.5*k[2], k[1]+0.5*k[3]
             plt.text(y, x, round(k[4], 2), color='red', fontsize=6)
         sc = plt.scatter(df['loc2'], df['loc1'], s=float(self.markersize), c=df['ks'],
-                         alpha=0.8, edgecolors=None, linewidths=0, marker='o', vmin=self.area[0], vmax=self.area[1], cmap=cm)
+                         alpha=0.5, edgecolors=None, linewidths=0, marker='o', vmin=self.area[0], vmax=self.area[1], cmap=cm)
         cbar = fig.colorbar(sc, shrink=0.5, pad=0.03, fraction=0.1)
         align = dict(family='Times New Roman', style='normal',
                      horizontalalignment="center", verticalalignment="center")
