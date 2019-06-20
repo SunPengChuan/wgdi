@@ -31,7 +31,7 @@ class retain():
         fig, axs = plt.subplots(
             len(chrnum), 1, sharex=True, sharey=True, figsize=tuple(self.figsize))
         fig.add_subplot(111, frameon=False)
-        align = dict(family='Times New Roman', style='italic',
+        align = dict(family='Arial', style='italic',
                      verticalalignment="center", horizontalalignment="center")
         plt.ylabel(self.ylabel+'\n\n\n\n', fontsize=16, **align)
         for spine in plt.gca().spines.values():

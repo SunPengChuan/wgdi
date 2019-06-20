@@ -11,7 +11,7 @@ with open('requirements.txt') as f:
 
 setup(
     name="WGDI",
-    version="0.2.1",
+    version="0.2.2",
     author="Pengchuan Sun",
     author_email="sunpengchuan@gmail.com",
     description="Whole Genome Duplication Identification",
@@ -21,12 +21,12 @@ setup(
     url="https://github.com/SunPengChuan/wgdi",
     packages=find_packages(),
     package_data={'':['*.conf'],'wgdi': ['*.ini']},
-    classifiers=(
+    classifiers=[
         "Intended Audience :: Science/Research",
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
-    ),
+    ],
     entry_points={
         'console_scripts':[
             'wgdi = wgdi.run:main',

@@ -50,6 +50,7 @@ class block_ks():
                 [1, float(lens1.sum())/float(lens2.sum())])*10
         step1 = 1 / float(lens1.sum())
         step2 = 1 / float(lens2.sum())
+        plt.rcParams['ytick.major.pad'] = 0
         fig, ax = plt.subplots(figsize=self.figsize)
         ax.xaxis.set_ticks_position('top')
         base.dotplot_frame(fig, ax, lens1, lens2, step1, step2,
@@ -70,9 +71,9 @@ class block_ks():
         sc = plt.scatter(df['loc2'], df['loc1'], s=float(self.markersize), c=df['ks'],
                          alpha=0.5, edgecolors=None, linewidths=0, marker='o', vmin=self.area[0], vmax=self.area[1], cmap=cm)
         cbar = fig.colorbar(sc, shrink=0.5, pad=0.03, fraction=0.1)
-        align = dict(family='Times New Roman', style='normal',
+        align = dict(family='Arial', style='normal',
                      horizontalalignment="center", verticalalignment="center")
         cbar.set_label('Ks', labelpad=12.5, fontsize=18, **align)
-        plt.subplots_adjust(left=0.06, right=1, top=0.95, bottom=0.05)
+        plt.subplots_adjust(left=0.09, right=0.96, top=0.93, bottom=0.03)
         plt.savefig(self.savefile, dpi=500)
         sys.exit(0)

@@ -43,6 +43,7 @@ class dotplot():
         else:
             self.figsize = np.array(
                 [1, float(lens1.sum())/float(lens2.sum())])*10
+        plt.rcParams['ytick.major.pad'] = 0
         fig, ax = plt.subplots(figsize=self.figsize)
         ax.xaxis.set_ticks_position('top')
         lens1 = base.newlens(self.lens1, self.position)
@@ -61,6 +62,6 @@ class dotplot():
                                int(self.multiple ), int(self.repnum))
         plt.scatter(df['loc2'], df['loc1'], s=float(self.markersize), c=df['color'],
                     alpha=0.5, edgecolors=None, linewidths=0, marker='o')
-        plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.05)
+        plt.subplots_adjust(left=0.07, right=0.97, top=0.93, bottom=0.03)
         plt.savefig(self.savefile, dpi=500)
         sys.exit(0)

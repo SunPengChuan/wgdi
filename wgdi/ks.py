@@ -32,7 +32,7 @@ class ks():
         p = '\n'.join(p[0])
         if 'path length' in p or 'MAXIMUM GAP' in p:
             colinearity = base.read_colinearscan(self.pairs_file)
-            pairs = [[v[0], v[2]] for k in colinearity for v in k[0]]
+            pairs = [[v[0], v[2]] for k in colinearity for v in k[1]]
         elif 'MATCH_SIZE' in p or '## Alignment' in p:
             colinearity = base.read_mcscanx(self.pairs_file)
             pairs = [k[1:] for k in colinearity]
@@ -57,7 +57,7 @@ class ks():
         ks_file = open(self.ks_file, 'w')
         ks_file.write(
             '\t'.join(['id1', 'id2', 'ka_NG86', 'ks_NG86', 'ka_YN00', 'ks_YN00'])+'\n')
-        for k in pairs[0:20]:
+        for k in pairs:
             self.pair = str(k[0]+','+str(k[1]))
             if k[0] in cds.keys() and k[1] in cds.keys() and k[0] in pep.keys() and k[1] in pep.keys():
                 cds[k[0]].id = cds[k[0]].id.replace('.', '_')
@@ -96,9 +96,10 @@ class ks():
     def align(self):
         if self.align_software == 'mafft':
             mafft_cline = MafftCommandline(
-                mafft_path=self.mafft_path, input=self.pair_pep_file, auto=True)
+                cmd = self.mafft_path, input=self.pair_pep_file, auto=True)
             stdout, stderr = mafft_cline()
-            self.prot_align_file = AlignIO.write(StringIO(stdout), "fasta")
+            align = AlignIO.read(StringIO(stdout), "fasta")
+            AlignIO.write(align, self.prot_align_file , "fasta")
         if self.align_software == 'muscle':
             muscle_cline = MuscleCommandline(
                 cmd=self.muscle_path, input=self.pair_pep_file, out=self.prot_align_file, seqtype="protein", clwstrict=True)
@@ -106,24 +107,24 @@ class ks():
 
     
 
-    # def pal2nal(self):
-    #     args = ['perl', self.pal2nal_path, self.prot_align_file,
-    #             self.pair_cds_file, '-output paml -nogap', '>'+self.mrtrans]
-    #     command = ' '.join(args)
-    #     try:
-    #         os.system(command)
-    #     except:
-    #         return False
-    #     return True
+    def pal2nal(self):
+        args = ['perl', self.pal2nal_path, self.prot_align_file,
+                self.pair_cds_file, '-output paml -nogap', '>'+self.mrtrans]
+        command = ' '.join(args)
+        try:
+            os.system(command)
+        except:
+            return False
+        return True
 
 
-    # def run_yn00(self):
-    #     yn = yn00.Yn00()
-    #     yn.alignment = self.mrtrans
-    #     yn.out_file = self.pair_yn
-    #     yn.set_options(icode=0, commonf3x4=0, weighting=0, verbose=1)
-    #     try:
-    #         run_result = yn.run(command=self.yn00_path)
-    #     except:
-    #         run_result = None
-    #     return run_result
+    def run_yn00(self):
+        yn = yn00.Yn00()
+        yn.alignment = self.mrtrans
+        yn.out_file = self.pair_yn
+        yn.set_options(icode=0, commonf3x4=0, weighting=0, verbose=1)
+        try:
+            run_result = yn.run(command=self.yn00_path)
+        except:
+            run_result = None
+        return run_result

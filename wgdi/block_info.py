@@ -20,8 +20,8 @@ class block_info():
                                   'chr'], gff2.loc[block[1][0][2], 'chr']
             array1, array2 = [float(i[1]) for i in block[1]], [
                 float(i[3]) for i in block[1]]
-            start1, end1 = min(array1), max(array1)
-            start2, end2 = min(array2), max(array2)
+            start1, end1 = array1[0], array1[-1]
+            start2, end2 = array2[0], array2[-1]
             for k in block[1]:
                 if k[0]+","+k[2] not in blast.index:
                     continue
@@ -37,10 +37,10 @@ class block_info():
             homo = df.mean().values
             if len(homo) == 0:
                 continue
-            data.append([block[0], chr1, chr2, start1, end1, start2, end2, len(
+            data.append([block[0], chr1, chr2, start1, end1, start2, end2, block[2], len(
                 block[1]), base.get_median(blk_ks), homo[0], homo[1], homo[2], homo[3], homo[4], blkks])
-        data = pd.DataFrame(data, columns=['id', 'chr1', 'chr2', 'start1', 'end1', 'start2',
-                                           'end2', 'length', 'ks_median', 'homo1', 'homo2', 'homo3', 'homo4', 'homo5', 'ks'])
+        data = pd.DataFrame(data, columns=['id', 'chr1', 'chr2', 'start1', 'end1', 'start2', 'end2',
+                                           'pvalue', 'length', 'ks_median', 'homo1', 'homo2', 'homo3', 'homo4', 'homo5', 'ks'])
         data.to_csv(self.savefile, index=None)
         return data
 

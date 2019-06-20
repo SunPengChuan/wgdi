@@ -70,7 +70,14 @@ class circos():
     def deal_alignment(self, alignment, gff, lens, loc_chr, angle):
         alignment.replace('\s+', '', inplace=True)
         alignment.replace('.', '', inplace=True)
-        newalignment = alignment.replace(gff['chr'])
+        # newalignment = alignment.replace(gff['chr'])
+        print(alignment.info())
+        # newalignment = alignment.applymap(gff['chr'])
+        newalignment = alignment.copy()
+        for i in  range(10):
+            alignment[i] = alignment[i].astype(str)
+            newalignment[i] = alignment[i].map(gff['chr'].to_dict())
+            print(i)
         newalignment['loc'] = alignment[0].replace(gff[self.position])
         newalignment[0] = newalignment[0].astype('str')
         newalignment['loc'] = newalignment['loc'].astype('float')

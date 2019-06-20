@@ -43,7 +43,7 @@ class align_dotplot():
     def plot_chr1(self, lens, gl, gl2, step, mark, name):
         gl_start, n, start_x = 0.95, 0, 0.05
         mark_y = 0.04
-        align = dict(family='Times New Roman', style='normal',
+        align = dict(family='Arial', style='normal',
                      horizontalalignment="center", verticalalignment="center")
         for k in lens.index:
             n += float(lens[k])
@@ -62,7 +62,7 @@ class align_dotplot():
     def plot_chr2(self, lens, gl, gl2, step, mark, name):
         gl_start, n, start_x = 0.05, 0, 0.95
         mark_y = 0.96
-        align = dict(family='Times New Roman', style='normal',
+        align = dict(family='Arial', style='normal',
                      horizontalalignment="center", verticalalignment="center")
         for k in lens.index:
             n += float(lens[k])

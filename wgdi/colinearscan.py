@@ -45,17 +45,18 @@ class colinearscan():
         blast.replace({'+': '1', '-': '-1'}, inplace=True)
         return blast
 
-    def rewriteblock(self, file, fout):
+    def rewriteblock(self, blast, file, fout):
         num = 1
         fout = open(fout, 'w')
-        with open(file) as f:
-            for line in f.readlines():
-                if re.match(r"the", line):
-                    line = line.replace(
-                        re.search('\d+', line).group(), str(num), 1)
-                    num += 1
-                fout.write(line)
-        f.close()
+        colinearity = base.read_colinearscan(file)
+        for block in colinearity:
+            if block[1][-1][0]+','+block[1][-1][2] not in blast.index:
+                block[1] = block[1][:-1]
+            fout.write('the '+num+'th path length '+len(block[1])+'\n')
+            for k in block[1]:
+                s = ' '.join([str(i) for i in k])
+                fout.write(s+'\n')
+            fout.write('>LOCALE p-value :'+block[2]+'\n\n')
 
     def run(self):
         lens1 = base.newlens(self.lens1, 'order')
@@ -82,4 +83,4 @@ class colinearscan():
         args = ['cat', self.dir+'/block/*.blk', '>', self.dir+'.block.old.txt']
         command = ' '.join([str(k) for k in args])
         os.system(command)
-        self.rewriteblock(self.dir+'.block.old.txt', self.dir+'.block.txt')
+        self.rewriteblock(blast, self.dir+'.block.old.txt', self.dir+'.block.txt')
