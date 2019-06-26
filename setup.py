@@ -11,7 +11,7 @@ with open('requirements.txt') as f:
 
 setup(
     name="WGDI",
-    version="0.2.2",
+    version="0.2.4",
     author="Pengchuan Sun",
     author_email="sunpengchuan@gmail.com",
     description="Whole Genome Duplication Identification",

@@ -1,0 +1,3 @@
+[console_scripts]
+wgdi = wgdi.run:main
+
