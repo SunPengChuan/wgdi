@@ -36,8 +36,8 @@ class block_info():
             ks_median = base.get_median([k for k in blk_ks if k >= 0])
             df = pd.DataFrame(blk_homo)
             homo = df.mean().values
-            if len(block[1]) != len(blk_ks):
-                print(block[0], len(block[1]), len(blk_ks))
+            # if len(block[1]) != len(blk_ks):
+            #     print(block[0], len(block[1]), len(blk_ks))
             if len(homo) == 0:
                 continue
             blkks = ','.join([str(k) for k in blk_ks])

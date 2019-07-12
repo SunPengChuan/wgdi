@@ -65,15 +65,15 @@ class block_correspondence():
         block_dict =dict(zip([int(block[0]) for block in colinearity], [block[1] for block in colinearity]))
         for chr1, group in bkinfo.groupby(['chr1']):
             group = group.sort_values(by=['length', 'start2'], ascending = [False,False])
-            print(chr1)
+            print(chr1,len(group))
             for index, row in group.iterrows():
                 newcor = cor[(cor['chr1'] == row['chr1'])&(cor['chr2'] == row['chr2'])]
                 for sub, cor_row in newcor.groupby(['sub']):
                     if row['homo'+self.multiple] <= float(cor_row['homo1']) or row['homo'+self.multiple] >= float(cor_row['homo2']):
                         continue
-                    print(index,row['length'])
-                    # index = gff[(gff[0] == chr1) & (gff1[5] >= start1) & (gff1[5] <= end1)].index
-            # break
+                    # print(index,row['length'])
+                    index = gff[(gff[0] == chr1) & (gff1[5] >= start1) & (gff1[5] <= end1)].index
+            break
             # if (end1-start1)/len(array1) <= 0.05 or (end2-start2)/len(array2) <= 0.05:
     #             continue
     #         if (end1-start1)/len(array1) <= 0.05 or (end2-start2)/len(array2) <= 0.05:

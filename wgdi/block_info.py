@@ -5,7 +5,7 @@ import wgdi.base as base
 
 class block_info():
     def __init__(self, options):
-        self.repnum = 20
+        self.repnum = 30
         self.ks_col = 'ks_NG86'
         for k, v in options:
             setattr(self, str(k), v)
@@ -36,8 +36,6 @@ class block_info():
             ks_median = base.get_median([k for k in blk_ks if k >= 0])
             df = pd.DataFrame(blk_homo)
             homo = df.mean().values
-            if len(block[1]) != len(blk_ks):
-                print(block[0], len(block[1]), len(blk_ks))
             if len(homo) == 0:
                 continue
             blkks = ','.join([str(k) for k in blk_ks])
@@ -55,8 +53,17 @@ class block_info():
         data.to_csv(self.savefile, index=None)
         return data
 
+    def remove_tandem(self, bkinfo):
+        group = bkinfo[bkinfo['chr1'] == bkinfo['chr2']].copy()
+        group.loc[:, 'start'] = group.loc[:, 'start1']-group.loc[:, 'start2']
+        group.loc[:, 'end'] = group.loc[:, 'end1']-group.loc[:, 'end2']
+        index = group[(group['start'].abs() < int(self.tandem_length)) | (
+            group['end'].abs() < int(self.tandem_length))].index
+        bkinfo = bkinfo.drop(index)
+        return bkinfo
+
     def blast_homo(self, blast, gff1, gff2, repnum):
-        index = [group.sort_values(by=11, ascending = False)[:repnum].index.tolist()
+        index = [group.sort_values(by=11, ascending=False)[:repnum].index.tolist()
                  for name, group in blast.groupby([0])]
         blast = blast.loc[np.concatenate(
             np.array([k[:repnum] for k in index])), [0, 1]]

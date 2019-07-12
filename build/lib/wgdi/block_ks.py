@@ -13,6 +13,7 @@ class block_ks():
         self.figsize = 'default'
         self.area = [0, 3]
         self.position = 'order'
+        self.ks_col = 'ks_NG86'
         for k, v in options:
             setattr(self, str(k), v)
             print(str(k), ' = ', v)
@@ -28,7 +29,7 @@ class block_ks():
                 continue
             for k in block[1]:
                 if k[0]+","+k[2] in ks.index:
-                    pair_ks = ks.at[str(k[0])+","+str(k[2]), 3]
+                    pair_ks = ks[str(k[0])+","+str(k[2])]
                     loc1, loc2 = gff1.loc[k[0], 'loc'], gff2.loc[k[2], 'loc']
                     a.append(loc1)
                     b.append(loc2)
@@ -60,7 +61,7 @@ class block_ks():
         gff1 = base.gene_location(gff1, lens1, step1, self.position)
         gff2 = base.gene_location(gff2, lens2, step2, self.position)
         colinearity = base.read_colinearscan(self.colinearity)
-        ks = base.read_ks(self.ks)
+        ks = base.read_ks(self.ks, self.ks_col)
         pos, pairs = self.block_position(colinearity, gff1, gff2, ks)
         cm = plt.cm.get_cmap('gist_rainbow')
         df = pd.DataFrame(pairs, columns=['id1', 'id2', 'loc1', 'loc2', 'ks'])

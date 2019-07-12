@@ -43,33 +43,7 @@ def read_colinearscan(file):
     return data
 
 
-def read_mcscanx(fn):
-    f1 = open(fn)
-    data, b = [], []
-    flag = 0
-    for line in f1.readlines():
-        line = line.strip()
-        if re.match(r"## Alignment", line):
-            flag = 1
-            if len(b) == 0:
-                b.append([line])
-                continue
-            data.append(b)
-            b = []
-            b.append([line])
-            continue
-        if flag == 0:
-            continue
-        if re.match(r'#', line):
-            continue
-        a = re.split(r"\:", line)
-        c = re.split(r"\s+", a[1])
-        b.append([c[1], c[2]])
-    data.append(b)
-    return data
-
-
-def read_ks(file,col):
+def read_ks(file, col):
     ks = pd.read_csv(file, sep='\t')
     ks = ks.drop_duplicates()
     ks[col] = ks[col].astype(float)
@@ -92,12 +66,6 @@ def cds_to_pep(cds_file, pep_file, fmt='fasta'):
         k.seq = k.seq.translate()
     SeqIO.write(records, pep_file, 'fasta')
     return True
-
-
-def tandem(chr1, chr2, loc1, loc2):
-    if (chr1 == chr2) and (abs(float(loc1)-float(loc2)) < 200):
-        return True
-    return False
 
 
 def newblast(file, score, evalue, gene_loc1, gene_loc2):
@@ -136,7 +104,7 @@ def newlens(file, position):
 
 def gene_location(gff, lens, step, position):
     loc_gene, dict_chr, n = {}, {}, 0
-    gff = gff[gff['chr'].isin(lens.index)]
+    gff = gff[gff['chr'].isin(lens.index)].copy()
     dict_chr = dict(zip(lens.index, np.append(
         np.array([0]), lens.cumsum()[:-1].values)))
     gff.loc[:, 'loc'] = ''
@@ -153,7 +121,7 @@ def dotplot_frame(fig, ax, lens1, lens2, step1, step2, genome1_name, genome2_nam
     align = dict(family='Arial', style='normal',
                  horizontalalignment="center", verticalalignment="center")
     align1 = dict(family='Arial', style='normal',
-                 horizontalalignment="right", verticalalignment="center")
+                  horizontalalignment="right", verticalalignment="center")
     yticks = lens1.cumsum()*step1-0.5*lens1*step1
     ax.set_yticks(yticks)
     ax.set_yticklabels(lens1.index, fontsize=12, **align1)
@@ -163,8 +131,6 @@ def dotplot_frame(fig, ax, lens1, lens2, step1, step2, genome1_name, genome2_nam
     ax.xaxis.set_ticks_position('none')
     ax.yaxis.set_ticks_position('none')
     ax.axis([0, 1, 1, 0])
-    ax.set_ylabel(genome1_name, labelpad=15,
-                  weight='semibold', fontsize=18, **align)
-    fig.suptitle(genome2_name, y= 0.97, weight='semibold', fontsize=18, **align)
-# if __name__ == "__main__":
-#     config()
+    ax.text(-0.05, 0.5, genome1_name, weight='semibold',
+            fontsize=18, rotation=90, **align)
+    ax.text(0.5, -0.05, genome2_name, weight='semibold', fontsize=18, **align)
