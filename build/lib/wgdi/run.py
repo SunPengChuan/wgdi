@@ -24,7 +24,7 @@ substitutions, and differences in different evolution rates, etc.
 
     https://wgdi.readthedocs.io/en/latest/
     -------------------------------------- '''
-parser.add_argument("-v", "--version", action='version', version='0.2.5')
+parser.add_argument("-v", "--version", action='version', version='0.2.6')
 parser.add_argument("-cl", dest="collinearity",
                     help="A simple way to run ColinearScan")
 parser.add_argument("-ks", dest="calks",

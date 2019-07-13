@@ -40,9 +40,13 @@ class block_correspondence():
         for k in cor['sub'].drop_duplicates().values:
             gff['sub'+str(k)] = ''
         # print(gff.head())
-        arr = self.colinearity_region(gff, cor, bkinfo)
-        print(arr)
-        print(len(arr))
+        index = self.colinearity_region(gff, cor, bkinfo)
+        bkinfo = bkinfo.loc[index]
+        bkinfo = bkinfo.sort_values(by=['chr1','chr2'], ascending=[True,True])
+        print(bkinfo.head())
+        print(len(bkinfo))
+        bkinfo.to_csv('out.csv',index=None)
+
         # align[gff1.columns[-int(self.multiple):]
         #       ].to_csv(self.savefile, sep='\t', header=None)
 

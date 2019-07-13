@@ -74,7 +74,7 @@ class circos():
         print(alignment.info())
         # newalignment = alignment.applymap(gff['chr'])
         newalignment = alignment.copy()
-        for i in  range(10):
+        for i in range(10):
             alignment[i] = alignment[i].astype(str)
             newalignment[i] = alignment[i].map(gff['chr'].to_dict())
             print(i)
