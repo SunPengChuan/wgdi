@@ -71,7 +71,6 @@ class block_correspondence():
                         continue
                     arr.append(index)
         return arr
-                    # print(index,row['length'])
                     # index = gff[(gff[0] == chr1) & (gff[5] >= start1) & (gff[5] <= end1)].index
             # if (end1-start1)/len(array1) <= 0.05 or (end2-start2)/len(array2) <= 0.05:
     #             continue
