@@ -5,6 +5,7 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import wgdi.base as base
 
 
 class align_dotplot():
@@ -16,108 +17,79 @@ class align_dotplot():
             print(str(k), ' = ', v)
         self.colors = [str(k) for k in self.colors.split(',')]
 
-    def gene_location(self, gff, lens, step):
-        loc_gene, dict_chr, n = {}, {}, 0
-        for i in lens.index:
-            dict_chr[str(i)] = n
-            n += float(lens[i])
-        for k in gff.index:
-            if gff.loc[k, 'chr'] not in dict_chr:
-                continue
-            loc = (float(dict_chr[gff.loc[k, 'chr']]) +
-                   float(gff.loc[k, self.position])) * step
-            loc_gene[gff.loc[k, 'id']] = loc
-        return loc_gene
-
-    def pair_positon(self, alignment, loc1, loc2):
-        pos1, pos2 = [], []
-        gl_start1, gl_start2 = 0.95, 0.05
-        alignment = alignment[alignment.str.match(r'\w+') == True]
-        for index in alignment.index:
-            if (index not in loc1) or (alignment[index] not in loc2):
-                continue
-            pos1.append(gl_start1 - loc1[index])
-            pos2.append(gl_start2 + loc2[alignment[index]])
-        return pos1, pos2
-
-    def plot_chr1(self, lens, gl, gl2, step, mark, name):
-        gl_start, n, start_x = 0.95, 0, 0.05
-        mark_y = 0.04
-        align = dict(family='Arial', style='normal',
-                     horizontalalignment="center", verticalalignment="center")
-        for k in lens.index:
-            n += float(lens[k])
-            mark_new = str(mark) + str(k)
-            x = gl_start - float(n) * step
-            mark_x = x + 0.5 * float(lens[k]) * step
-            plt.plot([start_x, start_x + gl2], [x, x],
-                     linestyle='-', color='black', linewidth=0.5)
-            plt.text(mark_y, mark_x, mark_new, color='black',
-                     fontsize=12, rotation=90, weight='semibold', **align)
-        plt.plot([start_x, start_x + gl2], [gl_start, gl_start],
-                 linestyle='-', color='black', linewidth=1)
-        plt.text(mark_y - 0.02, 0.5 * (2 * gl_start - gl), name, color='black', fontsize=18, rotation=90,
-                 weight='semibold', **align)
-
-    def plot_chr2(self, lens, gl, gl2, step, mark, name):
-        gl_start, n, start_x = 0.05, 0, 0.95
-        mark_y = 0.96
-        align = dict(family='Arial', style='normal',
-                     horizontalalignment="center", verticalalignment="center")
-        for k in lens.index:
-            n += float(lens[k])
-            mark_new = str(mark) + str(k)
-            x = gl_start + float(n) * step
-            mark_x = x - 0.5 * float(lens[k]) * step
-            plt.plot([x, x], [start_x, start_x - gl2],
-                     linestyle='-', color='black', linewidth=0.5)
-            plt.text(mark_x, mark_y, mark_new, color='black',
-                     fontsize=12, rotation=0, weight='semibold', **align)
-        plt.plot([gl_start, gl_start], [start_x, start_x - gl2],
-                 linestyle='-', color='black', linewidth=1)
-        plt.text(0.5 * (2 * gl_start + gl), mark_y + 0.02, name, color='black', fontsize=18, rotation=0,
-                 weight='semibold', **align)
+    def pair_positon(self, alignment, loc1, loc2, colors):
+        alignment.index = alignment.index.map(loc1)
+        data, i = [], 0
+        for k in alignment.columns:
+            alignment[k] = alignment[k].map(loc2)
+            alignment[k].dropna(axis=0, how='any', inplace=True)
+            for index, row in alignment[k].iteritems():
+                data.append([index, row, colors[i]])
+            i+=1
+        df = pd.DataFrame(data, columns=['loc1', 'loc2', 'color'])
+        return df
 
     def run(self):
-        gff_1 = pd.read_csv(self.gff1, sep="\t", header=None)
-        gff_2 = pd.read_csv(self.gff2, sep="\t", header=None)
-        gff_1.rename(columns={0: 'chr', 1: 'id', 2: 'start',
-                              3: 'end', 5: 'order'}, inplace=True)
-        gff_2.rename(columns={0: 'chr', 1: 'id', 2: 'start',
-                              3: 'end', 5: 'order'}, inplace=True)
-        gff_1['chr'] = gff_1['chr'].astype('str')
-        gff_2['chr'] = gff_2['chr'].astype('str')
-        lens_1 = pd.read_csv(self.lens1, sep="\t", header=None, index_col=0)
-        lens_2 = pd.read_csv(self.lens2, sep="\t", header=None, index_col=0)
-        gl1, gl2 = 0.92, 0.92
-        if self.position == 'order':
-            lens_1 = lens_1[2]
-            lens_2 = lens_2[2]
-
-        else:
-            lens_1 = lens_1[1]
-            lens_2 = lens_2[1]
+        lens1 = base.newlens(self.lens1, self.position)
+        lens2 = base.newlens(self.lens2, self.position)
         if re.search('\d', self.figsize):
             self.figsize = [float(k) for k in self.figsize.split(',')]
         else:
             self.figsize = np.array(
-                [1, float(lens_1.sum())/float(lens_2.sum())])*10
-        step1 = gl1 / float(lens_1.sum())
-        step2 = gl2 / float(lens_2.sum())
-        fig = plt.figure(figsize=tuple(self.figsize))
-        plt.axis('off')
-        self.plot_chr1(lens_1, gl1, gl2, step1, '', self.genome1_name)
-        self.plot_chr2(lens_2, gl1, gl2, step2, '', self.genome2_name)
-        alignment = pd.read_csv(self.alignment, sep='\t',
-                                header=None, index_col=0)
-        alignment.replace('\s+', '', inplace=True)
-        gene_loc_1 = self.gene_location(gff_1, lens_1, step1)
-        gene_loc_2 = self.gene_location(gff_2, lens_2, step2)
-        for k in alignment.columns:
-            y, x = self.pair_positon(alignment[k], gene_loc_1, gene_loc_2)
-            cols = [self.colors[k-1]]*len(x)
-            plt.scatter(x, y, s=float(self.markersize), c=cols, alpha=0.5,
-                        edgecolors=None, linewidths=0, marker='o')
-        plt.subplots_adjust(left=0.02, right=1, top=0.98, bottom=0)
-        plt.savefig(self.savefile, dpi=500)
+                [1, float(lens1.sum())/float(lens2.sum())])*10
+        plt.rcParams['ytick.major.pad'] = 0
+        fig, ax = plt.subplots(figsize=self.figsize)
+        ax.xaxis.set_ticks_position('top')
+        step1 = 1 / float(lens1.sum())
+        step2 = 1 / float(lens2.sum())
+        base.dotplot_frame(fig, ax, lens1, lens2, step1, step2,
+                           self.genome1_name, self.genome2_name)
+        gff1 = base.newgff(self.gff1)
+        gff2 = base.newgff(self.gff2)
+        gff1 = base.gene_location(gff1, lens1, step1, self.position)
+        gff2 = base.gene_location(gff2, lens2, step2, self.position)
+        block_list = pd.read_csv(self.block_list, header=None, sep='\t')
+        bkinfo = pd.read_csv(self.blockinfo,index_col=0)
+        bkinfo['chr1'] = bkinfo['chr1'].astype(str)
+        bkinfo['chr2'] = bkinfo['chr2'].astype(str)
+        align = self.alignment(gff1, gff2, block_list, bkinfo)
+        alignment = align[gff1.columns[-int(len(block_list.columns)):]]
+        alignment.to_csv(self.savefile, sep='\t', header=None)
+        df = self.pair_positon(
+            alignment, gff1['loc'], gff2['loc'], self.colors)
+        print(df.tail(10))
+        plt.scatter(df['loc2'], df['loc1'], s=float(self.markersize), c=df['color'],
+                    alpha=0.5, edgecolors=None, linewidths=0, marker='o')
+        plt.subplots_adjust(left=0.07, right=0.97, top=0.93, bottom=0.03)
+        plt.savefig(self.savefig, dpi=500)
         sys.exit(0)
+
+    def alignment(self, gff1, gff2, block_list, bkinfo):
+        for col in block_list.columns:
+            bl = block_list[col].dropna().values
+            name = 'l'+str(int(col)+1)
+            # bl =bl[:3]
+            gff1[name] = ''
+            for block in [int(k) for k in bl]:
+                block1 = bkinfo.loc[block, 'block1'].split(',')
+                block2 = bkinfo.loc[block, 'block2'].split(',')
+                block1 = [float(k) for k in block1]
+                block2 = [float(k) for k in block2]
+                index = gff1[(gff1['chr'] == bkinfo.loc[block, 'chr1']) & (
+                    gff1['order'] >= min(block1)) & (gff1['order'] <= max(block1))].index
+                index1 = gff1[(gff1['chr'] == bkinfo.loc[block, 'chr1']) & (
+                    gff1['order'].isin(block1))].index
+                index2 = gff2[(gff2['chr'] == bkinfo.loc[block, 'chr2']) & (
+                    gff2['order'].isin(block2))].index
+                if block1[0] -block1[1]>0:
+                    index2 = index2[::-1]
+                # old_index = gff1[gff1.index.isin(
+                #     index) & gff1[name].str.match(r'\w+') == True].index
+                # inters = np.intersect1d(index1, old_index)
+                # if len(inters)/len(index1) > 0.2:
+                #     continue
+                # print(len(index1))
+                gff1.loc[index1, name] = index2
+                # gff1.loc[gff1.index.isin(
+                #     index) & gff1[name].str.match(''), name] = '.'
+        return gff1

@@ -39,12 +39,7 @@ class block_correspondence():
             bkinfo = self.remove_tandem(bkinfo)
         for k in cor['sub'].drop_duplicates().values:
             gff['sub'+str(k)] = ''
-        # print(gff.head())
         arr = self.colinearity_region(gff, cor, bkinfo)
-        print(arr)
-        print(len(arr))
-        # align[gff1.columns[-int(self.multiple):]
-        #       ].to_csv(self.savefile, sep='\t', header=None)
 
     def remove_tandem(self, bkinfo):
         group = bkinfo[bkinfo['chr1'] == bkinfo['chr2']].copy()
@@ -58,8 +53,7 @@ class block_correspondence():
     def colinearity_region(self, gff, cor, bkinfo):
         arr=[]
         for chr1, group in bkinfo.groupby(['chr1']):
-            group = group.sort_values(by=['length', 'start2'], ascending = [False,False])
-            # print(chr1,len(group))
+            group = group.sort_values(by=['start2'], ascending = [False])
             for index, row in group.iterrows():
                 newcor = cor[(cor['chr1'] == row['chr1'])&(cor['chr2'] == row['chr2'])]
                 for sub, cor_row in newcor.groupby(['sub']):
@@ -67,35 +61,3 @@ class block_correspondence():
                         continue
                     arr.append(index)
         return arr
-                    # print(index,row['length'])
-                    # index = gff[(gff[0] == chr1) & (gff[5] >= start1) & (gff[5] <= end1)].index
-            # if (end1-start1)/len(array1) <= 0.05 or (end2-start2)/len(array2) <= 0.05:
-    #             continue
-    #         if (end1-start1)/len(array1) <= 0.05 or (end2-start2)/len(array2) <= 0.05:
-    #             continue
-    #         for index, row in group.iterrows():
-    #             if (int(row['start1']) <= start1) and (int(row['end1']) >= end1) and (int(row['start2']) <= start2) and (int(row['end2']) >= end2):
-    #                 homo = 0
-    #                 for block in k[1]:
-    #                     if (block[0] not in gff1.index) or (block[2] not in gff2.index):
-    #                         continue
-    #                     if block[0]+","+block[2] in homopairs.keys():
-    #                         homo += homopairs[block[0]+","+block[2]]
-    #                 homo = homo/len(k[1])
-    #                 if homo <= float(row['homo1']) or homo >= float(row['homo2']):
-    #                     continue
-    #                 index = gff1[(gff1[0] == chr1) & (gff1[5] >= start1) & (
-    #                     gff1[5] <= end1)].index
-    #                 new_index = [i[0] for i in k[1]]
-    #                 for i in range(1, int(self.multiple)+1):
-    #                     name = 'L'+str(i)
-    #                     old_index = gff1[gff1.index.isin(
-    #                         index) & gff1[name].str.match(r'\w+') == True].index
-    #                     inters = np.intersect1d(old_index, new_index)
-    #                     if len(inters)/len(new_index) > 0.2:
-    #                         continue
-    #                     gff1.loc[gff1.index.isin(
-    #                         index) & gff1[name].isnull(), name] = '.'
-    #                     gff1.loc[new_index, name] = [i[2] for i in k[1]]
-    #                     break
-    #     return gff1
