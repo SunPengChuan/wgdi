@@ -13,6 +13,7 @@ class circos():
     def __init__(self, options):
         self.figsize = '10,10'
         self.position = 'order'
+        self.label_size = 9
         for k, v in options:
             setattr(self, str(k), v)
             print(k, ' = ', v)
@@ -60,7 +61,7 @@ class circos():
                      color=color[str(k)], lw=lw, alpha=alpha)
 
     def chr_loction(self, lens, angle_gap, angle):
-        start, end, loc_chr = 0, 0, {}
+        start, end, loc_chr = 0, -angle_gap, {}
         for k in lens.index:
             end += angle_gap + angle * (float(lens[k]))
             start = end - angle * (float(lens[k]))
@@ -70,15 +71,11 @@ class circos():
     def deal_alignment(self, alignment, gff, lens, loc_chr, angle):
         alignment.replace('\s+', '', inplace=True)
         alignment.replace('.', '', inplace=True)
-        # newalignment = alignment.replace(gff['chr'])
-        print(alignment.info())
-        # newalignment = alignment.applymap(gff['chr'])
         newalignment = alignment.copy()
-        for i in range(10):
+        for i in range(len(alignment.columns)):
             alignment[i] = alignment[i].astype(str)
             newalignment[i] = alignment[i].map(gff['chr'].to_dict())
-            print(i)
-        newalignment['loc'] = alignment[0].replace(gff[self.position])
+        newalignment['loc'] = alignment[0].map(gff[self.position].to_dict())
         newalignment[0] = newalignment[0].astype('str')
         newalignment['loc'] = newalignment['loc'].astype('float')
         newalignment = newalignment[newalignment[0].isin(lens.index) == True]
@@ -94,7 +91,7 @@ class circos():
         fig = plt.figure(figsize=(tuple(self.figsize)))
         root = plt.axes([0, 0, 1, 1])
         mpl.rcParams['agg.path.chunksize'] = 100000000
-        lens = base.newlens(self.lens1, self.position)
+        lens = base.newlens(self.lens, self.position)
         radius, angle_gap = float(self.radius), float(self.angle_gap)
         angle = (2 * np.pi - (int(len(lens))) * angle_gap) / (int(lens.sum()))
         loc_chr = self.chr_loction(lens, angle_gap, angle)
@@ -102,14 +99,15 @@ class circos():
         chr_color = dict(zip(list_colors[::2], list_colors[1::2]))
         for k in loc_chr:
             start, end = loc_chr[k]
-            self.Wedge(root, (0.0, 0.0), radius + 0.03, start * 180 /
-                       np.pi, end * 180 / np.pi, 0.03, chr_color[k], 0.9)
+            self.Wedge(root, (0.0, 0.0), radius+self.ring_width, start * 180 /
+                       np.pi, end * 180 / np.pi, self.ring_width, chr_color[k], 0.9)
         gff = pd.read_csv(self.gff, sep='\t', header=None, index_col=1)
         gff.rename(columns={0: 'chr', 1: 'id', 2: 'start',
                             3: 'end', 5: 'order'}, inplace=True)
         alignment = pd.read_csv(self.alignment, sep='\t', header=None)
         newalignment = self.deal_alignment(
             alignment, gff, lens, loc_chr, angle)
+
         for k, v in enumerate(newalignment.columns[1:-2]):
             r = radius + self.ring_width*(k+1)
             self.plot_circle(loc_chr, r, lw=0.5, alpha=0.5, color='grey')
@@ -117,7 +115,7 @@ class circos():
                           0.15, self.ring_width*0.7, 0.15, chr_color, 0.9)
         labels = self.chr_label + lens.index
         labels = dict(zip(lens.index, labels))
-        self.plot_labels(labels, loc_chr, radius - 0.03, fontsize=9)
+        self.plot_labels(labels, loc_chr, radius - 0.03, fontsize=self.label_size)
         root.set_xlim(-1, 1)
         root.set_ylim(-1.05, 0.95)
         root.set_axis_off()

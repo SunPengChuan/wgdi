@@ -13,6 +13,7 @@ from wgdi.colinearscan import colinearscan
 from wgdi.dotplot import dotplot
 from wgdi.circos import circos
 from wgdi.ks import ks
+from wgdi.ks_peaks import kspeaks
 from wgdi.retain import retain
 
 parser = argparse.ArgumentParser(
@@ -24,7 +25,7 @@ substitutions, and differences in different evolution rates, etc.
 
     https://wgdi.readthedocs.io/en/latest/
     -------------------------------------- '''
-parser.add_argument("-v", "--version", action='version', version='0.2.6')
+parser.add_argument("-v", "--version", action='version', version='0.2.7')
 parser.add_argument("-cl", dest="collinearity",
                     help="A simple way to run ColinearScan")
 parser.add_argument("-ks", dest="calks",
@@ -43,6 +44,8 @@ parser.add_argument("-r", dest="retain",
                     help="Show subgenomes in gene retention or genome fractionation")
 parser.add_argument("-circos", dest="circos",
                     help="A simple way to run circos")
+parser.add_argument("-kp", dest="kspeaks",
+                    help="A simple way to get ks peaks")
 
 args = parser.parse_args()
 
@@ -86,6 +89,10 @@ def run_block_ks():
     blockks = block_ks(options)
     blockks.run()
 
+def run_kspeaks():
+    options = base.load_conf(args.kspeaks, 'kspeaks')
+    kp = kspeaks(options)
+    kp.run()
 
 def run_cal_ks():
     options = base.load_conf(args.calks, 'ks')
@@ -98,6 +105,10 @@ def run_colinearscan():
     col = colinearscan(options)
     col.run()
 
+def run_colinearscan():
+    options = base.load_conf(args.kspeaks, 'kspeaks')
+    kp = kspeaks(options)
+    kp.run()
 
 def module_to_run(argument):
     switcher = {
@@ -109,7 +120,8 @@ def module_to_run(argument):
         'blockinfo': run_block_info,
         'calks': run_cal_ks,
         'collinearity': run_colinearscan,
-        'circos': run_circos
+        'circos': run_circos,
+        'kspeaks': run_kspeaks,
     }
     return switcher.get(argument)()
 
@@ -124,7 +136,8 @@ def main():
                'blockinfo': 'blockinfo.conf',
                'calks': 'ks.conf',
                'collinearity': 'colinearscan.conf',
-               'circos': 'circos.conf'}
+               'circos': 'circos.conf',
+               'kspeaks': 'kspeaks.conf'}
     for arg in vars(args):
         value = getattr(args, arg)
         if value is not None:
