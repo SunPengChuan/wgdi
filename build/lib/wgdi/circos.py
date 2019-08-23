@@ -14,6 +14,7 @@ class circos():
         self.figsize = '10,10'
         self.position = 'order'
         self.label_size = 9
+        self.label_radius = 0.015
         for k, v in options:
             setattr(self, str(k), v)
             print(k, ' = ', v)
@@ -28,15 +29,17 @@ class circos():
             plt.plot(x, y, linestyle=linestyle,
                      color=color, lw=lw, alpha=alpha)
 
-    def plot_labels(self, labels, loc_chr, radius, horizontalalignment="center", verticalalignment="center", fontsize=6,
+    def plot_labels(self, root, labels, loc_chr, radius, horizontalalignment="center", verticalalignment="center", fontsize=6,
                     color='black'):
         for k in loc_chr:
             loc = sum(loc_chr[k]) * 0.5
             x, y = radius * np.cos(loc), radius * np.sin(loc)
+            self.Wedge(root, (x, y), self.label_radius, 0,
+                       360, self.label_radius, 'white', 1)
             if 1 * np.pi < loc < 2 * np.pi:
                 loc += np.pi
             plt.text(x, y, labels[k], horizontalalignment=horizontalalignment, verticalalignment=verticalalignment,
-                     fontsize=fontsize, color=color, rotation=loc * 180 / np.pi - 90)
+                     fontsize=fontsize, color=color, rotation=0)
 
     def Wedge(self, ax, loc, radius, start, end, width, color, alpha):
         p = mpatches.Wedge(loc, radius, start, end, width=width,
@@ -87,6 +90,53 @@ class circos():
                 name)][0]+angle * group['loc']
         return newalignment
 
+    def deal_ancestor(self, alignment, gff, lens, loc_chr, angle, al):
+        alignment.replace('\s+', '', inplace=True)
+        alignment.replace('.', np.nan, inplace=True)
+        newalignment = pd.merge(alignment, gff, left_on=0, right_on=gff.index)
+        newalignment['rad'] = np.nan
+        for name, group in newalignment.groupby(['chr']):
+            if str(name) not in loc_chr:
+                continue
+            newalignment.loc[group.index, 'rad'] = loc_chr[str(
+                name)][0]+angle * group[self.position]
+        newalignment.index = newalignment[0]
+        newalignment[0] = newalignment[0].map(newalignment['rad'].to_dict())
+        data = []
+        for index_al, row_al in al.iterrows():
+            for k in alignment.columns[1:]:
+                alignment[k] = alignment[k].astype(str)
+                group = newalignment[(newalignment['chr'] == row_al['chr']) & (
+                    newalignment['order'] >= row_al['start']) & (newalignment['order'] <= row_al['end'])]
+                group[k] = group[k].map(newalignment['rad'].to_dict())
+                group[k].dropna(inplace=True)
+                group.index = group.index.map(newalignment['rad'].to_dict())
+                group['color'] = row_al['color']
+                group = group[group[k].notnull()]
+                data += group[[0,k,'color']].values.tolist()
+        df = pd.DataFrame(data, columns=['loc1', 'loc2', 'color'])
+        return df
+
+    def plot_colinearity(self, data, radius, lw=0.02, alpha=1):
+        for name, group in data.groupby('color'):
+            x,y = np.array([]), np.array([])
+            for index, row in group.iterrows():
+                ex1x, ex1y = radius * \
+                    np.cos(row['loc1']), radius*np.sin(row['loc1'])
+                ex2x, ex2y = radius * \
+                    np.cos(row['loc2']), radius*np.sin(row['loc2'])
+                ex3x, ex3y = radius * (1-abs(row['loc1']-row['loc2'])/np.pi) * np.cos((row['loc1']+row['loc2'])*0.5), radius * (
+                    1-abs(row['loc1']-row['loc2'])/np.pi) * np.sin((row['loc1']+row['loc2'])*0.5)
+                x1 = [ex1x, 0.5*ex3x, ex2x]
+                y1 = [ex1y, 0.5*ex3y, ex2y]
+                step = .002
+                t = np.arange(0, 1+step, step)
+                xt = base.Bezier3(x1, t)
+                yt = base.Bezier3(y1, t)
+                x = np.hstack((x,xt,np.nan))
+                y = np.hstack((y,yt,np.nan))
+            plt.plot(x, y, color=name, lw=lw,alpha=alpha)
+
     def run(self):
         fig = plt.figure(figsize=(tuple(self.figsize)))
         root = plt.axes([0, 0, 1, 1])
@@ -101,23 +151,30 @@ class circos():
             start, end = loc_chr[k]
             self.Wedge(root, (0.0, 0.0), radius+self.ring_width, start * 180 /
                        np.pi, end * 180 / np.pi, self.ring_width, chr_color[k], 0.9)
-        gff = pd.read_csv(self.gff, sep='\t', header=None, index_col=1)
-        gff.rename(columns={0: 'chr', 1: 'id', 2: 'start',
-                            3: 'end', 5: 'order'}, inplace=True)
-        alignment = pd.read_csv(self.alignment, sep='\t', header=None)
-        newalignment = self.deal_alignment(
-            alignment, gff, lens, loc_chr, angle)
+        gff = base.newgff(self.gff)
+        if hasattr(self, 'ancestor'):
+            ancestor = pd.read_csv(self.ancestor, sep='\t', header=None)
+            al = pd.read_csv(self.ancestor_location, sep='\t', header=None)
+            al.rename(columns={0: 'chr', 1: 'start',
+                               2: 'end', 3: 'color'}, inplace=True)
+            al['chr'] = al['chr'].astype(str)
+            data = self.deal_ancestor(ancestor, gff, lens, loc_chr, angle, al)
+            self.plot_colinearity(data, radius, lw=0.1, alpha=0.8)
 
-        for k, v in enumerate(newalignment.columns[1:-2]):
-            r = radius + self.ring_width*(k+1)
-            self.plot_circle(loc_chr, r, lw=0.5, alpha=0.5, color='grey')
-            self.plot_bar(newalignment[[v, 'rad']], r + self.ring_width *
-                          0.15, self.ring_width*0.7, 0.15, chr_color, 0.9)
+        if hasattr(self,'alignment'):
+            alignment = pd.read_csv(self.alignment, sep='\t', header=None)
+            newalignment = self.deal_alignment(
+                alignment, gff, lens, loc_chr, angle)
+            for k, v in enumerate(newalignment.columns[1:-2]):
+                r = radius + self.ring_width*(k+1)
+                self.plot_circle(loc_chr, r, lw=0.5, alpha=0.5, color='grey')
+                self.plot_bar(newalignment[[v, 'rad']], r + self.ring_width *
+                            0.15, self.ring_width*0.7, 0.15, chr_color, 1)
         labels = self.chr_label + lens.index
         labels = dict(zip(lens.index, labels))
-        self.plot_labels(labels, loc_chr, radius - 0.03, fontsize=self.label_size)
+        self.plot_labels(root,labels, loc_chr, radius - self.ring_width*1.2, fontsize=self.label_size)
         root.set_xlim(-1, 1)
         root.set_ylim(-1.05, 0.95)
         root.set_axis_off()
-        plt.savefig(self.savefile, dpi=500)
+        plt.savefig(self.savefig, dpi=500)
         sys.exit(0)

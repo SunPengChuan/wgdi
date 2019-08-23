@@ -23,9 +23,12 @@ class block_info():
                 float(i[3]) for i in block[1]]
             start1, end1 = array1[0], array1[-1]
             start2, end2 = array2[0], array2[-1]
+            block1,block2 =[],[]
             for k in block[1]:
                 if k[0]+","+k[2] not in blast.index:
                     continue
+                block1.append(int(float(k[1])))
+                block2.append(int(float(k[3])))
                 blk_homo.append(
                     blast.loc[k[0]+","+k[2], ['homo'+str(i) for i in range(1, 6)]].values.tolist())
                 if k[0]+","+k[2] in ks.index:
@@ -33,14 +36,18 @@ class block_info():
                     blk_ks.append(pair_ks)
                 else:
                     blk_ks.append(-1)
-            ks_median = base.get_median([k for k in blk_ks if k >= 0])
+            ks_arr = [k for k in blk_ks if k >= 0]
+            if len(ks_arr)==0:
+                ks_median = -1
+            else:
+                ks_median = base.get_median([k for k in blk_ks if k >= 0])
             df = pd.DataFrame(blk_homo)
             homo = df.mean().values
             if len(homo) == 0:
                 continue
             blkks = ','.join([str(k) for k in blk_ks])
-            block1 = ','.join([str(k[1]) for k in block[1]])
-            block2 = ','.join([str(k[3]) for k in block[1]])
+            block1 = ','.join([str(k) for k in block1])
+            block2 = ','.join([str(k) for k in block2])
             data.append([block[0], chr1, chr2, start1, end1, start2, end2, block[2], len(
                 block[1]), ks_median, homo[0], homo[1], homo[2], homo[3], homo[4], block1, block2, blkks])
         data = pd.DataFrame(data, columns=['id', 'chr1', 'chr2', 'start1', 'end1', 'start2', 'end2',

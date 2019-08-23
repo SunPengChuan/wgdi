@@ -85,8 +85,8 @@ def newgff(file):
     gff.rename(columns={0: 'chr', 2: 'start',
                         3: 'end', 4: 'stand', 5: 'order'}, inplace=True)
     gff['chr'] = gff['chr'].astype(str)
-    gff['start'] = gff['start'].astype(float)
-    gff['end'] = gff['end'].astype(float)
+    gff['start'] = gff['start'].astype(int)
+    gff['end'] = gff['end'].astype(int)
     gff['stand'] = gff['stand'].astype(str)
     gff['order'] = gff['order'].astype(int)
     return gff
@@ -134,3 +134,13 @@ def dotplot_frame(fig, ax, lens1, lens2, step1, step2, genome1_name, genome2_nam
     ax.text(-0.05, 0.5, genome1_name, weight='semibold',
             fontsize=18, rotation=90, **align)
     ax.text(0.5, -0.05, genome2_name, weight='semibold', fontsize=18, **align)
+
+
+def Bezier3(plist, t):
+    p0, p1, p2 = plist
+    return p0*(1-t)**2+2*p1*t*(1-t)+p2*t**2
+
+
+def Bezier4(plist, t):
+    p0, p1, p2, p3, p4 = plist
+    return p0*(1-t)**4+4*p1*t*(1-t)**3+6*p2*t**2*(1-t)**2+4*p3*(1-t)*t**3+p4*t**4

@@ -20,6 +20,7 @@ wgdi/dotplot.py
 wgdi/ks.py
 wgdi/ks_peaks.py
 wgdi/method.py
+wgdi/peaksfit.py
 wgdi/pindex.py
 wgdi/retain.py
 wgdi/run.py

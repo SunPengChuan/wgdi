@@ -35,6 +35,9 @@ class block_ks():
             locx_median = (dict_x_chr[row['chr2']] +
                            0.5*(row['end2']+row['start2']))*step2
             pos.append([locx_median, locy_median, row['ks_median']])
+            if len(block1)!=len(ks):
+                print(row['ks'])
+                print(row['id'],len(block1),len(ks))
             for i in range(len(block1)):
                 locy = (dict_y_chr[row['chr1']]+float(block1[i]))*step1
                 locx = (dict_x_chr[row['chr2']]+float(block2[i]))*step2
@@ -72,12 +75,12 @@ class block_ks():
             lens1.index)) & (bkinfo['chr2'].isin(lens2.index)) & (bkinfo['pvalue'] < float(self.pvalue))]
         if self.tandem == True or self.tandem == 'true' or self.tandem == 1:
             bkinfo = self.remove_tandem(bkinfo)
+        # bkinfo = bkinfo[(bkinfo['ks_median']>=self.area[0]) & (bkinfo['ks_median']<=self.area[1])]
         pos, pairs = self.block_position(bkinfo, lens1, lens2, step1, step2)
         cm = plt.cm.get_cmap('gist_rainbow')
         df = pd.DataFrame(pairs, columns=['loc1', 'loc2', 'ks'])
+        df = df[(df['ks']>=self.area[0]) & (df['ks']<=self.area[1])]
         df.drop_duplicates(inplace=True)
-        for k in pos:
-            plt.text(k[0], k[1], round(k[2], 2), color='red', fontsize=6)
         sc = plt.scatter(df['loc1'], df['loc2'], s=float(self.markersize), c=df['ks'],
                          alpha=0.5, edgecolors=None, linewidths=0, marker='o', vmin=self.area[0], vmax=self.area[1], cmap=cm)
         cbar = fig.colorbar(sc, shrink=0.5, pad=0.03, fraction=0.1)
@@ -85,5 +88,6 @@ class block_ks():
                      horizontalalignment="center", verticalalignment="center")
         cbar.set_label('Ks', labelpad=12.5, fontsize=18, **align)
         plt.subplots_adjust(left=0.09, right=0.96, top=0.93, bottom=0.03)
-        plt.savefig(self.savefile, dpi=500)
+        plt.savefig(self.savefig, dpi=500)
+        plt.show()
         sys.exit(0)

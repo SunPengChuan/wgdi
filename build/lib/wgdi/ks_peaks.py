@@ -79,5 +79,5 @@ class kspeaks():
         plt.subplots_adjust(left=0.09, right=0.96, top=0.93, bottom=0.12)
         plt.savefig(self.savefig, dpi=500)
         plt.show()
-        bkinfo['ks_median'].to_csv(self.savefile, index=None, header=False)
+        bkinfo.to_csv(self.savefile, index=None)
         sys.exit(0)

@@ -48,16 +48,15 @@ class align_dotplot():
         gff2 = base.newgff(self.gff2)
         gff1 = base.gene_location(gff1, lens1, step1, self.position)
         gff2 = base.gene_location(gff2, lens2, step2, self.position)
-        block_list = pd.read_csv(self.block_list, header=None, sep='\t')
+        block_list = pd.read_csv(self.block_list, header=None)
         bkinfo = pd.read_csv(self.blockinfo,index_col=0)
         bkinfo['chr1'] = bkinfo['chr1'].astype(str)
         bkinfo['chr2'] = bkinfo['chr2'].astype(str)
         align = self.alignment(gff1, gff2, block_list, bkinfo)
-        alignment = align[gff1.columns[-int(len(block_list.columns)):]]
+        alignment = align[gff1.columns[-int(len(block_list[0].drop_duplicates())):]]
         alignment.to_csv(self.savefile, sep='\t', header=None)
         df = self.pair_positon(
             alignment, gff1['loc'], gff2['loc'], self.colors)
-        print(df.tail(10))
         plt.scatter(df['loc2'], df['loc1'], s=float(self.markersize), c=df['color'],
                     alpha=0.5, edgecolors=None, linewidths=0, marker='o')
         plt.subplots_adjust(left=0.07, right=0.97, top=0.93, bottom=0.03)
@@ -65,16 +64,17 @@ class align_dotplot():
         sys.exit(0)
 
     def alignment(self, gff1, gff2, block_list, bkinfo):
-        for col in block_list.columns:
-            bl = block_list[col].dropna().values
-            name = 'l'+str(int(col)+1)
-            # bl =bl[:3]
-            gff1[name] = ''
+        bkl = block_list[0].drop_duplicates().sort_values(ascending=True)
+        for col in bkl:
+            bl = block_list.loc[block_list[0]==col,1].values
+            name = 'l'+str(int(col))
+            gff1[name] = np.nan
             for block in [int(k) for k in bl]:
                 block1 = bkinfo.loc[block, 'block1'].split(',')
                 block2 = bkinfo.loc[block, 'block2'].split(',')
-                block1 = [float(k) for k in block1]
-                block2 = [float(k) for k in block2]
+                block1 = [int(k) for k in block1]
+                block2 = [int(k) for k in block2]
+                # print(block1)
                 index = gff1[(gff1['chr'] == bkinfo.loc[block, 'chr1']) & (
                     gff1['order'] >= min(block1)) & (gff1['order'] <= max(block1))].index
                 index1 = gff1[(gff1['chr'] == bkinfo.loc[block, 'chr1']) & (
@@ -88,8 +88,7 @@ class align_dotplot():
                 # inters = np.intersect1d(index1, old_index)
                 # if len(inters)/len(index1) > 0.2:
                 #     continue
-                # print(len(index1))
+                # print(len(index1),len(index2),block1)
                 gff1.loc[index1, name] = index2
-                # gff1.loc[gff1.index.isin(
-                #     index) & gff1[name].str.match(''), name] = '.'
+                gff1.loc[gff1.index.isin(index) & gff1[name].isna(), name] = '.'
         return gff1

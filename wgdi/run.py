@@ -7,13 +7,14 @@ import wgdi
 import wgdi.base as base
 from wgdi.align_dotplot import align_dotplot
 from wgdi.block_correspondence import block_correspondence
-from wgdi.block_ks import block_ks
 from wgdi.block_info import block_info
+from wgdi.block_ks import block_ks
+from wgdi.circos import circos
 from wgdi.colinearscan import colinearscan
 from wgdi.dotplot import dotplot
-from wgdi.circos import circos
 from wgdi.ks import ks
 from wgdi.ks_peaks import kspeaks
+from wgdi.peaksfit import peaksfit
 from wgdi.retain import retain
 
 parser = argparse.ArgumentParser(
@@ -25,7 +26,7 @@ substitutions, and differences in different evolution rates, etc.
 
     https://wgdi.readthedocs.io/en/latest/
     -------------------------------------- '''
-parser.add_argument("-v", "--version", action='version', version='0.2.7')
+parser.add_argument("-v", "--version", action='version', version='0.2.8')
 parser.add_argument("-cl", dest="collinearity",
                     help="A simple way to run ColinearScan")
 parser.add_argument("-ks", dest="calks",
@@ -42,11 +43,12 @@ parser.add_argument("-a", dest="alignment",
                     help="Show event-related genomic alignment in a dotplot")
 parser.add_argument("-r", dest="retain",
                     help="Show subgenomes in gene retention or genome fractionation")
-parser.add_argument("-circos", dest="circos",
+parser.add_argument("-ci", dest="circos",
                     help="A simple way to run circos")
 parser.add_argument("-kp", dest="kspeaks",
                     help="A simple way to get ks peaks")
-
+parser.add_argument("-pf", dest="peaksfit",
+                    help="Gaussian fitting of ks distribution")
 args = parser.parse_args()
 
 
@@ -65,6 +67,11 @@ def run_circos():
     options = base.load_conf(args.circos, 'circos')
     cir = circos(options)
     cir.run()
+
+def run_peaksfit():
+    options = base.load_conf(args.peaksfit, 'peaksfit')
+    pf = peaksfit(options)
+    pf.run()
 
 def run_align_dotplot():
     options = base.load_conf(args.alignment, 'alignment')
@@ -105,10 +112,6 @@ def run_colinearscan():
     col = colinearscan(options)
     col.run()
 
-def run_colinearscan():
-    options = base.load_conf(args.kspeaks, 'kspeaks')
-    kp = kspeaks(options)
-    kp.run()
 
 def module_to_run(argument):
     switcher = {
@@ -122,6 +125,7 @@ def module_to_run(argument):
         'collinearity': run_colinearscan,
         'circos': run_circos,
         'kspeaks': run_kspeaks,
+        'peaksfit':run_peaksfit,
     }
     return switcher.get(argument)()
 
@@ -137,7 +141,9 @@ def main():
                'calks': 'ks.conf',
                'collinearity': 'colinearscan.conf',
                'circos': 'circos.conf',
-               'kspeaks': 'kspeaks.conf'}
+               'kspeaks': 'kspeaks.conf',
+               'peaksfit':'peaksfit.conf'
+               }
     for arg in vars(args):
         value = getattr(args, arg)
         if value is not None:

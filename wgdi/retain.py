@@ -4,52 +4,50 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
+import wgdi.base as base
 
 class retain():
     def __init__(self, options):
+        self.position = 'order'
         for k, v in options:
             setattr(self, str(k), v)
             print(str(k), ' = ', v)
         self.colors = [str(k) for k in self.colors.split(',')]
         self.figsize = [float(k) for k in self.figsize.split(',')]
-        self.main()
+       
 
-    def main(self):
-        gff = pd.read_csv(self.gff, sep="\t", header=None, index_col=1)
+    def run(self):
+        gff = base.newgff(self.gff)
+        lens = base.newlens(self.lens, self.position)
         alignment = pd.read_csv(self.alignment, sep="\t",
                                 header=None, index_col=0)
-        gff = gff[[0, 5]]
-        gff.columns = ['chr', 'order']
-        alignment = alignment.join(gff, how='left')
+        alignment = alignment.join(gff[['chr',self.position]], how='left')
         self.retain = self.align_chr(alignment)
         self.retain[self.retain.columns[:-2]
                     ].to_csv(self.savefile, sep='\t', header=None)
-
-    def run(self):
-        chrnum = self.retain['chr'].drop_duplicates().values
         fig, axs = plt.subplots(
-            len(chrnum), 1, sharex=True, sharey=True, figsize=tuple(self.figsize))
+            len(lens), 1, sharex=True, sharey=True, figsize=tuple(self.figsize))
         fig.add_subplot(111, frameon=False)
         align = dict(family='Arial', verticalalignment="center", horizontalalignment="center")
-        plt.ylabel(self.ylabel+'\n\n\n\n\n', fontsize=16, **align)
+        plt.ylabel(self.ylabel+'\n\n\n\n', fontsize=20, **align)
         for spine in plt.gca().spines.values():
             spine.set_visible(False)
         plt.tick_params(top=False, bottom=False, left=False,
                         right=False, labelleft=False, labelbottom=False)
         groups = self.retain.groupby(['chr'])
-        for i in range(len(chrnum)):
-            group = groups.get_group(chrnum[i])
+        for i in range(len(lens)):
+            group = groups.get_group(lens.index[i])
             for j in self.retain.columns[:-2]:
                 axs[i].plot(group['order'].values, group[j].values,
                             linestyle='-', color=self.colors[j-1], linewidth=1)
             axs[i].spines['right'].set_visible(False)
             axs[i].spines['top'].set_visible(False)
-            axs[i].set_ylim([0, 1])
-        for i in range(len(chrnum)):
+            axs[i].set_ylim([0, .5])
+            axs[i].tick_params(labelsize=12)
+        for i in range(len(lens)):
             x, y = axs[i].get_xlim()[1]*0.95, axs[i].get_ylim()[1]*0.5
             axs[i].text(x, y, self.refgenome+' ' +
-                        str(chrnum[i]), fontsize=16, **align)
+                        str(lens.index[i]), fontsize=18, **align)
         plt.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.05)
         plt.savefig(self.figurefile, dpi=500)
         sys.exit(0)
