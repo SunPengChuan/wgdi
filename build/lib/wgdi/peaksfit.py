@@ -48,9 +48,6 @@ class peaksfit():
         p = kde(x)
         guess = [1, 1, 1]*self.peaks
         popt, pcov = curve_fit(self.gaussian_fuc, x, p, guess)
-        
-        print(popt)
-        # popt= [0.2762617,1.77580711,0.14276132,2.97177234,1.04075785,0.16944535,4.04491311,0.58492098,0.05859669]
         data = []
         y = self.gaussian_fuc(x, *popt)
         for i in range(0, len(popt), 3):
@@ -74,7 +71,6 @@ class peaksfit():
         for i in range(len(fit)):
             ax.plot(x, fit[i], label='fit '+str(i+1))
         ax.plot(x, y, color='blue',linestyle = '--', label='Gaussian')
-        # print(r-squared)
         ax.grid()
         align = dict(family='Arial', verticalalignment="center",
                      horizontalalignment="center")

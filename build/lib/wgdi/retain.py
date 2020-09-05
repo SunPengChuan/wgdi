@@ -19,8 +19,7 @@ class retain():
     def run(self):
         gff = base.newgff(self.gff)
         lens = base.newlens(self.lens, self.position)
-        alignment = pd.read_csv(self.alignment, sep="\t",
-                                header=None, index_col=0)
+        alignment = pd.read_csv(self.alignment,header=None, index_col=0)
         alignment = alignment.join(gff[['chr',self.position]], how='left')
         self.retain = self.align_chr(alignment)
         self.retain[self.retain.columns[:-2]
@@ -42,7 +41,7 @@ class retain():
                             linestyle='-', color=self.colors[j-1], linewidth=1)
             axs[i].spines['right'].set_visible(False)
             axs[i].spines['top'].set_visible(False)
-            axs[i].set_ylim([0, .5])
+            axs[i].set_ylim([0, 0.1])
             axs[i].tick_params(labelsize=12)
         for i in range(len(lens)):
             x, y = axs[i].get_xlim()[1]*0.95, axs[i].get_ylim()[1]*0.5

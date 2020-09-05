@@ -45,7 +45,7 @@ def read_colinearscan(file):
 
 def read_ks(file, col):
     ks = pd.read_csv(file, sep='\t')
-    ks = ks.drop_duplicates()
+    ks.drop_duplicates(subset=['id1', 'id2'], keep='first', inplace=True)
     ks[col] = ks[col].astype(float)
     ks = ks[ks[col] >= 0]
     ks.index = ks['id1']+','+ks['id2']
@@ -68,8 +68,10 @@ def cds_to_pep(cds_file, pep_file, fmt='fasta'):
     return True
 
 
-def newblast(file, score, evalue, gene_loc1, gene_loc2):
+def newblast(file, score, evalue, gene_loc1, gene_loc2,reverse):
     blast = pd.read_csv(file, sep="\t", header=None)
+    if reverse.upper() == 'TRUE':
+        blast[[0, 1]] = blast[[1, 0]]
     blast = blast[(blast[11] >= score) & (
         blast[10] < evalue) & (blast[1] != blast[0])]
     blast = blast[(blast[0].isin(gene_loc1.index)) &
@@ -113,7 +115,7 @@ def gene_location(gff, lens, step, position):
     return gff
 
 
-def dotplot_frame(fig, ax, lens1, lens2, step1, step2, genome1_name, genome2_name):
+def dotplot_frame(fig, ax, lens1, lens2, step1, step2, genome1_name, genome2_name, arr):
     for k in lens1.cumsum()[:-1]*step1:
         ax.axhline(y=k, alpha=0.8, color='black', lw=0.5)
     for k in lens2.cumsum()[:-1]*step2:
@@ -127,13 +129,26 @@ def dotplot_frame(fig, ax, lens1, lens2, step1, step2, genome1_name, genome2_nam
     ax.set_yticklabels(lens1.index, fontsize=12, **align1)
     xticks = lens2.cumsum()*step2-0.5*lens2*step2
     ax.set_xticks(xticks)
+    # ax.set_xticks([])
+    # ax.set_yticks([])
     ax.set_xticklabels(lens2.index, fontsize=12, **align)
     ax.xaxis.set_ticks_position('none')
     ax.yaxis.set_ticks_position('none')
-    ax.axis([0, 1, 1, 0])
-    ax.text(-0.05, 0.5, genome1_name, weight='semibold',
-            fontsize=18, rotation=90, **align)
-    ax.text(0.5, -0.05, genome2_name, weight='semibold', fontsize=18, **align)
+    if arr[0] < 0:
+        ax.text(-0.065, 0.5, genome1_name, weight='semibold',
+                fontsize=18, rotation=90, **align)
+    elif arr[0] == 1:
+        ax.text(-0.065, 0.5, genome1_name, weight='semibold',
+                fontsize=18, rotation=90, **align)
+    else:
+        ax.text(-0.05, 0.5, genome1_name, weight='semibold',
+                fontsize=18, rotation=90, **align)
+    if arr[1] < 0:
+        ax.text(0.5, -0.065, genome2_name,
+                weight='semibold', fontsize=18, **align)
+    else:
+        ax.text(0.5, -0.05, genome2_name,
+                weight='semibold', fontsize=18, **align)
 
 
 def Bezier3(plist, t):

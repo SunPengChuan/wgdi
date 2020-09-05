@@ -14,6 +14,7 @@ class colinearscan():
         self.score = 100
         self.evalue = 1e-5
         self.position = 'order'
+        self.blast_reverse = False
         for k, v in options:
             setattr(self, str(k), v)
             print(str(k), ' = ', v)
@@ -69,8 +70,8 @@ class colinearscan():
         gff2 = base.newgff(self.gff2)
         gff1 = gff1[gff1['chr'].isin(lens1.index)]
         gff2 = gff2[gff2['chr'].isin(lens2.index)]
-        blast = base.newblast(self.blast, int(self.score),
-                              float(self.evalue), gff1, gff2)
+        blast = base.newblast(self.blast, int(self.score), float(
+            self.evalue), gff1, gff2, self.blast_reverse)
         df = self.deal_blast(blast, gff1, gff2, int(self.repnum))
         for (chr1, chr2), group in df.groupby(['chr1', 'chr2']):
             group = group.sort_values(by=['loc1', 'loc2'])
@@ -87,3 +88,5 @@ class colinearscan():
         os.system(command)
         self.rewriteblock(blast, self.dir+'.block.old.txt',
                           self.dir+'.block.txt')
+        shutil.rmtree(self.dir)
+        sys.exit(0)

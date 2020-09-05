@@ -64,7 +64,7 @@ class circos():
                      color=color[str(k)], lw=lw, alpha=alpha)
 
     def chr_loction(self, lens, angle_gap, angle):
-        start, end, loc_chr = 0, -angle_gap, {}
+        start, end, loc_chr = 0, 0.2*angle_gap, {}
         for k in lens.index:
             end += angle_gap + angle * (float(lens[k]))
             start = end - angle * (float(lens[k]))
@@ -143,14 +143,14 @@ class circos():
         mpl.rcParams['agg.path.chunksize'] = 100000000
         lens = base.newlens(self.lens, self.position)
         radius, angle_gap = float(self.radius), float(self.angle_gap)
-        angle = (2 * np.pi - (int(len(lens))) * angle_gap) / (int(lens.sum()))
+        angle = (2 * np.pi - (int(len(lens))+1.5) * angle_gap) / (int(lens.sum()))
         loc_chr = self.chr_loction(lens, angle_gap, angle)
         list_colors = [str(k).strip() for k in re.split(',|:', self.colors)]
         chr_color = dict(zip(list_colors[::2], list_colors[1::2]))
         for k in loc_chr:
             start, end = loc_chr[k]
             self.Wedge(root, (0.0, 0.0), radius+self.ring_width, start * 180 /
-                       np.pi, end * 180 / np.pi, self.ring_width, chr_color[k], 0.9)
+                       np.pi, end * 180 / np.pi, self.ring_width*0.6, chr_color[k], 0.9)
         gff = base.newgff(self.gff)
         if hasattr(self, 'ancestor'):
             ancestor = pd.read_csv(self.ancestor, sep='\t', header=None)
@@ -165,14 +165,27 @@ class circos():
             alignment = pd.read_csv(self.alignment, sep='\t', header=None)
             newalignment = self.deal_alignment(
                 alignment, gff, lens, loc_chr, angle)
+            names = ['A11','A12','A21','A22','C11','C12','C21','C22','D11','D12','D21','D22']
+            n=0
+            # newalignment = newalignment.head(100)
+            align = dict(family='Arial', verticalalignment="center", horizontalalignment="center")
             for k, v in enumerate(newalignment.columns[1:-2]):
                 r = radius + self.ring_width*(k+1)
                 self.plot_circle(loc_chr, r, lw=0.5, alpha=0.5, color='grey')
                 self.plot_bar(newalignment[[v, 'rad']], r + self.ring_width *
                             0.15, self.ring_width*0.7, 0.15, chr_color, 1)
+                if n%2==0:
+                    loc=0.05
+                    x, y = (r+self.ring_width*0.5) * np.cos(loc), (r+self.ring_width*0.5) * np.sin(loc)
+                    plt.text(x,y,names[n],rotation=loc* 180 / np.pi,fontsize=10,**align)
+                else:
+                    loc=-0.08
+                    x, y = (r+self.ring_width*0.5) * np.cos(loc), (r+self.ring_width*0.5) * np.sin(loc)
+                    plt.text(x,y,names[n],fontsize=10,rotation=loc* 180 / np.pi,**align)
+                n+=1
         labels = self.chr_label + lens.index
         labels = dict(zip(lens.index, labels))
-        self.plot_labels(root,labels, loc_chr, radius - self.ring_width*1.2, fontsize=self.label_size)
+        self.plot_labels(root,labels, loc_chr, radius - self.ring_width*0.6, fontsize=self.label_size)
         root.set_xlim(-1, 1)
         root.set_ylim(-1.05, 0.95)
         root.set_axis_off()

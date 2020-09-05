@@ -44,7 +44,10 @@ class ks():
             pairs = colinearity.values.tolist()
         df = pd.DataFrame(pairs)
         df = df.drop_duplicates()
-        return df.values.tolist()
+        df[0] = df[0].astype(str)
+        df[1] = df[1].astype(str)
+        df.index = df[0]+','+df[1]
+        return df
 
     def run(self):
         path = os.getcwd()
@@ -53,44 +56,34 @@ class ks():
                             os.path.join(path, self.pep_file))
         cds = SeqIO.to_dict(SeqIO.parse(self.cds_file, "fasta"))
         pep = SeqIO.to_dict(SeqIO.parse(self.pep_file, "fasta"))
-        pairs = self.auto_file()
-        ks_exists = []
+        df_pairs = self.auto_file()
         if os.path.exists(self.ks_file):
             ks = pd.read_csv(self.ks_file, sep='\t')
             ks = ks.drop_duplicates()
-            ks_file = open(self.ks_file, 'a')
-            ks_exists = (ks['id1']+','+ks['id2']).values.tolist()
+            ks['id'] = ks['id1']+','+ks['id2']
+            df_pairs.drop(ks['id'].to_numpy(), inplace=True)
+            ks_file = open(self.ks_file, 'a+')
         else:
             ks_file = open(self.ks_file, 'w')
-            ks_file.write('\t'.join(['id1', 'id2', 'ka_NG86', 'ks_NG86', 'ka_YN00', 'ks_YN00'])+'\n')
+            ks_file.write(
+                '\t'.join(['id1', 'id2', 'ka_NG86', 'ks_NG86', 'ka_YN00', 'ks_YN00'])+'\n')
+        df_pairs = df_pairs[(df_pairs[0].isin(cds.keys())) & (df_pairs[1].isin(
+            cds.keys())) & (df_pairs[0].isin(pep.keys())) & (df_pairs[1].isin(pep.keys()))]
+        pairs = df_pairs[[0, 1]].to_numpy()
         for k in pairs:
-            self.pair = str(k[0]+','+str(k[1]))
-            if self.pair in ks_exists:
-                continue
-            if k[0] in cds.keys() and k[1] in cds.keys() and k[0] in pep.keys() and k[1] in pep.keys():
-                cds[k[0]].id = cds[k[0]].id.replace('.', '_')
-                cds[k[1]].id = cds[k[1]].id.replace('.', '_')
-                pep[k[0]].id = pep[k[0]].id.replace('.', '_')
-                pep[k[1]].id = pep[k[1]].id.replace('.', '_')
-                SeqIO.write([cds[k[0]], cds[k[1]]],
-                            self.pair_cds_file, "fasta")
-                SeqIO.write([pep[k[0]], pep[k[1]]],
-                            self.pair_pep_file, "fasta")
-            else:
-                continue
+            SeqIO.write([cds[k[0]], cds[k[1]]], self.pair_cds_file, "fasta")
+            SeqIO.write([pep[k[0]], pep[k[1]]], self.pair_pep_file, "fasta")
             kaks = self.pair_kaks(k)
-            print(self.pair, kaks)
+            print(k, kaks)
             if kaks == None:
                 continue
-            ks_file.write('\t'.join([str(i) for i in k+kaks])+'\n')
+            ks_file.write('\t'.join([str(i) for i in list(k)+list(kaks)])+'\n')
         ks_file.close()
-        for file in (self.pair_pep_file, self.pair_cds_file, self.pep_file, self.mrtrans, self.pair_yn, 
-            self.prot_align_file, '2YN.dN', '2YN.dS', '2YN.t', 'rst', 'rst1', 'yn00.ctl', 'rub'):
+        for file in (self.pair_pep_file, self.pair_cds_file,  self.mrtrans, self.pair_yn, self.prot_align_file, '2YN.dN', '2YN.dS', '2YN.t', 'rst', 'rst1', 'yn00.ctl', 'rub'):
             try:
                 os.remove(file)
             except OSError:
                 pass
-
 
     def pair_kaks(self, k):
         k[0], k[1] = k[0].replace('.', '_'), k[1].replace('.', '_')
@@ -108,16 +101,14 @@ class ks():
     def align(self):
         if self.align_software == 'mafft':
             mafft_cline = MafftCommandline(
-                cmd = self.mafft_path, input=self.pair_pep_file, auto=True)
+                cmd=self.mafft_path, input=self.pair_pep_file, auto=True)
             stdout, stderr = mafft_cline()
             align = AlignIO.read(StringIO(stdout), "fasta")
-            AlignIO.write(align, self.prot_align_file , "fasta")
+            AlignIO.write(align, self.prot_align_file, "fasta")
         if self.align_software == 'muscle':
             muscle_cline = MuscleCommandline(
                 cmd=self.muscle_path, input=self.pair_pep_file, out=self.prot_align_file, seqtype="protein", clwstrict=True)
             stdout, stderr = muscle_cline()
-
-    
 
     def pal2nal(self):
         args = ['perl', self.pal2nal_path, self.prot_align_file,
@@ -128,7 +119,6 @@ class ks():
         except:
             return False
         return True
-
 
     def run_yn00(self):
         yn = yn00.Yn00()

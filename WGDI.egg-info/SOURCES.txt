@@ -19,11 +19,11 @@ wgdi/conf.ini
 wgdi/dotplot.py
 wgdi/ks.py
 wgdi/ks_peaks.py
-wgdi/method.py
 wgdi/peaksfit.py
 wgdi/pindex.py
 wgdi/retain.py
 wgdi/run.py
+wgdi/trees.py
 wgdi/example/__init__.py
 wgdi/example/align.conf
 wgdi/example/blockinfo.conf
@@ -34,5 +34,7 @@ wgdi/example/corr.conf
 wgdi/example/dotplot.conf
 wgdi/example/ks.conf
 wgdi/example/kspeaks.conf
+wgdi/example/pindex.conf
 wgdi/example/retain.conf
 wgdi/example/total.conf
+wgdi/example/trees.conf

@@ -7,6 +7,7 @@ class block_info():
     def __init__(self, options):
         self.repnum = 30
         self.ks_col = 'ks_NG86'
+        self.blast_reverse = 'False'
         for k, v in options:
             setattr(self, str(k), v)
             print(str(k), ' = ', v)
@@ -23,7 +24,7 @@ class block_info():
                 float(i[3]) for i in block[1]]
             start1, end1 = array1[0], array1[-1]
             start2, end2 = array2[0], array2[-1]
-            block1,block2 =[],[]
+            block1, block2 = [], []
             for k in block[1]:
                 if k[0]+","+k[2] not in blast.index:
                     continue
@@ -37,21 +38,24 @@ class block_info():
                 else:
                     blk_ks.append(-1)
             ks_arr = [k for k in blk_ks if k >= 0]
-            if len(ks_arr)==0:
+            if len(ks_arr) == 0:
                 ks_median = -1
+                ks_average = -1
             else:
-                ks_median = base.get_median([k for k in blk_ks if k >= 0])
+                arr_ks = [k for k in blk_ks if k >= 0]
+                ks_median = base.get_median(arr_ks)
+                ks_average = sum(arr_ks)/len(arr_ks)
             df = pd.DataFrame(blk_homo)
             homo = df.mean().values
             if len(homo) == 0:
                 continue
-            blkks = ','.join([str(k) for k in blk_ks])
-            block1 = ','.join([str(k) for k in block1])
-            block2 = ','.join([str(k) for k in block2])
+            blkks = '_'.join([str(k) for k in blk_ks])
+            block1 = '_'.join([str(k) for k in block1])
+            block2 = '_'.join([str(k) for k in block2])
             data.append([block[0], chr1, chr2, start1, end1, start2, end2, block[2], len(
-                block[1]), ks_median, homo[0], homo[1], homo[2], homo[3], homo[4], block1, block2, blkks])
+                block[1]), ks_median, ks_average, homo[0], homo[1], homo[2], homo[3], homo[4], block1, block2, blkks])
         data = pd.DataFrame(data, columns=['id', 'chr1', 'chr2', 'start1', 'end1', 'start2', 'end2',
-                                           'pvalue', 'length', 'ks_median', 'homo1', 'homo2', 'homo3',
+                                           'pvalue', 'length', 'ks_median', 'ks_average', 'homo1', 'homo2', 'homo3',
                                            'homo4', 'homo5', 'block1', 'block2', 'ks'])
         data['density1'] = data['length'] / \
             ((data['end1']-data['start1']).abs()+1)
@@ -73,15 +77,17 @@ class block_info():
         index = [group.sort_values(by=11, ascending=False)[:repnum].index.tolist()
                  for name, group in blast.groupby([0])]
         blast = blast.loc[np.concatenate(
-            np.array([k[:repnum] for k in index])), [0, 1]]
+            np.array([k[:repnum] for k in index], dtype=object)), [0, 1]]
         blast = blast.assign(homo1=np.nan, homo2=np.nan,
                              homo3=np.nan, homo4=np.nan, homo5=np.nan)
         for i in range(1, 6):
             bluenum = i+5
-            redindex = np.concatenate(np.array([k[:i] for k in index]))
-            blueindex = np.concatenate(np.array([k[i:bluenum] for k in index]))
+            redindex = np.concatenate(
+                np.array([k[:i] for k in index], dtype=object))
+            blueindex = np.concatenate(
+                np.array([k[i:bluenum] for k in index], dtype=object))
             grayindex = np.concatenate(
-                np.array([k[bluenum:repnum] for k in index]))
+                np.array([k[bluenum:repnum] for k in index], dtype=object))
             blast.loc[redindex, 'homo'+str(i)] = 1
             blast.loc[blueindex, 'homo'+str(i)] = 0
             blast.loc[grayindex, 'homo'+str(i)] = -1
@@ -94,8 +100,8 @@ class block_info():
         gff2 = base.newgff(self.gff2)
         gff1 = gff1[gff1['chr'].isin(lens1.index)]
         gff2 = gff2[gff2['chr'].isin(lens2.index)]
-        blast = base.newblast(self.blast, int(self.score),
-                              float(self.evalue), gff1, gff2)
+        blast = base.newblast(self.blast, int(self.score), float(
+            self.evalue), gff1, gff2, self.blast_reverse)
         blast = self.blast_homo(blast, gff1, gff2, int(self.repnum))
         blast.index = blast[0]+','+blast[1]
         colinearity = base.read_colinearscan(self.colinearity)

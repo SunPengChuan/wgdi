@@ -33,11 +33,14 @@ class kspeaks():
         return bkinfo
 
     def ks_kde(self, df):
-        ks = df['ks'].str.split(',')
+        ks = df['ks'].str.split('_')
         arr = []
         ks_ave = []
         for v in ks.values:
-            arr.extend([float(k) for k in v])
+            v = [float(k) for k in v if float(k)>=0]
+            if len(v)==0:
+                continue
+            arr.extend(v)
             ks_ave.append(sum([float(k) for k in v])/len(v))
         kdemedian = gaussian_kde(df['ks_median'].values)
         kdemedian.set_bandwidth(bw_method=kdemedian.factor / 3.)
@@ -79,5 +82,5 @@ class kspeaks():
         plt.subplots_adjust(left=0.09, right=0.96, top=0.93, bottom=0.12)
         plt.savefig(self.savefig, dpi=500)
         plt.show()
-        bkinfo.to_csv(self.savefile, index=None)
+        bkinfo['ks_median'].to_csv(self.savefile,index=False,header=False)
         sys.exit(0)

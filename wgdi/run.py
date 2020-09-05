@@ -16,6 +16,8 @@ from wgdi.ks import ks
 from wgdi.ks_peaks import kspeaks
 from wgdi.peaksfit import peaksfit
 from wgdi.retain import retain
+from wgdi.pindex import pindex
+from wgdi.trees import trees
 
 parser = argparse.ArgumentParser(
     prog='wgdi', usage='%(prog)s [options]', epilog="", formatter_class=argparse.RawDescriptionHelpFormatter,)
@@ -26,7 +28,7 @@ substitutions, and differences in different evolution rates, etc.
 
     https://wgdi.readthedocs.io/en/latest/
     -------------------------------------- '''
-parser.add_argument("-v", "--version", action='version', version='0.2.8')
+parser.add_argument("-v", "--version", action='version', version='0.3.2')
 parser.add_argument("-cl", dest="collinearity",
                     help="A simple way to run ColinearScan")
 parser.add_argument("-ks", dest="calks",
@@ -41,6 +43,10 @@ parser.add_argument("-c", dest="correspondence",
                     help="Extract event-related genomic alignment")
 parser.add_argument("-a", dest="alignment",
                     help="Show event-related genomic alignment in a dotplot")
+parser.add_argument("-at", dest="alignmenttrees",
+                    help="Collinear genes construct phylogenetic trees")
+parser.add_argument("-p", dest="pindex",
+                    help="Polyploidy-index characterize the degree of divergence between subgenomes of a polyploidy")
 parser.add_argument("-r", dest="retain",
                     help="Show subgenomes in gene retention or genome fractionation")
 parser.add_argument("-ci", dest="circos",
@@ -49,6 +55,8 @@ parser.add_argument("-kp", dest="kspeaks",
                     help="A simple way to get ks peaks")
 parser.add_argument("-pf", dest="peaksfit",
                     help="Gaussian fitting of ks distribution")
+parser.add_argument("-conf", dest="configure",
+                    help="Show all configured parameters")
 args = parser.parse_args()
 
 
@@ -101,6 +109,17 @@ def run_kspeaks():
     kp = kspeaks(options)
     kp.run()
 
+def run_pindex():
+    options = base.load_conf(args.pindex, 'pindex')
+    p = pindex(options)
+    p.run()
+
+def run_trees():
+    options = base.load_conf(args.alignmenttrees, 'alignmenttrees')
+    t = trees(options)
+    t.run()
+
+
 def run_cal_ks():
     options = base.load_conf(args.calks, 'ks')
     calks = ks(options)
@@ -112,6 +131,8 @@ def run_colinearscan():
     col = colinearscan(options)
     col.run()
 
+def run_configure():
+    options = base.load_conf(args.conf, 'total')
 
 def module_to_run(argument):
     switcher = {
@@ -126,6 +147,9 @@ def module_to_run(argument):
         'circos': run_circos,
         'kspeaks': run_kspeaks,
         'peaksfit':run_peaksfit,
+        'pindex':run_pindex,
+        'alignmenttrees':run_trees,
+        'conf':run_configure,
     }
     return switcher.get(argument)()
 
@@ -142,7 +166,10 @@ def main():
                'collinearity': 'colinearscan.conf',
                'circos': 'circos.conf',
                'kspeaks': 'kspeaks.conf',
-               'peaksfit':'peaksfit.conf'
+               'pindex':'pindex.conf',
+               'alignmenttrees':'alignmenttrees.conf',
+               'peaksfit':'peaksfit.conf',
+               'configure':'total.conf'
                }
     for arg in vars(args):
         value = getattr(args, arg)
