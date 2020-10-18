@@ -42,6 +42,49 @@ def read_colinearscan(file):
                 b.append(a)
     return data
 
+def read_mcscanx(fn):
+    f1=open(fn)   
+    data,b=[],[]
+    flag,num=0,0
+    for line in f1.readlines():
+        line=line.strip()
+        if re.match(r"## Alignment",line):
+            flag=1
+            if len(b)==0:
+                arr= re.findall(r"[\d+\.]+", line)[0]
+                continue
+            data.append([num,b,0])
+            b=[]
+            num = re.findall(r"\d+", line)[0]
+            continue
+        if flag==0:
+            continue
+        a=re.split(r"\:",line)
+        c=re.split(r"\s+",a[1])
+        b.append([c[1],c[1],c[2],c[2]])
+    data.append([num,b,0])
+    return data
+
+def read_coliearity(fn):
+    f1=open(fn)   
+    data,b=[],[]
+    flag,num=0,0
+    for line in f1.readlines():
+        line=line.strip()
+        if re.match(r"# Alignment",line):
+            flag=1
+            if len(b)==0:
+                arr =re.findall('[\.\d+]+',line)
+                continue
+            data.append([arr[0],b,arr[2]])
+            b=[]
+            arr =re.findall('[\.\d+]+',line)
+            continue
+        if flag==0:
+            continue
+        b.append(re.split(r"\s", line))
+    data.append([arr[0],b,arr[2]])
+    return data
 
 def read_ks(file, col):
     ks = pd.read_csv(file, sep='\t')
@@ -68,7 +111,7 @@ def cds_to_pep(cds_file, pep_file, fmt='fasta'):
     return True
 
 
-def newblast(file, score, evalue, gene_loc1, gene_loc2,reverse):
+def newblast(file, score, evalue, gene_loc1, gene_loc2, reverse):
     blast = pd.read_csv(file, sep="\t", header=None)
     if reverse.upper() == 'TRUE':
         blast[[0, 1]] = blast[[1, 0]]

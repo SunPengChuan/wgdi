@@ -117,7 +117,7 @@ class circos():
         df = pd.DataFrame(data, columns=['loc1', 'loc2', 'color'])
         return df
 
-    def plot_colinearity(self, data, radius, lw=0.02, alpha=1):
+    def plot_collinearity(self, data, radius, lw=0.02, alpha=1):
         for name, group in data.groupby('color'):
             x,y = np.array([]), np.array([])
             for index, row in group.iterrows():
@@ -150,7 +150,7 @@ class circos():
         for k in loc_chr:
             start, end = loc_chr[k]
             self.Wedge(root, (0.0, 0.0), radius+self.ring_width, start * 180 /
-                       np.pi, end * 180 / np.pi, self.ring_width*0.6, chr_color[k], 0.9)
+                       np.pi, end * 180 / np.pi, self.ring_width*0.3, chr_color[k], 0.9)
         gff = base.newgff(self.gff)
         if hasattr(self, 'ancestor'):
             ancestor = pd.read_csv(self.ancestor, sep='\t', header=None)
@@ -159,19 +159,19 @@ class circos():
                                2: 'end', 3: 'color'}, inplace=True)
             al['chr'] = al['chr'].astype(str)
             data = self.deal_ancestor(ancestor, gff, lens, loc_chr, angle, al)
-            self.plot_colinearity(data, radius, lw=0.1, alpha=0.8)
+            self.plot_collinearity(data, radius, lw=0.1, alpha=0.8)
 
         if hasattr(self,'alignment'):
             alignment = pd.read_csv(self.alignment, sep='\t', header=None)
             newalignment = self.deal_alignment(
                 alignment, gff, lens, loc_chr, angle)
-            names = ['A11','A12','A21','A22','C11','C12','C21','C22','D11','D12','D21','D22']
+            names = [str(k) for k in self.column_names.split(',')]
             n=0
-            # newalignment = newalignment.head(100)
             align = dict(family='Arial', verticalalignment="center", horizontalalignment="center")
             for k, v in enumerate(newalignment.columns[1:-2]):
                 r = radius + self.ring_width*(k+1)
-                self.plot_circle(loc_chr, r, lw=0.5, alpha=0.5, color='grey')
+                print(r)
+                self.plot_circle(loc_chr, r, lw=0.5, alpha=1, color='grey')
                 self.plot_bar(newalignment[[v, 'rad']], r + self.ring_width *
                             0.15, self.ring_width*0.7, 0.15, chr_color, 1)
                 if n%2==0:
@@ -185,9 +185,10 @@ class circos():
                 n+=1
         labels = self.chr_label + lens.index
         labels = dict(zip(lens.index, labels))
-        self.plot_labels(root,labels, loc_chr, radius - self.ring_width*0.6, fontsize=self.label_size)
+        self.plot_labels(root,labels, loc_chr, radius - self.ring_width*0.3, fontsize=self.label_size)
         root.set_xlim(-1, 1)
         root.set_ylim(-1.05, 0.95)
         root.set_axis_off()
         plt.savefig(self.savefig, dpi=500)
+        plt.show()
         sys.exit(0)

@@ -30,6 +30,12 @@ class trees():
             os.makedirs(self.dir)
         cds = SeqIO.to_dict(SeqIO.parse(self.cds_file, "fasta"))
         for index, row in alignment.iterrows():
+            file = str(row['chr'])+'g'+str(row[self.position])
+            self.cdsfile = os.path.join(self.dir, file+'.fasta')
+            self.alignfile = os.path.join(self.dir, file+'.aln')
+            if os.path.isfile(self.alignfile):
+                data.append(self.alignfile)
+                continue
             ids = []
             for i in range(len(row[:-2])):
                 if row[i] is np.nan:
@@ -37,12 +43,7 @@ class trees():
                 gene_cds = cds[row[i]]
                 gene_cds.id = str(int(i)+1)
                 ids.append(gene_cds)
-            file = str(row['chr'])+'g'+str(row[self.position])
-            self.cdsfile = os.path.join(self.dir, file+'.fasta')
-            self.alignfile = os.path.join(self.dir, file+'.aln')
-            print(self.alignfile)
-            if os.path.isfile(self.alignfile):
-                continue
+
             SeqIO.write(ids, self.cdsfile, "fasta")
             self.align()
             self.buildtrees()
@@ -76,12 +77,18 @@ class trees():
         gff = base.newgff(self.gff)
         lens = base.newlens(self.lens, self.position)
         gff = gff[gff['chr'].isin(lens.index)]
-        print(alignment.head())
-        alignment.dropna(thresh=3, inplace=True)
+        alignment.dropna(thresh=5, inplace=True)
         alignment = pd.merge(
             alignment, gff[['chr', self.position]], left_on=0, right_on=gff.index, how='left')
         data = self.grouping(alignment)
         data = [k+'.treefile' for k in data]
-        with open(self.trees_file, 'w') as fout, fileinput.input(data) as fin:
-            for line in fin:
-                fout.write(line)
+        fout = open(self.trees_file,'w')
+        fout.close()
+        for i in range(0,len(data),100):
+            trees= ' '.join([str(k) for k in data[i:i+100]])
+            args = ['cat',trees , '>>', self.trees_file]
+            command = ' '.join([str(k) for k in args])
+            os.system(command)
+        df = pd.read_csv(self.trees_file,header=None,sep='\t')
+        df[1]=data
+        df[[1,0]].to_csv(self.trees_file,index=None,sep='\t')

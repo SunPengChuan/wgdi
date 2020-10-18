@@ -18,6 +18,7 @@ from wgdi.peaksfit import peaksfit
 from wgdi.retain import retain
 from wgdi.pindex import pindex
 from wgdi.trees import trees
+from wgdi.run_colliearity import mycollinearity
 
 parser = argparse.ArgumentParser(
     prog='wgdi', usage='%(prog)s [options]', epilog="", formatter_class=argparse.RawDescriptionHelpFormatter,)
@@ -28,9 +29,11 @@ substitutions, and differences in different evolution rates, etc.
 
     https://wgdi.readthedocs.io/en/latest/
     -------------------------------------- '''
-parser.add_argument("-v", "--version", action='version', version='0.3.2')
-parser.add_argument("-cl", dest="collinearity",
+parser.add_argument("-v", "--version", action='version', version='0.3.5')
+parser.add_argument("-cl", dest="colinearscan",
                     help="A simple way to run ColinearScan")
+parser.add_argument("-icl", dest="improvedcollinearity",
+                    help="Improved version of ColinearScan ")
 parser.add_argument("-ks", dest="calks",
                     help="Calculate Ka/Ks for homologous gene pairs by Comdel")
 parser.add_argument("-bk", dest="blockks",
@@ -127,9 +130,15 @@ def run_cal_ks():
 
 
 def run_colinearscan():
-    options = base.load_conf(args.collinearity, 'colinearscan')
+    options = base.load_conf(args.colinearscan, 'colinearscan')
     col = colinearscan(options)
     col.run()
+
+def run_collinearity():
+    options = base.load_conf(args.improvedcollinearity, 'collinearity')
+    col = mycollinearity(options)
+    col.run()
+
 
 def run_configure():
     options = base.load_conf(args.conf, 'total')
@@ -143,12 +152,13 @@ def module_to_run(argument):
         'blockks': run_block_ks,
         'blockinfo': run_block_info,
         'calks': run_cal_ks,
-        'collinearity': run_colinearscan,
+        'colinearscan': run_colinearscan,
         'circos': run_circos,
         'kspeaks': run_kspeaks,
         'peaksfit':run_peaksfit,
         'pindex':run_pindex,
         'alignmenttrees':run_trees,
+        'improvedcollinearity':run_collinearity,
         'conf':run_configure,
     }
     return switcher.get(argument)()
@@ -163,13 +173,14 @@ def main():
                'blockks': 'blockks.conf',
                'blockinfo': 'blockinfo.conf',
                'calks': 'ks.conf',
-               'collinearity': 'colinearscan.conf',
+               'colinearscan': 'colinearscan.conf',
                'circos': 'circos.conf',
                'kspeaks': 'kspeaks.conf',
                'pindex':'pindex.conf',
                'alignmenttrees':'alignmenttrees.conf',
                'peaksfit':'peaksfit.conf',
-               'configure':'total.conf'
+               'configure':'total.conf',
+               'improvedcollinearity':'collinearity.conf',
                }
     for arg in vars(args):
         value = getattr(args, arg)

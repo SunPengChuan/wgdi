@@ -3,6 +3,7 @@ import re
 import sys
 from io import StringIO
 
+import numpy as np
 import pandas as pd
 import wgdi.base as base
 from Bio import AlignIO, SeqIO
@@ -31,17 +32,20 @@ class ks():
         p = pd.read_csv(self.pairs_file, sep='\n', header=None, nrows=30)
         p = '\n'.join(p[0])
         if 'path length' in p or 'MAXIMUM GAP' in p:
-            colinearity = base.read_colinearscan(self.pairs_file)
-            pairs = [[v[0], v[2]] for k in colinearity for v in k[1]]
+            collinearity = base.read_colinearscan(self.pairs_file)
+            pairs = [[v[0], v[2]] for k in collinearity for v in k[1]]
+        elif '# Alignment' in p:
+            collinearity = base.read_coliearity(self.pairs_file)
+            pairs = [[v[0], v[2]] for k in collinearity for v in k[1]]
         elif 'MATCH_SIZE' in p or '## Alignment' in p:
-            colinearity = base.read_mcscanx(self.pairs_file)
-            pairs = [k[1:] for k in colinearity]
+            collinearity = base.read_mcscanx(self.pairs_file)
+            pairs = [[v[0], v[2]] for k in collinearity for v in k[1]]
         elif ',' in p:
-            colinearity = pd.read_csv(self.pairs_file, header=None)
-            pairs = colinearity.values.tolist()
+            collinearity = pd.read_csv(self.pairs_file, header=None)
+            pairs = collinearity.values.tolist()
         else:
-            colinearity = pd.read_csv(self.pairs_file, header=None, sep='\t')
-            pairs = colinearity.values.tolist()
+            collinearity = pd.read_csv(self.pairs_file, header=None, sep='\t')
+            pairs = collinearity.values.tolist()
         df = pd.DataFrame(pairs)
         df = df.drop_duplicates()
         df[0] = df[0].astype(str)
@@ -51,7 +55,7 @@ class ks():
 
     def run(self):
         path = os.getcwd()
-        if self.pep_file == 'pep':
+        if not os.path.exists(self.pep_file):
             base.cds_to_pep(os.path.join(path, self.cds_file),
                             os.path.join(path, self.pep_file))
         cds = SeqIO.to_dict(SeqIO.parse(self.cds_file, "fasta"))
@@ -61,7 +65,8 @@ class ks():
             ks = pd.read_csv(self.ks_file, sep='\t')
             ks = ks.drop_duplicates()
             ks['id'] = ks['id1']+','+ks['id2']
-            df_pairs.drop(ks['id'].to_numpy(), inplace=True)
+            df_pairs.drop(np.intersect1d(df_pairs.index,
+                                         ks['id'].to_numpy()), inplace=True)
             ks_file = open(self.ks_file, 'a+')
         else:
             ks_file = open(self.ks_file, 'w')
@@ -79,7 +84,7 @@ class ks():
                 continue
             ks_file.write('\t'.join([str(i) for i in list(k)+list(kaks)])+'\n')
         ks_file.close()
-        for file in (self.pair_pep_file, self.pair_cds_file,  self.mrtrans, self.pair_yn, self.prot_align_file, '2YN.dN', '2YN.dS', '2YN.t', 'rst', 'rst1', 'yn00.ctl', 'rub'):
+        for file in (self.pair_pep_file, self.pair_cds_file, self.mrtrans, self.pair_yn, self.prot_align_file, '2YN.dN', '2YN.dS', '2YN.t', 'rst', 'rst1', 'yn00.ctl', 'rub'):
             try:
                 os.remove(file)
             except OSError:

@@ -21,6 +21,9 @@ class block_ks():
             setattr(self, str(k), v)
             print(str(k), ' = ', v)
         self.area = [float(k) for k in self.area.split(',')]
+        if not hasattr(self, 'blockinfo_reverse'):
+            self.blockinfo_reverse = 'false'
+
 
     def block_position(self, bkinfo, lens1, lens2, step1, step2):
         pos, pairs = [], []
@@ -72,6 +75,9 @@ class block_ks():
         base.dotplot_frame(fig, ax, lens1, lens2, step1, step2,
                            self.genome1_name, self.genome2_name, [1, 1])
         bkinfo = pd.read_csv(self.blockinfo)
+        if self.blockinfo_reverse == True or self.blockinfo_reverse.upper() == 'TRUE':
+            bkinfo[['chr1', 'chr2']] = bkinfo[['chr2', 'chr1']]
+            bkinfo[['block1', 'block2']] = bkinfo[['block2', 'block1']]
         bkinfo['chr1'] = bkinfo['chr1'].astype(str)
         bkinfo['chr2'] = bkinfo['chr2'].astype(str)
         bkinfo = bkinfo[(bkinfo['length'] > int(self.block_length)) & (bkinfo['chr1'].isin(
@@ -85,6 +91,8 @@ class block_ks():
         df.drop_duplicates(inplace=True)
         sc = plt.scatter(df['loc1'], df['loc2'], s=float(self.markersize), c=df['ks'],
                          alpha=0.9, edgecolors=None, linewidths=0, marker='o', vmin=self.area[0], vmax=self.area[1], cmap=cm)
+        # sc = plt.scatter(df['loc1'], df['loc2'], s=float(self.markersize), c='dimgray',
+        #                  alpha=0.7, edgecolors=None, linewidths=0, marker='o', vmin=self.area[0], vmax=self.area[1])
         cbar = fig.colorbar(sc, shrink=0.5, pad=0.03, fraction=0.1)
         align = dict(family='Arial', style='normal',
                      horizontalalignment="center", verticalalignment="center")

@@ -5,16 +5,16 @@ import wgdi.base as base
 
 class block_info():
     def __init__(self, options):
-        self.repnum = 30
+        self.repeat_number = 20
         self.ks_col = 'ks_NG86'
         self.blast_reverse = 'False'
         for k, v in options:
             setattr(self, str(k), v)
             print(str(k), ' = ', v)
 
-    def block_position(self, colinearity, blast, gff1, gff2, ks):
+    def block_position(self, collinearity, blast, gff1, gff2, ks):
         data = []
-        for block in colinearity:
+        for block in collinearity:
             blk_homo, blk_ks = [],  []
             if block[1][0][0] not in gff1.index or block[1][0][2] not in gff2.index:
                 continue
@@ -26,17 +26,17 @@ class block_info():
             start2, end2 = array2[0], array2[-1]
             block1, block2 = [], []
             for k in block[1]:
-                if k[0]+","+k[2] not in blast.index:
-                    continue
                 block1.append(int(float(k[1])))
                 block2.append(int(float(k[3])))
-                blk_homo.append(
-                    blast.loc[k[0]+","+k[2], ['homo'+str(i) for i in range(1, 6)]].values.tolist())
                 if k[0]+","+k[2] in ks.index:
                     pair_ks = ks[str(k[0])+","+str(k[2])]
                     blk_ks.append(pair_ks)
                 else:
                     blk_ks.append(-1)
+                if k[0]+","+k[2] not in blast.index:
+                    continue
+                blk_homo.append(
+                    blast.loc[k[0]+","+k[2], ['homo'+str(i) for i in range(1, 6)]].values.tolist())
             ks_arr = [k for k in blk_ks if k >= 0]
             if len(ks_arr) == 0:
                 ks_median = -1
@@ -48,7 +48,7 @@ class block_info():
             df = pd.DataFrame(blk_homo)
             homo = df.mean().values
             if len(homo) == 0:
-                continue
+                homo = [-1,-1,-1,-1,-1]
             blkks = '_'.join([str(k) for k in blk_ks])
             block1 = '_'.join([str(k) for k in block1])
             block2 = '_'.join([str(k) for k in block2])
@@ -73,11 +73,11 @@ class block_info():
         bkinfo = bkinfo.drop(index)
         return bkinfo
 
-    def blast_homo(self, blast, gff1, gff2, repnum):
-        index = [group.sort_values(by=11, ascending=False)[:repnum].index.tolist()
+    def blast_homo(self, blast, gff1, gff2, repeat_number):
+        index = [group.sort_values(by=11, ascending=False)[:repeat_number].index.tolist()
                  for name, group in blast.groupby([0])]
         blast = blast.loc[np.concatenate(
-            np.array([k[:repnum] for k in index], dtype=object)), [0, 1]]
+            np.array([k[:repeat_number] for k in index], dtype=object)), [0, 1]]
         blast = blast.assign(homo1=np.nan, homo2=np.nan,
                              homo3=np.nan, homo4=np.nan, homo5=np.nan)
         for i in range(1, 6):
@@ -87,7 +87,7 @@ class block_info():
             blueindex = np.concatenate(
                 np.array([k[i:bluenum] for k in index], dtype=object))
             grayindex = np.concatenate(
-                np.array([k[bluenum:repnum] for k in index], dtype=object))
+                np.array([k[bluenum:repeat_number] for k in index], dtype=object))
             blast.loc[redindex, 'homo'+str(i)] = 1
             blast.loc[blueindex, 'homo'+str(i)] = 0
             blast.loc[grayindex, 'homo'+str(i)] = -1
@@ -102,8 +102,30 @@ class block_info():
         gff2 = gff2[gff2['chr'].isin(lens2.index)]
         blast = base.newblast(self.blast, int(self.score), float(
             self.evalue), gff1, gff2, self.blast_reverse)
-        blast = self.blast_homo(blast, gff1, gff2, int(self.repnum))
+        blast = self.blast_homo(blast, gff1, gff2, int(self.repeat_number))
         blast.index = blast[0]+','+blast[1]
-        colinearity = base.read_colinearscan(self.colinearity)
+        collinearity = self.auto_file(gff1, gff2)
         ks = base.read_ks(self.ks, self.ks_col)
-        data = self.block_position(colinearity, blast, gff1, gff2, ks)
+        data = self.block_position(collinearity, blast, gff1, gff2, ks)
+
+    def auto_file(self, gff1, gff2):
+        p = pd.read_csv(self.collinearity, sep='\n', header=None, nrows=30)
+        p = '\n'.join(p[0])
+        if 'path length' in p or 'MAXIMUM GAP' in p:
+            collinearity = base.read_colinearscan(self.collinearity)
+        elif 'MATCH_SIZE' in p or '## Alignment' in p:
+            col = base.read_mcscanx(self.collinearity)
+            collinearity = []
+            for block in col:
+                newblock = []
+                for k in block[1]:
+                    if k[0] not in gff1.index or k[2] not in gff2.index:
+                        continue
+                    k[1], k[3] = gff1.loc[k[0], 'order'], gff2.loc[k[2], 'order']
+                    newblock.append(k)
+                if len(newblock)==0:
+                    continue
+                collinearity.append([block[0], newblock, block[2]])
+        elif '# Alignment' in p:
+            collinearity = base.read_coliearity(self.collinearity)
+        return collinearity

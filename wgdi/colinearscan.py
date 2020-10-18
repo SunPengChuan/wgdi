@@ -10,11 +10,11 @@ import wgdi.base as base
 
 class colinearscan():
     def __init__(self, options):
-        self.repnum = 20
+        self.repeat_number = 20
         self.score = 100
         self.evalue = 1e-5
         self.position = 'order'
-        self.blast_reverse = False
+        self.blast_reverse = 'False'
         for k, v in options:
             setattr(self, str(k), v)
             print(str(k), ' = ', v)
@@ -28,11 +28,11 @@ class colinearscan():
         os.makedirs(self.dir+'/pair/')
         os.makedirs(self.dir+'/block/')
 
-    def deal_blast(self, blast, gff1, gff2, repnum):
-        index1 = [group.sort_values(by=11, ascending=False)[:repnum].index.tolist()
+    def deal_blast(self, blast, gff1, gff2, repeat_number):
+        index1 = [group.sort_values(by=11, ascending=False)[:repeat_number].index.tolist()
                   for name, group in blast.groupby([0])]
         index1 = np.concatenate(np.array(index1))
-        index2 = [group.sort_values(by=11, ascending=False)[:repnum].index.tolist()
+        index2 = [group.sort_values(by=11, ascending=False)[:repeat_number].index.tolist()
                   for name, group in blast.groupby([1])]
         index2 = np.concatenate(np.array(index2))
         index = np.intersect1d(index1, index2)
@@ -49,8 +49,8 @@ class colinearscan():
     def rewriteblock(self, blast, file, fout):
         num = 0
         fout = open(fout, 'w')
-        colinearity = base.read_colinearscan(file)
-        for block in colinearity:
+        collinearity = base.read_colinearscan(file)
+        for block in collinearity:
             num += 1
             if block[1][-1][0]+','+block[1][-1][2] not in blast.index:
                 block[1] = block[1][:-1]
@@ -72,7 +72,7 @@ class colinearscan():
         gff2 = gff2[gff2['chr'].isin(lens2.index)]
         blast = base.newblast(self.blast, int(self.score), float(
             self.evalue), gff1, gff2, self.blast_reverse)
-        df = self.deal_blast(blast, gff1, gff2, int(self.repnum))
+        df = self.deal_blast(blast, gff1, gff2, int(self.repeat_number))
         for (chr1, chr2), group in df.groupby(['chr1', 'chr2']):
             group = group.sort_values(by=['loc1', 'loc2'])
             dir1 = './'+self.dir+'/pair/'+str(chr1)+'.vs.'+str(chr2)+'.pair'

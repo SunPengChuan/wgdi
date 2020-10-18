@@ -13,7 +13,7 @@ class dotplot():
         self.multiple = 1
         self.score = 100
         self.evalue = 1e-5
-        self.repnum = 20
+        self.repeat_number = 20
         self.markersize = 0.5
         self.figsize = 'default'
         self.position = 'order'
@@ -28,16 +28,16 @@ class dotplot():
         if self.ancestor_left == 'none' or self.ancestor_left == '':
             self.ancestor_left = None
 
-    def pair_positon(self, blast, gff1, gff2, rednum, repnum):
+    def pair_positon(self, blast, gff1, gff2, rednum, repeat_number):
         blast['color'] = ''
         blast['loc1'] = blast[0].map(gff1['loc'])
         blast['loc2'] = blast[1].map(gff2['loc'])
         bluenum = 5+rednum
-        index = [group.sort_values(by=[11], ascending=[False])[:repnum].index.tolist()
+        index = [group.sort_values(by=[11], ascending=[False])[:repeat_number].index.tolist()
                  for name, group in blast.groupby([0])]
         reddata = np.array([k[:rednum] for k in index], dtype=object)
         bluedata = np.array([k[rednum:bluenum] for k in index], dtype=object)
-        graydata = np.array([k[bluenum:repnum] for k in index], dtype=object)
+        graydata = np.array([k[bluenum:repeat_number] for k in index], dtype=object)
         if len(reddata):
             redindex = np.concatenate(reddata)
         else:
@@ -102,12 +102,12 @@ class dotplot():
         blast = base.newblast(self.blast, int(self.score),
                               float(self.evalue), gff1, gff2, self.blast_reverse)
         df = self.pair_positon(blast, gff1, gff2,
-                               int(self.multiple), int(self.repnum))
+                               int(self.multiple), int(self.repeat_number))
         ax.scatter(df['loc2'], df['loc1'], s=float(self.markersize), c=df['color'],
                    alpha=0.5, edgecolors=None, linewidths=0, marker='o')
         ax.axis(axis)
         plt.subplots_adjust(left=left, right=right, top=top, bottom=bottom)
-        plt.savefig(self.savefile, dpi=500)
+        plt.savefig(self.savefig, dpi=500)
         plt.show()
         sys.exit(0)
 

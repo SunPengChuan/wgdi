@@ -12,13 +12,17 @@ class retain():
         for k, v in options:
             setattr(self, str(k), v)
             print(str(k), ' = ', v)
+        if hasattr(self, 'ylim'):
+            self.ylim = [float(k) for k in self.ylim.split(',')]
+        else:
+            self.ylim = [0,1]
         self.colors = [str(k) for k in self.colors.split(',')]
         self.figsize = [float(k) for k in self.figsize.split(',')]
-       
 
     def run(self):
         gff = base.newgff(self.gff)
         lens = base.newlens(self.lens, self.position)
+        gff = gff[gff['chr'].isin(lens.index)]
         alignment = pd.read_csv(self.alignment,header=None, index_col=0)
         alignment = alignment.join(gff[['chr',self.position]], how='left')
         self.retain = self.align_chr(alignment)
@@ -41,14 +45,15 @@ class retain():
                             linestyle='-', color=self.colors[j-1], linewidth=1)
             axs[i].spines['right'].set_visible(False)
             axs[i].spines['top'].set_visible(False)
-            axs[i].set_ylim([0, 0.1])
+            axs[i].set_ylim(self.ylim)
             axs[i].tick_params(labelsize=12)
         for i in range(len(lens)):
             x, y = axs[i].get_xlim()[1]*0.95, axs[i].get_ylim()[1]*0.5
             axs[i].text(x, y, self.refgenome+' ' +
                         str(lens.index[i]), fontsize=18, **align)
         plt.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.05)
-        plt.savefig(self.figurefile, dpi=500)
+        plt.savefig(self.savefig, dpi=500)
+        plt.show()
         sys.exit(0)
 
     def align_chr(self, alignment):

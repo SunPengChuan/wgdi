@@ -58,7 +58,7 @@ class align_dotplot():
         gff2 = base.newgff(self.gff2)
         gff1 = base.gene_location(gff1, lens1, step1, self.position)
         gff2 = base.gene_location(gff2, lens2, step2, self.position)
-        bkinfo = pd.read_csv(self.blockinfo, index_col=0)
+        bkinfo = pd.read_csv(self.blockinfo, index_col='id')
         if self.blockinfo_reverse == True or self.blockinfo_reverse.upper() == 'TRUE':
             bkinfo[['chr1', 'chr2']] = bkinfo[['chr2', 'chr1']]
             bkinfo[['block1', 'block2']] = bkinfo[['block2', 'block1']]
@@ -76,6 +76,7 @@ class align_dotplot():
         ax.axis(axis)
         plt.subplots_adjust(left=0.07, right=0.97, top=0.93, bottom=0.03)
         plt.savefig(self.savefig, dpi=500)
+        plt.show()
         sys.exit(0)
 
     def alignment(self, gff1, gff2, bkinfo):
@@ -97,12 +98,10 @@ class align_dotplot():
                 block2 = list(map(int, block2))
                 area = gff1[(gff1['chr'] == row['chr1']) & (
                     gff1['order'] >= min(block1)) & (gff1['order'] <= max(block1))].index
-                index1 = gff1[(gff1['chr'] == row['chr1']) &
-                              (gff1['order'].isin(block1))].index
-                index2 = gff2[(gff2['chr'] == row['chr2']) &
-                              (gff2['order'].isin(block2))].index
-                if int(b1[0]) - int(b1[1]) > 0:
-                    index2 = index2[::-1]
+                index1 = gff1[(gff1['chr'] == row['chr1']) & (gff1['order'].isin(
+                    block1))].sort_values(by=['order'], key=lambda x: block1).index
+                index2 = gff2[(gff2['chr'] == row['chr2']) & (gff2['order'].isin(
+                    block2))].sort_values(by=['order'], key=lambda x: block2).index
                 gff1.loc[index1, name] = index2
                 gff1.loc[gff1.index.isin(area) & gff1[name].isna(), name] = '.'
         return gff1

@@ -35,7 +35,7 @@ class block_correspondence():
         cor['chr2'] = cor['chr2'].astype(str)
         if self.tandem == True or self.tandem == 'true' or self.tandem == 1:
             bkinfo = self.remove_tandem(bkinfo)
-        arr = self.colinearity_region(cor, bkinfo)
+        arr = self.collinearity_region(cor, bkinfo)
         bkinfo.loc[bkinfo.index.isin(arr), :].to_csv(
             self.savefile, index=False)
 
@@ -48,7 +48,7 @@ class block_correspondence():
         bkinfo = bkinfo.drop(index)
         return bkinfo
 
-    def colinearity_region(self, cor, bkinfo):
+    def collinearity_region(self, cor, bkinfo):
         arr = []
         for chr1, group in bkinfo.groupby(['chr1']):
             group = group.sort_values(by=['start1'], ascending=[True])
