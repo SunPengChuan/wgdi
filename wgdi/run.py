@@ -10,11 +10,11 @@ from wgdi.block_correspondence import block_correspondence
 from wgdi.block_info import block_info
 from wgdi.block_ks import block_ks
 from wgdi.circos import circos
-from wgdi.colinearscan import colinearscan
 from wgdi.dotplot import dotplot
 from wgdi.ks import ks
 from wgdi.ks_peaks import kspeaks
 from wgdi.peaksfit import peaksfit
+from wgdi.ksfigure import ksfigure
 from wgdi.retain import retain
 from wgdi.pindex import pindex
 from wgdi.trees import trees
@@ -29,19 +29,17 @@ substitutions, and differences in different evolution rates, etc.
 
     https://wgdi.readthedocs.io/en/latest/
     -------------------------------------- '''
-parser.add_argument("-v", "--version", action='version', version='0.3.6')
-parser.add_argument("-cl", dest="colinearscan",
-                    help="A simple way to run ColinearScan")
+parser.add_argument("-v", "--version", action='version', version='0.4.2')
+parser.add_argument("-d", dest="dotplot",
+                    help="Show homologous gene dotplot")
 parser.add_argument("-icl", dest="improvedcollinearity",
                     help="Improved version of ColinearScan ")
 parser.add_argument("-ks", dest="calks",
-                    help="Calculate Ka/Ks for homologous gene pairs by Comdel")
+                    help="Calculate Ka/Ks for homologous gene pairs by YN00")
 parser.add_argument("-bk", dest="blockks",
                     help="Show Ks of blocks in a dotplot")
 parser.add_argument("-bi", dest="blockinfo",
                     help="Collinearity and Ks speculate whole genome duplication")
-parser.add_argument("-d", dest="dotplot",
-                    help="Show homologous gene dotplot")
 parser.add_argument("-c", dest="correspondence",
                     help="Extract event-related genomic alignment")
 parser.add_argument("-a", dest="alignment",
@@ -56,10 +54,12 @@ parser.add_argument("-ci", dest="circos",
                     help="A simple way to run circos")
 parser.add_argument("-kp", dest="kspeaks",
                     help="A simple way to get ks peaks")
+parser.add_argument("-kf", dest="ksfigure",
+                    help="A simple way to draw ks distribution map")
 parser.add_argument("-pf", dest="peaksfit",
                     help="Gaussian fitting of ks distribution")
 parser.add_argument("-conf", dest="configure",
-                    help="Show all configured parameters")
+                    help="Display and modify the environment variable")
 args = parser.parse_args()
 
 
@@ -112,6 +112,11 @@ def run_kspeaks():
     kp = kspeaks(options)
     kp.run()
 
+def run_ksfigure():
+    options = base.load_conf(args.ksfigure, 'ksfigure')
+    kf = ksfigure(options)
+    kf.run()
+
 def run_pindex():
     options = base.load_conf(args.pindex, 'pindex')
     p = pindex(options)
@@ -129,10 +134,6 @@ def run_cal_ks():
     calks.run()
 
 
-def run_colinearscan():
-    options = base.load_conf(args.colinearscan, 'colinearscan')
-    col = colinearscan(options)
-    col.run()
 
 def run_collinearity():
     options = base.load_conf(args.improvedcollinearity, 'collinearity')
@@ -141,7 +142,7 @@ def run_collinearity():
 
 
 def run_configure():
-    options = base.load_conf(args.conf, 'total')
+    base.rewrite(args.configure,'ini')
 
 def module_to_run(argument):
     switcher = {
@@ -152,14 +153,14 @@ def module_to_run(argument):
         'blockks': run_block_ks,
         'blockinfo': run_block_info,
         'calks': run_cal_ks,
-        'colinearscan': run_colinearscan,
         'circos': run_circos,
         'kspeaks': run_kspeaks,
         'peaksfit':run_peaksfit,
+        'ksfigure': run_ksfigure,
         'pindex':run_pindex,
         'alignmenttrees':run_trees,
         'improvedcollinearity':run_collinearity,
-        'conf':run_configure,
+        'configure':run_configure,
     }
     return switcher.get(argument)()
 
@@ -173,13 +174,13 @@ def main():
                'blockks': 'blockks.conf',
                'blockinfo': 'blockinfo.conf',
                'calks': 'ks.conf',
-               'colinearscan': 'colinearscan.conf',
                'circos': 'circos.conf',
                'kspeaks': 'kspeaks.conf',
+               'ksfigure': 'ksfigure',
                'pindex':'pindex.conf',
                'alignmenttrees':'alignmenttrees.conf',
                'peaksfit':'peaksfit.conf',
-               'configure':'total.conf',
+               'configure':'conf.ini',
                'improvedcollinearity':'collinearity.conf',
                }
     for arg in vars(args):

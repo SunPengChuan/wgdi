@@ -65,6 +65,7 @@ class align_dotplot():
         bkinfo['chr1'] = bkinfo['chr1'].astype(str)
         bkinfo['chr2'] = bkinfo['chr2'].astype(str)
         bkinfo['class'] = bkinfo['class'].astype(str)
+        bkinfo=bkinfo[bkinfo['chr1'].isin(lens1.index) & (bkinfo['chr2'].isin(lens2.index))]
         align = self.alignment(gff1, gff2, bkinfo)
         alignment = align[gff1.columns[-int(
             len(bkinfo['class'].drop_duplicates())):]]

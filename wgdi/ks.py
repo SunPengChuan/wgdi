@@ -34,11 +34,11 @@ class ks():
         if 'path length' in p or 'MAXIMUM GAP' in p:
             collinearity = base.read_colinearscan(self.pairs_file)
             pairs = [[v[0], v[2]] for k in collinearity for v in k[1]]
-        elif '# Alignment' in p:
-            collinearity = base.read_coliearity(self.pairs_file)
-            pairs = [[v[0], v[2]] for k in collinearity for v in k[1]]
         elif 'MATCH_SIZE' in p or '## Alignment' in p:
             collinearity = base.read_mcscanx(self.pairs_file)
+            pairs = [[v[0], v[2]] for k in collinearity for v in k[1]]
+        elif '# Alignment' in p:
+            collinearity = base.read_coliearity(self.pairs_file)
             pairs = [[v[0], v[2]] for k in collinearity for v in k[1]]
         elif ',' in p:
             collinearity = pd.read_csv(self.pairs_file, header=None)
@@ -91,7 +91,6 @@ class ks():
                 pass
 
     def pair_kaks(self, k):
-        k[0], k[1] = k[0].replace('.', '_'), k[1].replace('.', '_')
         self.align()
         pal = self.pal2nal()
         if not pal:

@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
-Name: WGDI
-Version: 0.3.6
+Name: wgdi
+Version: 0.4.2
 Summary: Whole Genome Duplication Identification
 Home-page: https://github.com/SunPengChuan/wgdi
 Author: Pengchuan Sun

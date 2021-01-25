@@ -1,6 +1,5 @@
 import re
 import sys
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -23,7 +22,6 @@ class block_ks():
         self.area = [float(k) for k in self.area.split(',')]
         if not hasattr(self, 'blockinfo_reverse'):
             self.blockinfo_reverse = 'false'
-
 
     def block_position(self, bkinfo, lens1, lens2, step1, step2):
         pos, pairs = [], []
@@ -53,8 +51,8 @@ class block_ks():
         group = bkinfo[bkinfo['chr1'] == bkinfo['chr2']].copy()
         group.loc[:, 'start'] = group.loc[:, 'start1']-group.loc[:, 'start2']
         group.loc[:, 'end'] = group.loc[:, 'end1']-group.loc[:, 'end2']
-        index = group[(group['start'].abs() < int(self.tandem_length)) | (
-            group['end'].abs() < int(self.tandem_length))].index
+        index = group[(group['start'].abs() <= int(self.tandem_length)) | (
+            group['end'].abs() <= int(self.tandem_length))].index
         bkinfo = bkinfo.drop(index)
         return bkinfo
 

@@ -6,12 +6,11 @@ from setuptools import setup, find_packages
 with open("README.md", "r",encoding='utf-8') as fh:
     long_description = fh.read()
 
-with open('requirements.txt') as f:
-    required = f.read().splitlines()
+required = ['pandas>=1.1.0','numpy','biopython','matplotlib','scipy']
 
 setup(
-    name="WGDI",
-    version="0.3.6",
+    name="wgdi",
+    version="0.4.2",
     author="Pengchuan Sun",
     author_email="sunpengchuan@gmail.com",
     description="Whole Genome Duplication Identification",

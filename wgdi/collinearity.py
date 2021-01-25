@@ -10,17 +10,21 @@ class collinearity:
     def __init__(self, options, matrix):
         self.gap_penality = -1
         self.over_length = 100000
-        self.mg1 = 25
-        self.mg2 = 25
+        self.mg1 = 40
+        self.mg2 = 40
         self.over_gap = 5
         self.path_dict = {}
         self.mat = matrix
         for k, v in options:
             setattr(self, str(k), v)
+        if hasattr(self, 'grading'):
+            self.grading = [int(k) for k in self.grading.split(',')]
+        else:
+            self.grading = [50, 40, 25]
         if hasattr(self, 'mg'):
             self.mg1, self.mg2 = [int(k) for k in self.mg.split(',')]
         else:
-            self.mg1, self.mg2 = [25, 25]
+            self.mg1, self.mg2 = [40, 40]
 
     def get_martix(self):
         self.mat.columns = self.mat.columns.astype(int)
@@ -37,13 +41,13 @@ class collinearity:
 
     def run(self):
         self.get_martix()
-        loc, evalues, scores = [], [], []
+        loc, pvalues, scores = [], [], []
         while(self.over_length >= 3):
             if self.maxPath():
                 loc.append(self.path)
-                evalues.append(self.evalue)
+                pvalues.append(self.pvalue)
                 scores.append(self.score)
-        return loc, evalues, scores
+        return loc, pvalues, scores
 
     def maxPath(self):
         mat_new_index, mat_new_columns = self.mat_new.index, self.mat_new.columns
@@ -92,7 +96,7 @@ class collinearity:
         if self.score1.empty or self.score2.empty or self.score1.stack().max() == self.score2.stack().max() == 0:
             self.over_length = 0
             self.path = []
-            self.evalue = np.nan
+            self.pvalue = np.nan
             self.score = 0
             return False
         if self.score1.stack().max() >= self.score2.stack().max():
@@ -137,7 +141,7 @@ class collinearity:
         self.mat_new = self.mat_new.loc[self.mat_new.sum(axis=1) != 0, :]
         if mark:
             return False
-        self.evalue = self.evalue_estimated()
+        self.pvalue = self.pvalue_estimated()
         return True
 
     def right_path(self):
@@ -148,7 +152,7 @@ class collinearity:
             self.path_dict[str(k[0])+':'+str(k[1])] = 1
         return True
 
-    def evalue_estimated(self):
+    def pvalue_estimated(self):
         (x1, y1), (x2, y2) = self.path[0], self.path[-1]
         x1, x2 = sorted([x1, x2])
         y1, y2 = sorted([y1, y2])
@@ -159,6 +163,6 @@ class collinearity:
             mat[mat > 0] = 1
             N += mat.sum()
         m = len(self.path)
-        L1, L2 = x2-x1+1, y2-y1+1
-        a = (N-m+1)/N*(L1-m+1)*(L2-m+1)/L1/L2/m
+        L1, L2 = x2-x1, y2-y1
+        a = (N-m+1)/N*(L1-m+1)*(L2-m+1)/L1/L2*(1-self.score/m/self.grading[0])
         return round(a, 4)

@@ -170,7 +170,6 @@ class circos():
             align = dict(family='Arial', verticalalignment="center", horizontalalignment="center")
             for k, v in enumerate(newalignment.columns[1:-2]):
                 r = radius + self.ring_width*(k+1)
-                print(r)
                 self.plot_circle(loc_chr, r, lw=0.5, alpha=1, color='grey')
                 self.plot_bar(newalignment[[v, 'rad']], r + self.ring_width *
                             0.15, self.ring_width*0.7, 0.15, chr_color, 1)

@@ -78,7 +78,7 @@ class trees():
         gff = base.newgff(self.gff)
         lens = base.newlens(self.lens, self.position)
         gff = gff[gff['chr'].isin(lens.index)]
-        alignment.dropna(thresh=3, inplace=True)
+        alignment.dropna(thresh=4, inplace=True)
         alignment = pd.merge(
             alignment, gff[['chr', self.position]], left_on=0, right_on=gff.index, how='left')
         data = self.grouping(alignment)

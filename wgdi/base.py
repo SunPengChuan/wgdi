@@ -10,7 +10,7 @@ from Bio import Seq, SeqIO, SeqRecord
 
 def config():
     conf = configparser.ConfigParser()
-    conf.read(os.path.join(wgdi.__path__[0], 'conf.ini'))
+    conf.read(os.path.join(wgdi.__path__[0], 'example/conf.ini'))
     return conf.items('ini')
 
 
@@ -18,6 +18,20 @@ def load_conf(file, section):
     conf = configparser.ConfigParser()
     conf.read(file)
     return conf.items(section)
+
+
+def rewrite(file, section):
+    conf = configparser.ConfigParser()
+    conf.read(file)
+    if conf.has_section(section):
+        for k in conf.sections():
+            if k == section:
+                continue
+            conf.remove_section(k)
+        conf.write(open(os.path.join(wgdi.__path__[0], 'example/conf.ini'), 'w'))
+        print('Option ini has been modified')
+    else:
+        print('Option ini no change')
 
 
 def read_colinearscan(file):
@@ -42,49 +56,52 @@ def read_colinearscan(file):
                 b.append(a)
     return data
 
+
 def read_mcscanx(fn):
-    f1=open(fn)   
-    data,b=[],[]
-    flag,num=0,0
+    f1 = open(fn)
+    data, b = [], []
+    flag, num = 0, 0
     for line in f1.readlines():
-        line=line.strip()
-        if re.match(r"## Alignment",line):
-            flag=1
-            if len(b)==0:
-                arr= re.findall(r"[\d+\.]+", line)[0]
+        line = line.strip()
+        if re.match(r"## Alignment", line):
+            flag = 1
+            if len(b) == 0:
+                arr = re.findall(r"[\d+\.]+", line)[0]
                 continue
-            data.append([num,b,0])
-            b=[]
+            data.append([num, b, 0])
+            b = []
             num = re.findall(r"\d+", line)[0]
             continue
-        if flag==0:
+        if flag == 0:
             continue
-        a=re.split(r"\:",line)
-        c=re.split(r"\s+",a[1])
-        b.append([c[1],c[1],c[2],c[2]])
-    data.append([num,b,0])
+        a = re.split(r"\:", line)
+        c = re.split(r"\s+", a[1])
+        b.append([c[1], c[1], c[2], c[2]])
+    data.append([num, b, 0])
     return data
 
+
 def read_coliearity(fn):
-    f1=open(fn)   
-    data,b=[],[]
-    flag,num=0,0
+    f1 = open(fn)
+    data, b = [], []
+    flag, num = 0, 0
     for line in f1.readlines():
-        line=line.strip()
-        if re.match(r"# Alignment",line):
-            flag=1
-            if len(b)==0:
-                arr =re.findall('[\.\d+]+',line)
+        line = line.strip()
+        if re.match(r"# Alignment", line):
+            flag = 1
+            if len(b) == 0:
+                arr = re.findall('[\.\d+]+', line)
                 continue
-            data.append([arr[0],b,arr[2]])
-            b=[]
-            arr =re.findall('[\.\d+]+',line)
+            data.append([arr[0], b, arr[2]])
+            b = []
+            arr = re.findall('[\.\d+]+', line)
             continue
-        if flag==0:
+        if flag == 0:
             continue
         b.append(re.split(r"\s", line))
-    data.append([arr[0],b,arr[2]])
+    data.append([arr[0], b, arr[2]])
     return data
+
 
 def read_ks(file, col):
     ks = pd.read_csv(file, sep='\t')

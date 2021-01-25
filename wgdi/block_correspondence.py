@@ -8,9 +8,8 @@ import wgdi.base as base
 
 class block_correspondence():
     def __init__(self, options):
-        self.block_len = 0
         self.tandem = True
-        self.pvalue = 0.05
+        self.pvalue = 0.01
         self.position = 'order'
         self.block_length = 5
         self.tandem_length = 200
@@ -25,8 +24,8 @@ class block_correspondence():
         bkinfo = pd.read_csv(self.blockinfo)
         bkinfo['chr1'] = bkinfo['chr1'].astype(str)
         bkinfo['chr2'] = bkinfo['chr2'].astype(str)
-        bkinfo = bkinfo[(bkinfo['length'] > int(self.block_length)) & (bkinfo['chr1'].isin(
-            lens1.index)) & (bkinfo['chr2'].isin(lens2.index)) & (bkinfo['pvalue'] < float(self.pvalue))]
+        bkinfo = bkinfo[(bkinfo['length'] >= int(self.block_length)) & (bkinfo['chr1'].isin(
+            lens1.index)) & (bkinfo['chr2'].isin(lens2.index)) & (bkinfo['pvalue'] <= float(self.pvalue))]
         cor = [[k, i, 0, lens1[i], j, 0, lens2[j], float(self.homo[0]), float(self.homo[1])] for k in range(
             1, int(self.multiple)+1) for i in lens1.index for j in lens2.index]
         cor = pd.DataFrame(
@@ -35,7 +34,7 @@ class block_correspondence():
         cor['chr2'] = cor['chr2'].astype(str)
         if self.tandem == True or self.tandem == 'true' or self.tandem == 1:
             bkinfo = self.remove_tandem(bkinfo)
-        arr = self.collinearity_region(cor, bkinfo)
+        arr = self.collinearity_region(cor, bkinfo, lens1)
         bkinfo.loc[bkinfo.index.isin(arr), :].to_csv(
             self.savefile, index=False)
 
@@ -43,20 +42,29 @@ class block_correspondence():
         group = bkinfo[bkinfo['chr1'] == bkinfo['chr2']].copy()
         group.loc[:, 'start'] = group.loc[:, 'start1']-group.loc[:, 'start2']
         group.loc[:, 'end'] = group.loc[:, 'end1']-group.loc[:, 'end2']
-        index = group[(group['start'].abs() < int(self.tandem_length)) | (
-            group['end'].abs() < int(self.tandem_length))].index
+        index = group[(group['start'].abs() <= int(self.tandem_length)) | (
+            group['end'].abs() <= int(self.tandem_length))].index
         bkinfo = bkinfo.drop(index)
         return bkinfo
 
-    def collinearity_region(self, cor, bkinfo):
+    def collinearity_region(self, cor, bkinfo,lens):
         arr = []
-        for chr1, group in bkinfo.groupby(['chr1']):
-            group = group.sort_values(by=['start1'], ascending=[True])
+        for (chr1,chr2), group in bkinfo.groupby(['chr1','chr2']):
+            group = group.sort_values(by=['length'], ascending=[True])
+            # print(chr1)
+            # print(lens[str(chr1)])
+            df = pd.Series(0,index=range(1,int(lens[str(chr1)])+1))
             for index, row in group.iterrows():
-                newcor = cor[(cor['chr1'] == row['chr1']) &
-                             (cor['chr2'] == row['chr2'])]
-                for sub, cor_row in newcor.groupby(['sub']):
-                    if row['homo'+self.multiple] <= float(cor_row['homo1']) or row['homo'+self.multiple] >= float(cor_row['homo2']):
-                        continue
-                    arr.append(index)
+                if row['homo'+self.multiple] < float(self.homo[0]) or row['homo'+self.multiple] > float(self.homo[1]):
+                    continue
+                b1 = row['block1'].split('_')
+                df1 = df.copy() 
+                df1[[int(k) for k in b1]]+=1
+                ratio = (len(df1[df1>0])-len(df[df>0]))/len(b1)
+                # print(len(df1[df1>0]),len(df[df>0]),len(b1),ratio)
+                if ratio <0.5:
+                    print(ratio)
+                    continue
+                df[[int(k) for k in b1]]+=1
+                arr.append(index)
         return arr

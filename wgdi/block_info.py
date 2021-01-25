@@ -31,6 +31,9 @@ class block_info():
                 if k[0]+","+k[2] in ks.index:
                     pair_ks = ks[str(k[0])+","+str(k[2])]
                     blk_ks.append(pair_ks)
+                elif k[2]+","+k[0] in ks.index:
+                    pair_ks = ks[str(k[2])+","+str(k[0])]
+                    blk_ks.append(pair_ks)
                 else:
                     blk_ks.append(-1)
                 if k[0]+","+k[2] not in blast.index:
@@ -48,7 +51,7 @@ class block_info():
             df = pd.DataFrame(blk_homo)
             homo = df.mean().values
             if len(homo) == 0:
-                homo = [-1,-1,-1,-1,-1]
+                homo = [-1, -1, -1, -1, -1]
             blkks = '_'.join([str(k) for k in blk_ks])
             block1 = '_'.join([str(k) for k in block1])
             block2 = '_'.join([str(k) for k in block2])
@@ -61,15 +64,14 @@ class block_info():
             ((data['end1']-data['start1']).abs()+1)
         data['density2'] = data['length'] / \
             ((data['end2']-data['start2']).abs()+1)
-        data.to_csv(self.savefile, index=None)
         return data
 
     def remove_tandem(self, bkinfo):
         group = bkinfo[bkinfo['chr1'] == bkinfo['chr2']].copy()
         group.loc[:, 'start'] = group.loc[:, 'start1']-group.loc[:, 'start2']
         group.loc[:, 'end'] = group.loc[:, 'end1']-group.loc[:, 'end2']
-        index = group[(group['start'].abs() < int(self.tandem_length)) | (
-            group['end'].abs() < int(self.tandem_length))].index
+        index = group[(group['start'].abs() <= int(self.tandem_length)) | (
+            group['end'].abs() <= int(self.tandem_length))].index
         bkinfo = bkinfo.drop(index)
         return bkinfo
 
@@ -107,6 +109,9 @@ class block_info():
         collinearity = self.auto_file(gff1, gff2)
         ks = base.read_ks(self.ks, self.ks_col)
         data = self.block_position(collinearity, blast, gff1, gff2, ks)
+        data['class1'] = 0
+        data['class2'] = 0
+        data.to_csv(self.savefile, index=None)
 
     def auto_file(self, gff1, gff2):
         p = pd.read_csv(self.collinearity, sep='\n', header=None, nrows=30)
@@ -123,7 +128,7 @@ class block_info():
                         continue
                     k[1], k[3] = gff1.loc[k[0], 'order'], gff2.loc[k[2], 'order']
                     newblock.append(k)
-                if len(newblock)==0:
+                if len(newblock) == 0:
                     continue
                 collinearity.append([block[0], newblock, block[2]])
         elif '# Alignment' in p:

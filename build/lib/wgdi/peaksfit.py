@@ -4,9 +4,10 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import wgdi.base as base
-from scipy.stats import gaussian_kde, linregress
 from scipy.optimize import curve_fit
+from scipy.stats import gaussian_kde, linregress
+
+import wgdi.base as base
 
 
 class peaksfit():
@@ -15,21 +16,22 @@ class peaksfit():
         self.fontsize = 9
         self.area = 0, 3
         self.mode = 'median'
+        self.histogram_only = 'false'
         for k, v in options:
             setattr(self, str(k), v)
             print(str(k), ' = ', v)
         self.figsize = [float(k) for k in self.figsize.split(',')]
         self.area = [float(k) for k in self.area.split(',')]
         self.bins_number = int(self.bins_number)
-        self.peaks = int(self.peaks)
+        self.peaks = 1
 
     def ks_values(self, df):
-        ks = df['ks'].str.split(',')
+        ks = df['ks'].str.split('_')
         ks_total = []
         ks_average = []
         for v in ks.values:
             ks_total.extend([float(k) for k in v])
-            ks_average.append(sum([float(k) for k in v])/len(v))
+        ks_average = df['ks_average'].values
         ks_median = df['ks_median'].values
         return [ks_median, ks_average, ks_total]
 
@@ -42,19 +44,22 @@ class peaksfit():
             y = y + amp * np.exp(-((x - ctr)/wid)**2)
         return y
 
-    def kde_fit(self, data, x, kde_bandwidth):
+    def kde_fit(self, data, x):
         kde = gaussian_kde(data)
         kde.set_bandwidth(bw_method=kde.factor/3.)
         p = kde(x)
-        guess = [1, 1, 1]*self.peaks
-        popt, pcov = curve_fit(self.gaussian_fuc, x, p, guess)
+        guess = [1,1, 1]*self.peaks
+        popt, pcov = curve_fit(self.gaussian_fuc, x, p, guess, maxfev = 80000)
+        popt = [abs(k) for k in popt]
         data = []
         y = self.gaussian_fuc(x, *popt)
         for i in range(0, len(popt), 3):
             array = [popt[i], popt[i+1], popt[i+2]]
             data.append(self.gaussian_fuc(x, *array))
         slope, intercept, r_value, p_value, std_err = linregress(p, y)
-        print(r_value**2)
+        print("\nR-square: "+str(r_value**2))
+        print("The gaussian fitting curve parameters are :")
+        print('  |  '.join([str(k) for k in popt]))
         return y, data
 
     def run(self):
@@ -63,14 +68,15 @@ class peaksfit():
         bkinfo = pd.read_csv(self.blockinfo)
         ks_median, ks_average, ks_total = self.ks_values(bkinfo)
         data = eval('ks_'+self.mode)
-        x = np.linspace(self.area[0], self.area[1], 500)
-        y, fit = self.kde_fit(data, x, float(self.kde_bandwidth))
+        data = [k for k in data if self.area[0] <= k <= self.area[1]]
+        x = np.linspace(self.area[0], self.area[1], self.bins_number)
         n, bins, patches = ax.hist(data, int(
             self.bins_number), density=1, facecolor='blue', alpha=0.3, label='histogram')
-        labels = []
-        for i in range(len(fit)):
-            ax.plot(x, fit[i], label='fit '+str(i+1))
-        ax.plot(x, y, color='blue',linestyle = '--', label='Gaussian')
+        if self.histogram_only == True or self.histogram_only.upper() == 'TRUE':
+            pass
+        else:
+            y, fit = self.kde_fit(data, x)
+            ax.plot(x, y, color='black', linestyle='-', label='Gaussian fit')
         ax.grid()
         align = dict(family='Arial', verticalalignment="center",
                      horizontalalignment="center")
