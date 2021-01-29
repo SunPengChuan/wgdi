@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
-with open("README.md", "r",encoding='utf-8') as fh:
+with open("README.md", "r", encoding='utf-8') as fh:
     long_description = fh.read()
 
-required = ['pandas>=1.1.0','numpy','biopython','matplotlib','scipy']
+required = ['pandas>=1.1.0', 'numpy', 'biopython', 'matplotlib', 'scipy']
 
 setup(
     name="wgdi",
-    version="0.4.2",
+    version="0.4.5",
     author="Pengchuan Sun",
     author_email="sunpengchuan@gmail.com",
     description="Whole Genome Duplication Identification",
@@ -19,7 +19,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/SunPengChuan/wgdi",
     packages=find_packages(),
-    package_data={'':['*.conf'],'wgdi': ['*.ini']},
+    package_data={'': ['*.conf','*.ini', '*.csv']},
     classifiers=[
         "Intended Audience :: Science/Research",
         "Programming Language :: Python :: 3",
@@ -27,10 +27,10 @@ setup(
         "Operating System :: OS Independent",
     ],
     entry_points={
-        'console_scripts':[
+        'console_scripts': [
             'wgdi = wgdi.run:main',
         ]
-      },
+    },
     zip_safe=True,
     install_requires=required
 )

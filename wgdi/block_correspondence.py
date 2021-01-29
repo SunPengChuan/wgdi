@@ -51,8 +51,6 @@ class block_correspondence():
         arr = []
         for (chr1,chr2), group in bkinfo.groupby(['chr1','chr2']):
             group = group.sort_values(by=['length'], ascending=[True])
-            # print(chr1)
-            # print(lens[str(chr1)])
             df = pd.Series(0,index=range(1,int(lens[str(chr1)])+1))
             for index, row in group.iterrows():
                 if row['homo'+self.multiple] < float(self.homo[0]) or row['homo'+self.multiple] > float(self.homo[1]):
@@ -61,9 +59,7 @@ class block_correspondence():
                 df1 = df.copy() 
                 df1[[int(k) for k in b1]]+=1
                 ratio = (len(df1[df1>0])-len(df[df>0]))/len(b1)
-                # print(len(df1[df1>0]),len(df[df>0]),len(b1),ratio)
                 if ratio <0.5:
-                    print(ratio)
                     continue
                 df[[int(k) for k in b1]]+=1
                 arr.append(index)

@@ -12,6 +12,7 @@ class align_dotplot():
     def __init__(self, options):
         self.position = 'order'
         self.figsize = 'default'
+        self.classid = 'class1'
         for k, v in options:
             setattr(self, str(k), v)
             print(str(k), ' = ', v)
@@ -64,11 +65,11 @@ class align_dotplot():
             bkinfo[['block1', 'block2']] = bkinfo[['block2', 'block1']]
         bkinfo['chr1'] = bkinfo['chr1'].astype(str)
         bkinfo['chr2'] = bkinfo['chr2'].astype(str)
-        bkinfo['class'] = bkinfo['class'].astype(str)
+        bkinfo[self.classid] = bkinfo[self.classid].astype(str)
         bkinfo=bkinfo[bkinfo['chr1'].isin(lens1.index) & (bkinfo['chr2'].isin(lens2.index))]
         align = self.alignment(gff1, gff2, bkinfo)
         alignment = align[gff1.columns[-int(
-            len(bkinfo['class'].drop_duplicates())):]]
+            len(bkinfo[self.classid].drop_duplicates())):]]
         alignment.to_csv(self.savefile, header=None)
         df = self.pair_positon(
             alignment, gff1['loc'], gff2['loc'], self.colors)
@@ -81,7 +82,7 @@ class align_dotplot():
         sys.exit(0)
 
     def alignment(self, gff1, gff2, bkinfo):
-        for cl, group in bkinfo.groupby(['class']):
+        for cl, group in bkinfo.groupby([self.classid]):
             name = 'l'+cl
             gff1[name] = np.nan
             group = group.sort_values(by=['length'], ascending=[True])

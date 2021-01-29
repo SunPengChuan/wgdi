@@ -12,9 +12,11 @@ class collinearity:
         self.over_length = 100000
         self.mg1 = 40
         self.mg2 = 40
+        self.pvalue = 1
         self.over_gap = 5
         self.path_dict = {}
         self.mat = matrix
+        self.p_value = 0
         for k, v in options:
             setattr(self, str(k), v)
         if hasattr(self, 'grading'):
@@ -25,6 +27,7 @@ class collinearity:
             self.mg1, self.mg2 = [int(k) for k in self.mg.split(',')]
         else:
             self.mg1, self.mg2 = [40, 40]
+        self.pvalue = float(self.pvalue)
 
     def get_martix(self):
         self.mat.columns = self.mat.columns.astype(int)
@@ -44,8 +47,10 @@ class collinearity:
         loc, pvalues, scores = [], [], []
         while(self.over_length >= 3):
             if self.maxPath():
+                if self.p_value > self.pvalue:
+                    continue
                 loc.append(self.path)
-                pvalues.append(self.pvalue)
+                pvalues.append(self.p_value)
                 scores.append(self.score)
         return loc, pvalues, scores
 
@@ -55,11 +60,12 @@ class collinearity:
             for j, col in enumerate(mat_new_columns):
                 if self.mat_new.loc[row, col] == 0:
                     continue
+                gap = self.mg2
                 for row_i in mat_new_index[i+1:i+1+self.mg1]:
                     if row_i - row > self.mg1:
                         break
                     for col_j in mat_new_columns[j+1:j+1+self.mg2]:
-                        if col_j - col > self.mg2:
+                        if col_j - col > gap:
                             break
                         if self.mat_new.loc[row_i, col_j] == 0:
                             continue
@@ -71,16 +77,20 @@ class collinearity:
                                            col_j] = self.path1.loc[row, col]
                             self.path1.loc[row_i,
                                            col_j] += str(row)+':'+str(col)+'_'
+                            gap = min(col_j-col+1,gap)
+
+                            
         mat_new_index = mat_new_index[::-1]
         for i, row in enumerate(mat_new_index):
             for j, col in enumerate(mat_new_columns):
                 if self.mat_new.loc[row, col] == 0:
                     continue
+                gap = self.mg2
                 for row_i in mat_new_index[i+1:i+1+self.mg1]:
                     if row - row_i > self.mg1 or row_i >= row:
                         break
                     for col_j in mat_new_columns[j+1:j+1+self.mg2]:
-                        if col_j - col > self.mg2:
+                        if col_j - col > gap:
                             break
                         if self.mat_new.loc[row_i, col_j] == 0:
                             continue
@@ -92,11 +102,12 @@ class collinearity:
                                            col_j] = self.path2.loc[row, col]
                             self.path2.loc[row_i,
                                            col_j] += str(row)+':'+str(col)+'_'
+                            gap = min(col_j-col+1,gap)
 
         if self.score1.empty or self.score2.empty or self.score1.stack().max() == self.score2.stack().max() == 0:
             self.over_length = 0
             self.path = []
-            self.pvalue = np.nan
+            self.p_value = np.nan
             self.score = 0
             return False
         if self.score1.stack().max() >= self.score2.stack().max():
@@ -141,7 +152,7 @@ class collinearity:
         self.mat_new = self.mat_new.loc[self.mat_new.sum(axis=1) != 0, :]
         if mark:
             return False
-        self.pvalue = self.pvalue_estimated()
+        self.p_value = self.pvalue_estimated()
         return True
 
     def right_path(self):

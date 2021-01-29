@@ -5,10 +5,11 @@ from io import StringIO
 
 import numpy as np
 import pandas as pd
-import wgdi.base as base
 from Bio import AlignIO, SeqIO
 from Bio.Align.Applications import MafftCommandline, MuscleCommandline
 from Bio.Phylo.PAML import yn00
+
+import wgdi.base as base
 
 
 class ks():
@@ -64,6 +65,11 @@ class ks():
         if os.path.exists(self.ks_file):
             ks = pd.read_csv(self.ks_file, sep='\t')
             ks = ks.drop_duplicates()
+            kscopy = ks.copy()
+            names = ks.columns.tolist()
+            names[0], names[1] = names[1], names[0]
+            kscopy.columns = names
+            ks = pd.concat([ks, kscopy])
             ks['id'] = ks['id1']+','+ks['id2']
             df_pairs.drop(np.intersect1d(df_pairs.index,
                                          ks['id'].to_numpy()), inplace=True)
@@ -75,11 +81,21 @@ class ks():
         df_pairs = df_pairs[(df_pairs[0].isin(cds.keys())) & (df_pairs[1].isin(
             cds.keys())) & (df_pairs[0].isin(pep.keys())) & (df_pairs[1].isin(pep.keys()))]
         pairs = df_pairs[[0, 1]].to_numpy()
+        if len(pairs) > 0 and pairs[0][0][:3] == pairs[0][1][:3]:
+            allpairs = []
+            pair_hash = {}
+            for k in pairs:
+                if k[0]+','+k[1] in pair_hash or k[1]+','+k[0] in pair_hash:
+                    continue
+                else:
+                    pair_hash[k[0]+','+k[1]] = 1
+                    pair_hash[k[1]+','+k[0]] = 1
+                    allpairs.append(k)
+            pairs = allpairs
         for k in pairs:
             SeqIO.write([cds[k[0]], cds[k[1]]], self.pair_cds_file, "fasta")
             SeqIO.write([pep[k[0]], pep[k[1]]], self.pair_pep_file, "fasta")
             kaks = self.pair_kaks(k)
-            print(k, kaks)
             if kaks == None:
                 continue
             ks_file.write('\t'.join([str(i) for i in list(k)+list(kaks)])+'\n')

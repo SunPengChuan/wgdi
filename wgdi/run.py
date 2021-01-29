@@ -1,8 +1,10 @@
 import argparse
 import os
+import shutil
 import sys
 
 import pandas as pd
+
 import wgdi
 import wgdi.base as base
 from wgdi.align_dotplot import align_dotplot
@@ -13,12 +15,12 @@ from wgdi.circos import circos
 from wgdi.dotplot import dotplot
 from wgdi.ks import ks
 from wgdi.ks_peaks import kspeaks
-from wgdi.peaksfit import peaksfit
 from wgdi.ksfigure import ksfigure
-from wgdi.retain import retain
+from wgdi.peaksfit import peaksfit
 from wgdi.pindex import pindex
-from wgdi.trees import trees
+from wgdi.retain import retain
 from wgdi.run_colliearity import mycollinearity
+from wgdi.trees import trees
 
 parser = argparse.ArgumentParser(
     prog='wgdi', usage='%(prog)s [options]', epilog="", formatter_class=argparse.RawDescriptionHelpFormatter,)
@@ -29,7 +31,7 @@ substitutions, and differences in different evolution rates, etc.
 
     https://wgdi.readthedocs.io/en/latest/
     -------------------------------------- '''
-parser.add_argument("-v", "--version", action='version', version='0.4.2')
+parser.add_argument("-v", "--version", action='version', version='0.4.5')
 parser.add_argument("-d", dest="dotplot",
                     help="Show homologous gene dotplot")
 parser.add_argument("-icl", dest="improvedcollinearity",
@@ -68,6 +70,7 @@ def run_dotplot():
     dot = dotplot(options)
     dot.run()
 
+
 def run_block_info():
     options = base.load_conf(args.blockinfo, 'blockinfo')
     blockinfo = block_info(options)
@@ -79,10 +82,12 @@ def run_circos():
     cir = circos(options)
     cir.run()
 
+
 def run_peaksfit():
     options = base.load_conf(args.peaksfit, 'peaksfit')
     pf = peaksfit(options)
     pf.run()
+
 
 def run_align_dotplot():
     options = base.load_conf(args.alignment, 'alignment')
@@ -107,20 +112,24 @@ def run_block_ks():
     blockks = block_ks(options)
     blockks.run()
 
+
 def run_kspeaks():
     options = base.load_conf(args.kspeaks, 'kspeaks')
     kp = kspeaks(options)
     kp.run()
+
 
 def run_ksfigure():
     options = base.load_conf(args.ksfigure, 'ksfigure')
     kf = ksfigure(options)
     kf.run()
 
+
 def run_pindex():
     options = base.load_conf(args.pindex, 'pindex')
     p = pindex(options)
     p.run()
+
 
 def run_trees():
     options = base.load_conf(args.alignmenttrees, 'alignmenttrees')
@@ -134,7 +143,6 @@ def run_cal_ks():
     calks.run()
 
 
-
 def run_collinearity():
     options = base.load_conf(args.improvedcollinearity, 'collinearity')
     col = mycollinearity(options)
@@ -142,7 +150,8 @@ def run_collinearity():
 
 
 def run_configure():
-    base.rewrite(args.configure,'ini')
+    base.rewrite(args.configure, 'ini')
+
 
 def module_to_run(argument):
     switcher = {
@@ -155,12 +164,12 @@ def module_to_run(argument):
         'calks': run_cal_ks,
         'circos': run_circos,
         'kspeaks': run_kspeaks,
-        'peaksfit':run_peaksfit,
+        'peaksfit': run_peaksfit,
         'ksfigure': run_ksfigure,
-        'pindex':run_pindex,
-        'alignmenttrees':run_trees,
-        'improvedcollinearity':run_collinearity,
-        'configure':run_configure,
+        'pindex': run_pindex,
+        'alignmenttrees': run_trees,
+        'improvedcollinearity': run_collinearity,
+        'configure': run_configure,
     }
     return switcher.get(argument)()
 
@@ -176,12 +185,12 @@ def main():
                'calks': 'ks.conf',
                'circos': 'circos.conf',
                'kspeaks': 'kspeaks.conf',
-               'ksfigure': 'ksfigure',
-               'pindex':'pindex.conf',
-               'alignmenttrees':'alignmenttrees.conf',
-               'peaksfit':'peaksfit.conf',
-               'configure':'conf.ini',
-               'improvedcollinearity':'collinearity.conf',
+               'ksfigure': 'ksfigure.conf',
+               'pindex': 'pindex.conf',
+               'alignmenttrees': 'alignmenttrees.conf',
+               'peaksfit': 'peaksfit.conf',
+               'configure': 'conf.ini',
+               'improvedcollinearity': 'collinearity.conf',
                }
     for arg in vars(args):
         value = getattr(args, arg)
@@ -189,6 +198,9 @@ def main():
             if value in ['?', 'help', 'example']:
                 f = open(os.path.join(path, 'example', options[arg]))
                 print(f.read())
+                if arg == 'ksfigure':
+                    if not os.path.exists('all_ks.csv'):
+                        shutil.copy2(os.path.join(wgdi.__path__[0], 'example/all_ks.csv'), os.getcwd())
             elif not os.path.exists(value):
                 print(value+' not exits')
                 sys.exit(0)

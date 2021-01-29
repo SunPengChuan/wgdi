@@ -41,7 +41,7 @@ class ksfigure():
     def run(self):
         plt.rcParams['ytick.major.pad'] = 0
         fig, ax = plt.subplots(figsize=self.figsize)
-        ksfit = pd.read_csv(self.ksfit, sep='\t', index_col=0)
+        ksfit = pd.read_csv(self.ksfit, index_col=0)
         t = np.arange(self.area[0], self.area[1], 0.005)
         col = [k for k in ksfit.columns if re.match('Unnamed:', k)]
         for index, row in ksfit.iterrows():

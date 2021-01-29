@@ -130,7 +130,7 @@ class mycollinearity():
                     mark = 'plus'
                 else:
                     mark = 'minus'
-                text += '# Alignment '+str(n)+': score='+str(socres[i])+' p_value=' + str(
+                text += '# Alignment '+str(n)+': score='+str(socres[i])+' pvalue=' + str(
                     evalues[i])+' N=' + str(len(blocks[i])) + ' '+str(chr1)+'&'+str(chr2) + ' ' + mark+'\n'
                 n += 1
                 for k in blocks[i]:
