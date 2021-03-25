@@ -174,6 +174,6 @@ class collinearity:
             mat[mat > 0] = 1
             N += mat.sum()
         m = len(self.path)
-        L1, L2 = x2-x1, y2-y1
-        a = (N-m+1)/N*(L1-m+1)*(L2-m+1)/L1/L2*(1-self.score/m/self.grading[0])
+        L1, L2 = x2-x1+1, y2-y1+1
+        a = (1-self.score/m/self.grading[0])*(N-m+1)/N*(L1-m+1)*(L2-m+1)/L1/L2
         return round(a, 4)

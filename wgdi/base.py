@@ -4,8 +4,9 @@ import re
 
 import numpy as np
 import pandas as pd
-import wgdi
 from Bio import Seq, SeqIO, SeqRecord
+
+import wgdi
 
 
 def config():
@@ -28,7 +29,8 @@ def rewrite(file, section):
             if k == section:
                 continue
             conf.remove_section(k)
-        conf.write(open(os.path.join(wgdi.__path__[0], 'example/conf.ini'), 'w'))
+        conf.write(
+            open(os.path.join(wgdi.__path__[0], 'example/conf.ini'), 'w'))
         print('Option ini has been modified')
     else:
         print('Option ini no change')
@@ -162,6 +164,16 @@ def newlens(file, position):
     if position == 'end':
         lens = lens[1]
     return lens
+
+
+def read_calassfication(file):
+    classification = pd.read_csv(file, sep="\t", header=None)
+    classification[0] = classification[0].astype(str)
+    classification[1] = classification[1].astype(int)
+    classification[2] = classification[2].astype(int)
+    classification[3] = classification[3].astype(str)
+    classification[4] = classification[4].astype(int)
+    return classification
 
 
 def gene_location(gff, lens, step, position):

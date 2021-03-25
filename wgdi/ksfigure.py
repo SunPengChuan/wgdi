@@ -10,7 +10,7 @@ from scipy import stats
 class ksfigure():
     def __init__(self, options):
         self.figsize = 10, 6.18
-        self.legendfontsize = 9
+        self.legendfontsize =30
         self.labelfontsize = 9
         self.area = 0, 3
         self.mode = 'median'
@@ -22,7 +22,7 @@ class ksfigure():
         if self.ylabel == 'none' or self.ylabel == '':
             self.ylabel = 'No. of syntenic blocks kernel density'
         if self.title == 'none' or self.title == '':
-            self.title = 'ks'
+            self.title = ''
         self.figsize = [float(k) for k in self.figsize.split(',')]
         self.area = [float(k) for k in self.area.split(',')]
 
@@ -57,11 +57,10 @@ class ksfigure():
         ax.set_title(self.title, weight='bold',
                      fontsize=self.labelfontsize, **align)
         plt.tick_params(labelsize=10)
-        plt.legend(loc='upper right', fontsize=self.legendfontsize,
-                   prop={'family': 'Arial', 'style': 'italic'}, )
+        plt.legend(loc='upper right',prop={'family': 'Arial', 'style': 'italic', 'size':self.legendfontsize})
         plt.gca().spines['top'].set_visible(False)
         plt.gca().spines['right'].set_visible(False)
-        plt.savefig(self.savefig, dpi=300)
+        plt.savefig(self.savefig, dpi=500)
         plt.show()
         sys.exit(0)
 

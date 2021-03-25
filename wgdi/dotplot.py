@@ -69,6 +69,8 @@ class dotplot():
                 self.ancestor_left, sep="\t", header=None)
             lens_ancestor_left[0] = lens_ancestor_left[0].astype(str)
             lens_ancestor_left[3] = lens_ancestor_left[3].astype(str)
+            lens_ancestor_left[4] = lens_ancestor_left[4].astype(int)
+            lens_ancestor_left[4] = lens_ancestor_left[4] / lens_ancestor_left[4].max()
             lens_ancestor_left = lens_ancestor_left[lens_ancestor_left[0].isin(
                 lens1.index)]
         if self.ancestor_top != None:
@@ -77,6 +79,8 @@ class dotplot():
                 self.ancestor_top, sep="\t", header=None)
             lens_ancestor_top[0] = lens_ancestor_top[0].astype(str)
             lens_ancestor_top[3] = lens_ancestor_top[3].astype(str)
+            lens_ancestor_top[4] = lens_ancestor_top[4].astype(int)
+            lens_ancestor_top[4] = lens_ancestor_top[4] / lens_ancestor_top[4].max()
             lens_ancestor_top = lens_ancestor_top[lens_ancestor_top[0].isin(
                 lens2.index)]
         if re.search('\d', self.figsize):
@@ -127,10 +131,10 @@ class dotplot():
                 width = abs(loc1-loc2)
                 loc = [min(loc1, loc2), 0]
                 height = -0.02
-                self.Rectangle(ax, loc, height, width, row[3], 1)
+                self.Rectangle(ax, loc, height, width, row[3], row[4])
             if mark == 'left':
                 height = abs(loc1-loc2)
                 loc = [-0.02, min(loc1, loc2), ]
                 width = 0.02
-                self.Rectangle(ax, loc, height, width, row[3], 1)
+                self.Rectangle(ax, loc, height, width, row[3], row[4])
         return None

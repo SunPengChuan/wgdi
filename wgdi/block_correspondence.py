@@ -32,7 +32,7 @@ class block_correspondence():
             cor, columns=['sub', 'chr1', 'start1', 'end1', 'chr2', 'start2', 'end2', 'homo1', 'homo2'])
         cor['chr1'] = cor['chr1'].astype(str)
         cor['chr2'] = cor['chr2'].astype(str)
-        if self.tandem == True or self.tandem == 'true' or self.tandem == 1:
+        if self.tandem == False or self.tandem.upper() == 'FALSE':
             bkinfo = self.remove_tandem(bkinfo)
         arr = self.collinearity_region(cor, bkinfo, lens1)
         bkinfo.loc[bkinfo.index.isin(arr), :].to_csv(

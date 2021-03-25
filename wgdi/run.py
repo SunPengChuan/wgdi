@@ -9,6 +9,7 @@ import wgdi
 import wgdi.base as base
 from wgdi.align_dotplot import align_dotplot
 from wgdi.block_correspondence import block_correspondence
+from wgdi.polyploidy_classification import polyploidy_classification
 from wgdi.block_info import block_info
 from wgdi.block_ks import block_ks
 from wgdi.circos import circos
@@ -31,7 +32,7 @@ substitutions, and differences in different evolution rates, etc.
 
     https://wgdi.readthedocs.io/en/latest/
     -------------------------------------- '''
-parser.add_argument("-v", "--version", action='version', version='0.4.5')
+parser.add_argument("-v", "--version", action='version', version='0.4.6')
 parser.add_argument("-d", dest="dotplot",
                     help="Show homologous gene dotplot")
 parser.add_argument("-icl", dest="improvedcollinearity",
@@ -44,6 +45,14 @@ parser.add_argument("-bi", dest="blockinfo",
                     help="Collinearity and Ks speculate whole genome duplication")
 parser.add_argument("-c", dest="correspondence",
                     help="Extract event-related genomic alignment")
+parser.add_argument("-kp", dest="kspeaks",
+                    help="A simple way to get ks peaks")
+parser.add_argument("-kf", dest="ksfigure",
+                    help="A simple way to draw ks distribution map")
+parser.add_argument("-pf", dest="peaksfit",
+                    help="Gaussian fitting of ks distribution")
+parser.add_argument("-pc", dest="polyploidy_classification",
+                    help="Polyploid distinguish among subgenomes")
 parser.add_argument("-a", dest="alignment",
                     help="Show event-related genomic alignment in a dotplot")
 parser.add_argument("-at", dest="alignmenttrees",
@@ -54,12 +63,6 @@ parser.add_argument("-r", dest="retain",
                     help="Show subgenomes in gene retention or genome fractionation")
 parser.add_argument("-ci", dest="circos",
                     help="A simple way to run circos")
-parser.add_argument("-kp", dest="kspeaks",
-                    help="A simple way to get ks peaks")
-parser.add_argument("-kf", dest="ksfigure",
-                    help="A simple way to draw ks distribution map")
-parser.add_argument("-pf", dest="peaksfit",
-                    help="Gaussian fitting of ks distribution")
 parser.add_argument("-conf", dest="configure",
                     help="Display and modify the environment variable")
 args = parser.parse_args()
@@ -124,6 +127,11 @@ def run_ksfigure():
     kf = ksfigure(options)
     kf.run()
 
+def run_polyploidy_classification():
+    options = base.load_conf(args.polyploidy_classification, 'polyploidy classification')
+    pc = polyploidy_classification(options)
+    pc.run()
+
 
 def run_pindex():
     options = base.load_conf(args.pindex, 'pindex')
@@ -170,6 +178,7 @@ def module_to_run(argument):
         'alignmenttrees': run_trees,
         'improvedcollinearity': run_collinearity,
         'configure': run_configure,
+        'polyploidy_classification':run_polyploidy_classification,
     }
     return switcher.get(argument)()
 
@@ -191,6 +200,7 @@ def main():
                'peaksfit': 'peaksfit.conf',
                'configure': 'conf.ini',
                'improvedcollinearity': 'collinearity.conf',
+               'polyploidy_classification':'polyploidy_classification.conf',
                }
     for arg in vars(args):
         value = getattr(args, arg)

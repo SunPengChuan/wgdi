@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import wgdi.base as base
 
+
 class retain():
     def __init__(self, options):
         self.position = 'order'
@@ -15,7 +16,7 @@ class retain():
         if hasattr(self, 'ylim'):
             self.ylim = [float(k) for k in self.ylim.split(',')]
         else:
-            self.ylim = [0,1]
+            self.ylim = [0, 1]
         self.colors = [str(k) for k in self.colors.split(',')]
         self.figsize = [float(k) for k in self.figsize.split(',')]
 
@@ -23,15 +24,16 @@ class retain():
         gff = base.newgff(self.gff)
         lens = base.newlens(self.lens, self.position)
         gff = gff[gff['chr'].isin(lens.index)]
-        alignment = pd.read_csv(self.alignment,header=None, index_col=0)
-        alignment = alignment.join(gff[['chr',self.position]], how='left')
+        alignment = pd.read_csv(self.alignment, header=None, index_col=0)
+        alignment = alignment.join(gff[['chr', self.position]], how='left')
         self.retain = self.align_chr(alignment)
         self.retain[self.retain.columns[:-2]
                     ].to_csv(self.savefile, sep='\t', header=None)
         fig, axs = plt.subplots(
             len(lens), 1, sharex=True, sharey=True, figsize=tuple(self.figsize))
         fig.add_subplot(111, frameon=False)
-        align = dict(family='Arial', verticalalignment="center", horizontalalignment="center")
+        align = dict(family='Arial', verticalalignment="center",
+                     horizontalalignment="center")
         plt.ylabel(self.ylabel+'\n\n\n\n', fontsize=20, **align)
         for spine in plt.gca().spines.values():
             spine.set_visible(False)
@@ -47,9 +49,11 @@ class retain():
             axs[i].spines['top'].set_visible(False)
             axs[i].set_ylim(self.ylim)
             axs[i].tick_params(labelsize=12)
+        align = dict(family='Arial', verticalalignment="center",
+                     horizontalalignment="left")
         for i in range(len(lens)):
-            x, y = axs[i].get_xlim()[1]*0.95, axs[i].get_ylim()[1]*0.5
-            axs[i].text(x, y, self.refgenome+' ' +
+            x, y = axs[i].get_xlim()[1]*0.90, axs[i].get_ylim()[1]*0.5
+            axs[i].text(x, y, self.refgenome +
                         str(lens.index[i]), fontsize=18, **align)
         plt.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.05)
         plt.savefig(self.savefig, dpi=500)

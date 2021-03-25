@@ -59,7 +59,7 @@ class kspeaks():
         bkinfo['chr2'] = bkinfo['chr2'].astype(str)
         bkinfo = bkinfo[(bkinfo['length'] > int(self.block_length))
                         & (bkinfo['pvalue'] < float(self.pvalue))]
-        if self.tandem == True or self.tandem == 'true' or self.tandem == 1:
+        if self.tandem == False or self.tandem.upper() == 'FALSE':
             bkinfo = self.remove_tandem(bkinfo)
         bkinfo = bkinfo[bkinfo['length'] >= int(self.block_length)]
         bkinfo = bkinfo[bkinfo['homo' +

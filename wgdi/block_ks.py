@@ -80,7 +80,7 @@ class block_ks():
         bkinfo['chr2'] = bkinfo['chr2'].astype(str)
         bkinfo = bkinfo[(bkinfo['length'] > int(self.block_length)) & (bkinfo['chr1'].isin(
             lens1.index)) & (bkinfo['chr2'].isin(lens2.index)) & (bkinfo['pvalue'] < float(self.pvalue))]
-        if self.tandem == True or self.tandem == 'true' or self.tandem == 1:
+        if self.tandem == False or self.tandem.upper() == 'FALSE':
             bkinfo = self.remove_tandem(bkinfo)
         pos, pairs = self.block_position(bkinfo, lens1, lens2, step1, step2)
         cm = plt.cm.get_cmap('gist_rainbow')  # gist_rainbow,hsv

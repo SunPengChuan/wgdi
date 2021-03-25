@@ -66,15 +66,6 @@ class block_info():
             ((data['end2']-data['start2']).abs()+1)
         return data
 
-    def remove_tandem(self, bkinfo):
-        group = bkinfo[bkinfo['chr1'] == bkinfo['chr2']].copy()
-        group.loc[:, 'start'] = group.loc[:, 'start1']-group.loc[:, 'start2']
-        group.loc[:, 'end'] = group.loc[:, 'end1']-group.loc[:, 'end2']
-        index = group[(group['start'].abs() <= int(self.tandem_length)) | (
-            group['end'].abs() <= int(self.tandem_length))].index
-        bkinfo = bkinfo.drop(index)
-        return bkinfo
-
     def blast_homo(self, blast, gff1, gff2, repeat_number):
         index = [group.sort_values(by=11, ascending=False)[:repeat_number].index.tolist()
                  for name, group in blast.groupby([0])]

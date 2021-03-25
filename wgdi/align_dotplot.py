@@ -26,6 +26,10 @@ class align_dotplot():
             self.colors = ['red', 'blue', 'green', 'black', 'orange']
         if not hasattr(self, 'blockinfo_reverse'):
             self.blockinfo_reverse = 'false'
+        if not hasattr(self, 'ancestor_top') or self.ancestor_top == 'none' or self.ancestor_top == '':
+            self.ancestor_top = None
+        if not hasattr(self, 'ancestor_left') or self.ancestor_left == 'none' or self.ancestor_left == '':
+            self.ancestor_left = None
 
     def pair_positon(self, alignment, loc1, loc2, colors):
         alignment.index = alignment.index.map(loc1)
@@ -41,6 +45,7 @@ class align_dotplot():
 
     def run(self):
         axis = [0, 1, 1, 0]
+        left, right, top, bottom = 0.07, 0.97, 0.93, 0.03
         lens1 = base.newlens(self.lens1, self.position)
         lens2 = base.newlens(self.lens2, self.position)
         if re.search('\d', self.figsize):
@@ -53,12 +58,40 @@ class align_dotplot():
         ax.xaxis.set_ticks_position('top')
         step1 = 1 / float(lens1.sum())
         step2 = 1 / float(lens2.sum())
+        if self.ancestor_left != None:
+            axis[0] = -0.02
+            lens_ancestor_left = pd.read_csv(
+                self.ancestor_left, sep="\t", header=None)
+            lens_ancestor_left[0] = lens_ancestor_left[0].astype(str)
+            lens_ancestor_left[3] = lens_ancestor_left[3].astype(str)
+            lens_ancestor_left[4] = lens_ancestor_left[4].astype(int)
+            lens_ancestor_left[4] = lens_ancestor_left[4] / \
+                lens_ancestor_left[4].max()
+            lens_ancestor_left = lens_ancestor_left[lens_ancestor_left[0].isin(
+                lens1.index)]
+        if self.ancestor_top != None:
+            axis[3] = -0.02
+            lens_ancestor_top = pd.read_csv(
+                self.ancestor_top, sep="\t", header=None)
+            lens_ancestor_top[0] = lens_ancestor_top[0].astype(str)
+            lens_ancestor_top[3] = lens_ancestor_top[3].astype(str)
+            lens_ancestor_top[4] = lens_ancestor_top[4].astype(int)
+            lens_ancestor_top[4] = lens_ancestor_top[4] / \
+                lens_ancestor_top[4].max()
+            lens_ancestor_top = lens_ancestor_top[lens_ancestor_top[0].isin(
+                lens2.index)]
         base.dotplot_frame(fig, ax, lens1, lens2, step1, step2,
                            self.genome1_name, self.genome2_name, [0, 1])
         gff1 = base.newgff(self.gff1)
         gff2 = base.newgff(self.gff2)
         gff1 = base.gene_location(gff1, lens1, step1, self.position)
         gff2 = base.gene_location(gff2, lens2, step2, self.position)
+        if self.ancestor_top != None:
+            top = top
+            self.ancestor_posion(ax, gff2, lens_ancestor_top, 'top')
+        if self.ancestor_left != None:
+            left = left
+            self.ancestor_posion(ax, gff1, lens_ancestor_left, 'left')
         bkinfo = pd.read_csv(self.blockinfo, index_col='id')
         if self.blockinfo_reverse == True or self.blockinfo_reverse.upper() == 'TRUE':
             bkinfo[['chr1', 'chr2']] = bkinfo[['chr2', 'chr1']]
@@ -66,7 +99,8 @@ class align_dotplot():
         bkinfo['chr1'] = bkinfo['chr1'].astype(str)
         bkinfo['chr2'] = bkinfo['chr2'].astype(str)
         bkinfo[self.classid] = bkinfo[self.classid].astype(str)
-        bkinfo=bkinfo[bkinfo['chr1'].isin(lens1.index) & (bkinfo['chr2'].isin(lens2.index))]
+        bkinfo = bkinfo[bkinfo['chr1'].isin(lens1.index) & (
+            bkinfo['chr2'].isin(lens2.index))]
         align = self.alignment(gff1, gff2, bkinfo)
         alignment = align[gff1.columns[-int(
             len(bkinfo[self.classid].drop_duplicates())):]]
@@ -107,3 +141,27 @@ class align_dotplot():
                 gff1.loc[index1, name] = index2
                 gff1.loc[gff1.index.isin(area) & gff1[name].isna(), name] = '.'
         return gff1
+
+    def ancestor_posion(self, ax, gff, lens, mark):
+        for index, row in lens.iterrows():
+            loc1 = gff[(gff['chr'] == row[0]) & (
+                gff['order'] == int(row[1]))].index
+            loc2 = gff[(gff['chr'] == row[0]) & (
+                gff['order'] == int(row[2]))].index
+            loc1, loc2 = gff.loc[[loc1[0], loc2[0]], 'loc']
+            if mark == 'top':
+                width = abs(loc1-loc2)
+                loc = [min(loc1, loc2), 0]
+                height = -0.02
+                self.Rectangle(ax, loc, height, width, row[3], row[4])
+            if mark == 'left':
+                height = abs(loc1-loc2)
+                loc = [-0.02, min(loc1, loc2), ]
+                width = 0.02
+                self.Rectangle(ax, loc, height, width, row[3], row[4])
+        return None
+
+    def Rectangle(self, ax, loc, heigt, width, color, alpha):
+        p = mpatches.Rectangle(
+            loc, width, heigt, edgecolor=None, facecolor=color, alpha=alpha)
+        ax.add_patch(p)
