@@ -158,7 +158,8 @@ def newgff(file):
 
 def newlens(file, position):
     lens = pd.read_csv(file, sep="\t", header=None, index_col=0)
-    lens.index = lens.index.astype(str)
+    #lens.index = lens.index.astype(str) # sort by contig name
+    lens = lens.sort_values([1], ascending=False) # sort by contig length
     if position == 'order':
         lens = lens[2]
     if position == 'end':
