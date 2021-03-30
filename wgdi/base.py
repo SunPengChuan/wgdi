@@ -83,6 +83,25 @@ def read_mcscanx(fn):
     return data
 
 
+def read_jcvi(fn):
+    f1 = open(fn)
+    data, b = [], []
+    num = 1
+    for line in f1.readlines():
+        line = line.strip()
+        if re.match(r"###", line):
+            if len(b) == 0:
+                continue
+            data.append([num, b, 0])
+            b = []
+            num += 1
+            continue
+        a = re.split(r"\t", line)
+        b.append([a[0], a[0], a[1], a[1]])
+    data.append([num, b, 0])
+    return data
+
+
 def read_coliearity(fn):
     f1 = open(fn)
     data, b = [], []

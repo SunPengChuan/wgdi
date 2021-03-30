@@ -77,9 +77,8 @@ class collinearity:
                                            col_j] = self.path1.loc[row, col]
                             self.path1.loc[row_i,
                                            col_j] += str(row)+':'+str(col)+'_'
-                            gap = min(col_j-col+1,gap)
+                            gap = min(col_j-col+1, gap)
 
-                            
         mat_new_index = mat_new_index[::-1]
         for i, row in enumerate(mat_new_index):
             for j, col in enumerate(mat_new_columns):
@@ -102,7 +101,7 @@ class collinearity:
                                            col_j] = self.path2.loc[row, col]
                             self.path2.loc[row_i,
                                            col_j] += str(row)+':'+str(col)+'_'
-                            gap = min(col_j-col+1,gap)
+                            gap = min(col_j-col+1, gap)
 
         if self.score1.empty or self.score2.empty or self.score1.stack().max() == self.score2.stack().max() == 0:
             self.over_length = 0
@@ -129,24 +128,35 @@ class collinearity:
         x1, x2 = sorted([x1, x2])
         y1, y2 = sorted([y1, y2])
         x_gap, y_gap = [], []
+        x_gap1, y_gap1 = [], []
+        x_gap2, y_gap2 = [], []
         for k in self.mat.index:
-            if k <= x2+self.mg1 and k >= x1 - self.mg1:
+            if k > x2+self.mg1:
+                break
+            if k >= x1 - self.mg1:
                 x_gap.append(k)
+            if k >= x1:
+                x_gap1.append(k)
+            if k <= x2 and k >= x1 - self.mg1:
+                x_gap2.append(k)
         for k in self.mat.columns:
-            if k <= y2 + self.mg2 and k >= y1-self.mg2:
+            if k > y2 + self.mg2:
+                break
+            if k >= y1-self.mg2:
                 y_gap.append(k)
-        del_x = [k for k in self.mat.index if x1 <= k <= x2]
-        del_y = [k for k in self.mat.columns if y1 <= k <= y2]
+            if k >= y1:
+                y_gap1.append(k)
+        y_gap2 = y_gap1
         mark = False
         if self.right_path():
             for row, col in self.path:
                 self.mat.loc[row, col] = 0
         else:
             mark = True
-        self.score1.loc[x_gap, y_gap] = 0
-        self.score2.loc[x_gap, y_gap] = 0
-        self.path1.loc[x_gap, y_gap] = ''
-        self.path2.loc[x_gap, y_gap] = ''
+        self.score1.loc[x_gap1, y_gap1] = 0
+        self.score2.loc[x_gap2, y_gap2] = 0
+        self.path1.loc[x_gap1, y_gap1] = ''
+        self.path2.loc[x_gap2, y_gap2] = ''
         self.mat_new = self.mat.loc[x_gap, y_gap]
         self.mat_new = self.mat_new.loc[:, self.mat_new.sum(axis=0) != 0]
         self.mat_new = self.mat_new.loc[self.mat_new.sum(axis=1) != 0, :]

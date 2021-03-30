@@ -32,7 +32,7 @@ substitutions, and differences in different evolution rates, etc.
 
     https://wgdi.readthedocs.io/en/latest/
     -------------------------------------- '''
-parser.add_argument("-v", "--version", action='version', version='0.4.6')
+parser.add_argument("-v", "--version", action='version', version='0.4.7')
 parser.add_argument("-d", dest="dotplot",
                     help="Show homologous gene dotplot")
 parser.add_argument("-icl", dest="improvedcollinearity",
@@ -209,8 +209,8 @@ def main():
                 f = open(os.path.join(path, 'example', options[arg]))
                 print(f.read())
                 if arg == 'ksfigure':
-                    if not os.path.exists('all_ks.csv'):
-                        shutil.copy2(os.path.join(wgdi.__path__[0], 'example/all_ks.csv'), os.getcwd())
+                    if not os.path.exists('ks_fit_result.csv'):
+                        shutil.copy2(os.path.join(wgdi.__path__[0], 'example/ks_fit_result.csv'), os.getcwd())
             elif not os.path.exists(value):
                 print(value+' not exits')
                 sys.exit(0)

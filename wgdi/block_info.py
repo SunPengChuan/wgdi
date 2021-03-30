@@ -124,4 +124,17 @@ class block_info():
                 collinearity.append([block[0], newblock, block[2]])
         elif '# Alignment' in p:
             collinearity = base.read_coliearity(self.collinearity)
+        elif '###' in p:
+            col = base.read_jcvi(self.collinearity)
+            collinearity = []
+            for block in col:
+                newblock = []
+                for k in block[1]:
+                    if k[0] not in gff1.index or k[2] not in gff2.index:
+                        continue
+                    k[1], k[3] = gff1.loc[k[0], 'order'], gff2.loc[k[2], 'order']
+                    newblock.append(k)
+                if len(newblock) == 0:
+                    continue
+                collinearity.append([block[0], newblock, block[2]])
         return collinearity

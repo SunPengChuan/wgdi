@@ -41,6 +41,9 @@ class ks():
         elif '# Alignment' in p:
             collinearity = base.read_coliearity(self.pairs_file)
             pairs = [[v[0], v[2]] for k in collinearity for v in k[1]]
+        elif '###' in p:
+            collinearity = base.read_jcvi(self.pairs_file)
+            pairs = [[v[0], v[2]] for k in collinearity for v in k[1]]
         elif ',' in p:
             collinearity = pd.read_csv(self.pairs_file, header=None)
             pairs = collinearity.values.tolist()
