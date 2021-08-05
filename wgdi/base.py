@@ -5,6 +5,7 @@ import re
 import numpy as np
 import pandas as pd
 from Bio import Seq, SeqIO, SeqRecord
+import matplotlib.patches as mpatches
 
 import wgdi
 
@@ -217,14 +218,16 @@ def dotplot_frame(fig, ax, lens1, lens2, step1, step2, genome1_name, genome2_nam
                   horizontalalignment="right", verticalalignment="center")
     yticks = lens1.cumsum()*step1-0.5*lens1*step1
     ax.set_yticks(yticks)
-    ax.set_yticklabels(lens1.index, fontsize=12, **align1)
+    ax.set_yticklabels(lens1.index, fontsize=13, **align1)
     xticks = lens2.cumsum()*step2-0.5*lens2*step2
     ax.set_xticks(xticks)
     # ax.set_xticks([])
     # ax.set_yticks([])
-    ax.set_xticklabels(lens2.index, fontsize=12, **align)
+    ax.set_xticklabels(lens2.index, fontsize=13, **align)
     ax.xaxis.set_ticks_position('none')
     ax.yaxis.set_ticks_position('none')
+    align = dict(family='Arial', style='normal',
+                 horizontalalignment="center", verticalalignment="center")
     if arr[0] < 0:
         ax.text(-0.065, 0.5, genome1_name, weight='semibold',
                 fontsize=18, rotation=90, **align)
@@ -250,3 +253,17 @@ def Bezier3(plist, t):
 def Bezier4(plist, t):
     p0, p1, p2, p3, p4 = plist
     return p0*(1-t)**4+4*p1*t*(1-t)**3+6*p2*t**2*(1-t)**2+4*p3*(1-t)*t**3+p4*t**4
+
+def Rectangle(ax, loc, height, width, color, alpha):
+    p = mpatches.Rectangle(
+        loc, width, height, edgecolor=None, facecolor=color, alpha=alpha)
+    ax.add_patch(p)
+
+def read_calassfication(file):
+    classification = pd.read_csv(file, sep="\t", header=None)
+    classification[0] = classification[0].astype(str)
+    classification[1] = classification[1].astype(int)
+    classification[2] = classification[2].astype(int)
+    classification[3] = classification[3].astype(str)
+    classification[4] = classification[4].astype(int)
+    return classification

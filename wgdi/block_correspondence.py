@@ -3,19 +3,25 @@ import sys
 
 import numpy as np
 import pandas as pd
+
 import wgdi.base as base
 
 
 class block_correspondence():
     def __init__(self, options):
         self.tandem = True
-        self.pvalue = 0.01
+        self.pvalue = 0.2
         self.position = 'order'
         self.block_length = 5
         self.tandem_length = 200
+        self.ks_hit = 0.5
         for k, v in options:
             setattr(self, str(k), v)
             print(k, ' = ', v)
+        if hasattr(self, 'ks_area'):
+            self.ks_area = [float(k) for k in self.ks_area.split(',')]
+        else:
+            self.ks_area = [-1, 3]
         self.homo = [float(k) for k in self.homo.split(',')]
 
     def run(self):
@@ -34,6 +40,7 @@ class block_correspondence():
         cor['chr2'] = cor['chr2'].astype(str)
         if self.tandem == False or self.tandem.upper() == 'FALSE':
             bkinfo = self.remove_tandem(bkinfo)
+        self.remove_ks_hit(bkinfo)
         arr = self.collinearity_region(cor, bkinfo, lens1)
         bkinfo.loc[bkinfo.index.isin(arr), :].to_csv(
             self.savefile, index=False)
@@ -47,20 +54,33 @@ class block_correspondence():
         bkinfo = bkinfo.drop(index)
         return bkinfo
 
-    def collinearity_region(self, cor, bkinfo,lens):
+    def collinearity_region(self, cor, bkinfo, lens):
         arr = []
-        for (chr1,chr2), group in bkinfo.groupby(['chr1','chr2']):
+        for (chr1, chr2), group in bkinfo.groupby(['chr1', 'chr2']):
             group = group.sort_values(by=['length'], ascending=[True])
-            df = pd.Series(0,index=range(1,int(lens[str(chr1)])+1))
+            df = pd.Series(0, index=range(1, int(lens[str(chr1)])+1))
             for index, row in group.iterrows():
                 if row['homo'+self.multiple] < float(self.homo[0]) or row['homo'+self.multiple] > float(self.homo[1]):
                     continue
                 b1 = row['block1'].split('_')
-                df1 = df.copy() 
-                df1[[int(k) for k in b1]]+=1
-                ratio = (len(df1[df1>0])-len(df[df>0]))/len(b1)
-                if ratio <0.5:
+                df1 = df.copy()
+                df1[[int(k) for k in b1]] += 1
+                ratio = (len(df1[df1 > 0])-len(df[df > 0]))/len(b1)
+                if ratio < 0.5:
                     continue
-                df[[int(k) for k in b1]]+=1
+                df[[int(k) for k in b1]] += 1
                 arr.append(index)
         return arr
+
+    def remove_ks_hit(self, bkinfo):
+        for index, row in bkinfo.iterrows():
+            ks = row['ks'].split('_')
+            if ks[0] == '':
+                ks = list(map(float, ks[1:]))
+            else:
+                ks = list(map(float, ks))
+            newks = [k for k in ks if self.ks_area[0] <= k <= self.ks_area[1]]
+            percet = len(newks)/len(ks)
+            if percet < float(self.ks_hit):
+                bkinfo.drop(index, inplace=True)
+        return bkinfo

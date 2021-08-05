@@ -19,6 +19,9 @@ class trees():
         self.position = 'order'
         self.alignfile = ''
         self.cdsfile = ''
+        self.trimming = 'trimal'
+        self.minimum = 3
+        self.delete_detail = 'true'
         for k, v in base_conf:
             setattr(self, str(k), v)
         for k, v in options:
@@ -34,12 +37,13 @@ class trees():
             file = str(row['chr'])+'g'+str(row[self.position])
             self.cdsfile = os.path.join(self.dir, file+'.fasta')
             self.alignfile = os.path.join(self.dir, file+'.aln')
-            if os.path.isfile(self.alignfile):
-                data.append(self.alignfile)
+            self.treefile = os.path.join(self.dir, file+'.aln.treefile')
+            if os.path.isfile(self.treefile):
+                data.append(self.treefile)
                 continue
             ids = []
             for i in range(len(row[:-2])):
-                if row[i] is np.nan:
+                if type(row[i]) == float and np.isnan(row[i]):
                     continue
                 gene_cds = cds[row[i]]
                 gene_cds.id = str(int(i)+1)
@@ -47,8 +51,10 @@ class trees():
 
             SeqIO.write(ids, self.cdsfile, "fasta")
             self.align()
+            if self.trimming.upper() == 'TRIMAL':
+                self.trimal()
             self.buildtrees()
-            data.append(self.alignfile)
+            data.append(self.treefile)
         return data
 
     def align(self):
@@ -63,8 +69,9 @@ class trees():
                 cmd=self.muscle_path, input=self.cdsfile, out=self.alignfile, seqtype="nucleo", clwstrict=True)
             stdout, stderr = muscle_cline()
 
-    def buildtrees(self):
-        args = [self.iqtree_path, '-s', self.alignfile, '-m', self.model]
+    def trimal(self):
+        args = [self.trimal_path, '-in', self.alignfile,
+                '-out', self.alignfile, '-automated1']
         command = ' '.join(args)
         try:
             os.system(command)
@@ -72,17 +79,34 @@ class trees():
             return False
         return True
 
+    def buildtrees(self):
+        args = [self.iqtree_path, '-s', self.alignfile, '-m', self.model]
+        command = ' '.join(args)
+        try:
+            os.system(command)
+        except:
+            return False
+        if self.delete_detail.upper() == 'TRUE':
+            for file in (self.cdsfile, self.alignfile, self.alignfile+'.bionj', self.alignfile+'.iqtree',
+                         self.alignfile+'.log', self.alignfile+'.mldist', self.alignfile+'.model.gz'):
+                try:
+                    os.remove(file)
+                except OSError:
+                    pass
+        return True
+
     def run(self):
         alignment = pd.read_csv(self.alignment, header=None)
         alignment.replace('.', np.nan, inplace=True)
         gff = base.newgff(self.gff)
         lens = base.newlens(self.lens, self.position)
-        gff = gff[gff['chr'].isin(lens.index)]
-        alignment.dropna(thresh=3, inplace=True)
+        alignment.dropna(thresh=int(self.minimum), inplace=True)
         alignment = pd.merge(
             alignment, gff[['chr', self.position]], left_on=0, right_on=gff.index, how='left')
+        alignment.dropna(subset=['chr', 'order'], inplace=True)
+        alignment['order'] = alignment['order'].astype(int)
+        alignment = alignment[alignment['chr'].isin(lens.index)]
         data = self.grouping(alignment)
-        data = [k+'.treefile' for k in data]
         fout = open(self.trees_file, 'w')
         fout.close()
         for i in range(0, len(data), 100):
@@ -92,4 +116,4 @@ class trees():
             os.system(command)
         df = pd.read_csv(self.trees_file, header=None, sep='\t')
         df[1] = data
-        df[[1, 0]].to_csv(self.trees_file, index=None, sep='\t', header=False)
+        df[0].to_csv(self.trees_file, index=None, sep='\t', header=False)

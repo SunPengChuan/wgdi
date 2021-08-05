@@ -112,7 +112,7 @@ class mycollinearity():
         for bk in group:
             chr1, chr2 = str(bk[0]), str(bk[1])
             print('runing ', chr1, 'vs', chr2)
-            df = pd.DataFrame(np.zeros((lens1[chr1], lens2[chr2])))
+            df = pd.DataFrame(np.zeros((lens1[chr1], lens2[chr2])),columns=range(1,lens2[chr2]+1),index=range(1,lens1[chr1]+1))
             for index, row in bk[2].iterrows():
                 df.loc[row['loc1'], row['loc2']] = row['grading']
             df = df.loc[:, df.sum(axis=0) != 0]

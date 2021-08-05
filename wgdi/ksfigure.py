@@ -10,7 +10,7 @@ from scipy import stats
 class ksfigure():
     def __init__(self, options):
         self.figsize = 10, 6.18
-        self.legendfontsize =30
+        self.legendfontsize = 30
         self.labelfontsize = 9
         self.area = 0, 3
         self.mode = 'median'
@@ -32,7 +32,8 @@ class ksfigure():
             if np.isnan(k[3 * i + 2]):
                 continue
             k[3 * i + 2] = float(k[3 * i + 2])/np.sqrt(2)
-            k[3 * i + 0] = float(k[3 * i + 0])*np.sqrt(2*np.pi)*float(k[3 * i + 2])
+            k[3 * i + 0] = float(k[3 * i + 0]) * \
+                np.sqrt(2*np.pi)*float(k[3 * i + 2])
             y1 = stats.norm.pdf(
                 t, float(k[3 * i + 1]), float(k[3 * i + 2])) * float(k[3 * i + 0])
             y = y+y1
@@ -45,9 +46,10 @@ class ksfigure():
         t = np.arange(self.area[0], self.area[1], 0.005)
         col = [k for k in ksfit.columns if re.match('Unnamed:', k)]
         for index, row in ksfit.iterrows():
-            ax.plot(t, self.Gaussian_distribution(
-                t, row[col].values), linestyle=row['linestyle'], color=row['color'], label=index, linewidth=row['linewidth'])
-
+            # ax.plot(t, self.Gaussian_distribution(
+            #     t, row[col].values), linestyle=row['linestyle'], color=row['color'], label=index, linewidth=row['linewidth'])
+            ax.fill_between(t, 0, self.Gaussian_distribution(
+                t, row[col].values),  color=row['color'], alpha=0.3, interpolate=True, edgecolor=None, label=index,)
         align = dict(family='Arial', verticalalignment="center",
                      horizontalalignment="center")
         ax.set_xlabel(self.xlabel, fontsize=self.labelfontsize,
@@ -57,10 +59,10 @@ class ksfigure():
         ax.set_title(self.title, weight='bold',
                      fontsize=self.labelfontsize, **align)
         plt.tick_params(labelsize=10)
-        plt.legend(loc='upper right',prop={'family': 'Arial', 'style': 'italic', 'size':self.legendfontsize})
+        plt.legend(loc='upper right', prop={
+                   'family': 'Arial', 'style': 'italic', 'size': self.legendfontsize})
         plt.gca().spines['top'].set_visible(False)
         plt.gca().spines['right'].set_visible(False)
         plt.savefig(self.savefig, dpi=500)
         plt.show()
         sys.exit(0)
-

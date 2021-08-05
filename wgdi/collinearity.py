@@ -37,6 +37,7 @@ class collinearity:
         self.score2 = self.mat.copy()
         self.mat_new = self.mat.copy()
         self.matold = self.mat.copy()
+        self.matold[self.matold > 0] = 1
         self.path1 = pd.DataFrame([['' for i in range(n)] for j in range(
             m)], index=self.mat.index, columns=self.mat.columns)
         self.path2 = pd.DataFrame([['' for i in range(n)] for j in range(
@@ -58,6 +59,7 @@ class collinearity:
         mat_new_index, mat_new_columns = self.mat_new.index, self.mat_new.columns
         for i, row in enumerate(mat_new_index):
             for j, col in enumerate(mat_new_columns):
+                #Point (i, j) as the starting point, search for synteny blocks.
                 if self.mat_new.loc[row, col] == 0:
                     continue
                 gap = self.mg2
@@ -77,7 +79,7 @@ class collinearity:
                                            col_j] = self.path1.loc[row, col]
                             self.path1.loc[row_i,
                                            col_j] += str(row)+':'+str(col)+'_'
-                            gap = min(col_j-col+1, gap)
+                            gap = min(col_j-col, gap)
 
         mat_new_index = mat_new_index[::-1]
         for i, row in enumerate(mat_new_index):
@@ -101,7 +103,7 @@ class collinearity:
                                            col_j] = self.path2.loc[row, col]
                             self.path2.loc[row_i,
                                            col_j] += str(row)+':'+str(col)+'_'
-                            gap = min(col_j-col+1, gap)
+                            gap = min(col_j-col, gap)
 
         if self.score1.empty or self.score2.empty or self.score1.stack().max() == self.score2.stack().max() == 0:
             self.over_length = 0
@@ -127,6 +129,7 @@ class collinearity:
         (x1, y1), (x2, y2) = self.path[0], self.path[-1]
         x1, x2 = sorted([x1, x2])
         y1, y2 = sorted([y1, y2])
+        #The interval of the path on the block.
         x_gap, y_gap = [], []
         x_gap1, y_gap1 = [], []
         x_gap2, y_gap2 = [], []
@@ -162,7 +165,7 @@ class collinearity:
         self.mat_new = self.mat_new.loc[self.mat_new.sum(axis=1) != 0, :]
         if mark:
             return False
-        self.p_value = self.pvalue_estimated()
+        self.p_value = self.pvalue_estimated(x1, x2, y1, y2, x_gap, y_gap)
         return True
 
     def right_path(self):
@@ -173,17 +176,14 @@ class collinearity:
             self.path_dict[str(k[0])+':'+str(k[1])] = 1
         return True
 
-    def pvalue_estimated(self):
-        (x1, y1), (x2, y2) = self.path[0], self.path[-1]
-        x1, x2 = sorted([x1, x2])
-        y1, y2 = sorted([y1, y2])
+    def pvalue_estimated(self, x1, x2, y1, y2, x_gap, y_gap):
         N = 0
-        for (x, y) in self.path:
-            mat = self.matold.loc[x, self.matold.columns.isin(
-                range(y-int(self.mg2*0.5), y+int(self.mg2*0.5)))]
-            mat[mat > 0] = 1
-            N += mat.sum()
+        mat = self.matold.loc[x_gap, y_gap]
+        N1 = mat.sum().sum()
+        N = mat[mat > 0].count().sum()
+        mat[mat > 0] += 1
+        self.matold.loc[x_gap, y_gap] = mat
         m = len(self.path)
         L1, L2 = x2-x1+1, y2-y1+1
-        a = (1-self.score/m/self.grading[0])*(N-m+1)/N*(L1-m+1)*(L2-m+1)/L1/L2
+        a = (1-self.score/m/self.grading[0])*(N1-m+1)/N*(L1-m+1)*(L2-m+1)/L1/L2
         return round(a, 4)

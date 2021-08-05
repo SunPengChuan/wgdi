@@ -34,6 +34,7 @@ class kspeaks():
         return bkinfo
 
     def ks_kde(self, df):
+        df.loc[df['ks'].str.startswith('_'),'ks']= df.loc[df['ks'].str.startswith('_'),'ks'].str[1:]
         ks = df['ks'].str.split('_')
         arr = []
         ks_ave = []

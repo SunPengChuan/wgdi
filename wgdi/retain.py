@@ -34,7 +34,7 @@ class retain():
         fig.add_subplot(111, frameon=False)
         align = dict(family='Arial', verticalalignment="center",
                      horizontalalignment="center")
-        plt.ylabel(self.ylabel+'\n\n\n\n', fontsize=20, **align)
+        plt.ylabel(self.ylabel+'\n\n\n\n', fontsize=18, **align)
         for spine in plt.gca().spines.values():
             spine.set_visible(False)
         plt.tick_params(top=False, bottom=False, left=False,
@@ -54,7 +54,7 @@ class retain():
         for i in range(len(lens)):
             x, y = axs[i].get_xlim()[1]*0.90, axs[i].get_ylim()[1]*0.5
             axs[i].text(x, y, self.refgenome +
-                        str(lens.index[i]), fontsize=18, **align)
+                        str(lens.index[i]), fontsize=14, **align)
         plt.subplots_adjust(left=0.1, right=0.95, top=0.95, bottom=0.05)
         plt.savefig(self.savefig, dpi=500)
         plt.show()

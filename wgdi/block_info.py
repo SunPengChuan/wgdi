@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+
 import wgdi.base as base
 
 
@@ -55,6 +56,7 @@ class block_info():
             blkks = '_'.join([str(k) for k in blk_ks])
             block1 = '_'.join([str(k) for k in block1])
             block2 = '_'.join([str(k) for k in block2])
+            blkks = '_' + blkks
             data.append([block[0], chr1, chr2, start1, end1, start2, end2, block[2], len(
                 block[1]), ks_median, ks_average, homo[0], homo[1], homo[2], homo[3], homo[4], block1, block2, blkks])
         data = pd.DataFrame(data, columns=['id', 'chr1', 'chr2', 'start1', 'end1', 'start2', 'end2',

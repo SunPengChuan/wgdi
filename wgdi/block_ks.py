@@ -1,8 +1,10 @@
 import re
 import sys
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+
 import wgdi.base as base
 
 
@@ -39,8 +41,7 @@ class block_ks():
                            0.5*(row['end2']+row['start2']))*step2
             pos.append([locx_median, locy_median, row['ks_median']])
             if len(block1) != len(ks):
-                print(row['ks'])
-                print(row['id'], len(block1), len(ks))
+                ks = ks[1:]
             for i in range(len(block1)):
                 locy = (dict_y_chr[row['chr1']]+float(block1[i]))*step1
                 locx = (dict_x_chr[row['chr2']]+float(block2[i]))*step2

@@ -1,10 +1,10 @@
 import re
 import sys
 
-import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+
 import wgdi.base as base
 
 
@@ -119,12 +119,15 @@ class align_dotplot():
         for cl, group in bkinfo.groupby([self.classid]):
             name = 'l'+cl
             gff1[name] = np.nan
-            group = group.sort_values(by=['length'], ascending=[True])
+            group = group.sort_values(by=['length'], ascending=[False])
             for index, row in group.iterrows():
                 b1 = row['block1'].split('_')
                 b2 = row['block2'].split('_')
                 ks = row['ks'].split('_')
-                ks = list(map(float, ks))
+                if ks[0] == '':
+                    ks = list(map(float, ks[1:]))
+                else:
+                    ks = list(map(float, ks))
                 block1, block2 = [], []
                 for i in range(len(ks)):
                     if self.ks_area[0] <= ks[i] <= self.ks_area[1]:
@@ -132,6 +135,8 @@ class align_dotplot():
                         block2.append(int(b2[i]))
                 block1 = list(map(int, block1))
                 block2 = list(map(int, block2))
+                if len(block1) < 1 or len(block2) < 1:
+                    continue
                 area = gff1[(gff1['chr'] == row['chr1']) & (
                     gff1['order'] >= min(block1)) & (gff1['order'] <= max(block1))].index
                 index1 = gff1[(gff1['chr'] == row['chr1']) & (gff1['order'].isin(
@@ -153,15 +158,10 @@ class align_dotplot():
                 width = abs(loc1-loc2)
                 loc = [min(loc1, loc2), 0]
                 height = -0.02
-                self.Rectangle(ax, loc, height, width, row[3], row[4])
+                base.Rectangle(ax, loc, height, width, row[3], row[4])
             if mark == 'left':
                 height = abs(loc1-loc2)
                 loc = [-0.02, min(loc1, loc2), ]
                 width = 0.02
-                self.Rectangle(ax, loc, height, width, row[3], row[4])
+                base.Rectangle(ax, loc, height, width, row[3], row[4])
         return None
-
-    def Rectangle(self, ax, loc, heigt, width, color, alpha):
-        p = mpatches.Rectangle(
-            loc, width, heigt, edgecolor=None, facecolor=color, alpha=alpha)
-        ax.add_patch(p)

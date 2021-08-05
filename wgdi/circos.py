@@ -22,6 +22,11 @@ class circos():
             print(k, ' = ', v)
         self.figsize = [float(k) for k in self.figsize.split(',')]
         self.ring_width = float(self.ring_width)
+        if hasattr(self, 'legend_square'):
+            self.legend_square = [float(k)
+                                  for k in self.legend_square.split(',')]
+        else:
+            self.legend_square = 0.04, 0.04
 
     def plot_circle(self, loc_chr, radius, color='black', lw=1, alpha=1, linestyle='-'):
         for k in loc_chr:
@@ -50,6 +55,8 @@ class circos():
 
     def plot_bar(self, df, radius, length, lw, color, alpha):
         for k in df[df.columns[0]].drop_duplicates().values:
+            if str(k) not in color.keys():
+                color[str(k)] = 'black'
             if k in ['', np.nan]:
                 continue
             df_chr = df.groupby(df.columns[0]).get_group(k)
@@ -140,9 +147,24 @@ class circos():
                 y = np.hstack((y, yt, np.nan))
             plt.plot(x, y, color=name, lw=lw, alpha=alpha)
 
+    def plot_legend(self, ax, chr_color, width, height):
+        (x1, x2) = ax.get_xlim()
+        (y1, y2) = ax.get_ylim()
+        a = 1000
+        for k, v in enumerate(chr_color.keys(), 0):
+            h = y1-k//a*height*2
+            k = k % a
+            if x1 + width * k > x2-width:
+                a = k
+                h = y1-k//a*height*2
+                k = k % a
+            loc = [x1 + width * k, h]
+            base.Rectangle(ax, loc, height, width, chr_color[v], 1)
+            plt.text(loc[0] + width*0.382, h-0.618*height, v, fontsize=12)
+        ax.set_ylim(h-2*height, y2)
+
     def run(self):
-        fig = plt.figure(figsize=(tuple(self.figsize)))
-        root = plt.axes([0, 0, 1, 1])
+        fig, ax = plt.subplots(figsize=self.figsize)
         mpl.rcParams['agg.path.chunksize'] = 100000000
         lens = base.newlens(self.lens, self.position)
         radius, angle_gap = float(self.radius), float(self.angle_gap)
@@ -151,10 +173,6 @@ class circos():
         loc_chr = self.chr_loction(lens, angle_gap, angle)
         list_colors = [str(k).strip() for k in re.split(',|:', self.colors)]
         chr_color = dict(zip(list_colors[::2], list_colors[1::2]))
-        for k in loc_chr:
-            start, end = loc_chr[k]
-            self.Wedge(root, (0.0, 0.0), radius+self.ring_width, start * 180 /
-                       np.pi, end * 180 / np.pi, self.ring_width*0.3, chr_color[k], 0.9)
         gff = base.newgff(self.gff)
         if hasattr(self, 'ancestor'):
             ancestor = pd.read_csv(self.ancestor, header=None)
@@ -186,21 +204,32 @@ class circos():
                     x, y = (r+self.ring_width*0.5) * \
                         np.cos(loc), (r+self.ring_width*0.5) * np.sin(loc)
                     plt.text(x, y, names[n], rotation=loc *
-                             180 / np.pi, fontsize=10, **align)
+                             180 / np.pi, fontsize=self.label_size, **align)
                 else:
                     loc = -0.08
                     x, y = (r+self.ring_width*0.5) * \
                         np.cos(loc), (r+self.ring_width*0.5) * np.sin(loc)
-                    plt.text(x, y, names[n], fontsize=10,
+                    plt.text(x, y, names[n], fontsize=self.label_size,
                              rotation=loc * 180 / np.pi, **align)
                 n += 1
+        if hasattr(self, 'ancestor'):
+            colors = al['color'].drop_duplicates().values.tolist()
+            ancestor_chr_color = dict(zip(range(1, len(colors)+1), colors))
+            self.plot_legend(ax, ancestor_chr_color,
+                             self.legend_square[0], self.legend_square[1])
+        if hasattr(self, 'alignment'):
+            del chr_color['nan']
+            self.plot_legend(
+                ax, chr_color, self.legend_square[0], self.legend_square[1])
         labels = self.chr_label + lens.index
         labels = dict(zip(lens.index, labels))
-        self.plot_labels(root, labels, loc_chr, radius -
+        self.plot_labels(ax, labels, loc_chr, radius +
                          self.ring_width*0.3, fontsize=self.label_size)
-        root.set_xlim(-1, 1)
-        root.set_ylim(-1.05, 0.95)
-        root.set_axis_off()
+
+        plt.axis('off')
+        a = (ax.get_ylim()[1]-ax.get_ylim()[0]) / \
+            (ax.get_xlim()[1]-ax.get_xlim()[0])
+        fig.set_size_inches(self.figsize[0], self.figsize[0]*a, forward=True)
         plt.savefig(self.savefig, dpi=500)
         plt.show()
         sys.exit(0)

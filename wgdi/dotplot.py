@@ -5,6 +5,7 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+
 import wgdi.base as base
 
 
@@ -99,10 +100,11 @@ class dotplot():
         gff2 = base.gene_location(gff2, lens2, step2, self.position)
         if self.ancestor_top != None:
             top = top
-            self.ancestor_posion(ax, gff2, lens_ancestor_top, 'top')
+            self.aree_left = self.ancestor_posion(ax, gff2, lens_ancestor_top, 'top')
         if self.ancestor_left != None:
             left = left
-            self.ancestor_posion(ax, gff1, lens_ancestor_left, 'left')
+            self.aree_top = self.ancestor_posion(ax, gff1, lens_ancestor_left, 'left')
+
         blast = base.newblast(self.blast, int(self.score),
                               float(self.evalue), gff1, gff2, self.blast_reverse)
         df = self.pair_positon(blast, gff1, gff2,
@@ -111,16 +113,12 @@ class dotplot():
                    alpha=0.5, edgecolors=None, linewidths=0, marker='o')
         ax.axis(axis)
         plt.subplots_adjust(left=left, right=right, top=top, bottom=bottom)
-        plt.savefig(self.savefig, dpi=500)
+        plt.savefig(self.savefig, dpi=300)
         plt.show()
         sys.exit(0)
 
-    def Rectangle(self, ax, loc, heigt, width, color, alpha):
-        p = mpatches.Rectangle(
-            loc, width, heigt, edgecolor=None, facecolor=color, alpha=alpha)
-        ax.add_patch(p)
-
     def ancestor_posion(self, ax, gff, lens, mark):
+        data = []
         for index, row in lens.iterrows():
             loc1 = gff[(gff['chr'] == row[0]) & (
                 gff['order'] == int(row[1]))].index
@@ -131,10 +129,11 @@ class dotplot():
                 width = abs(loc1-loc2)
                 loc = [min(loc1, loc2), 0]
                 height = -0.02
-                self.Rectangle(ax, loc, height, width, row[3], row[4])
+                base.Rectangle(ax, loc, height, width, row[3], row[4])
             if mark == 'left':
                 height = abs(loc1-loc2)
                 loc = [-0.02, min(loc1, loc2), ]
                 width = 0.02
-                self.Rectangle(ax, loc, height, width, row[3], row[4])
-        return None
+                base.Rectangle(ax, loc, height, width, row[3], row[4])
+            data.append([loc, height, width, row[3], row[4]])
+        return data
