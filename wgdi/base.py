@@ -1,13 +1,17 @@
+import wgdi
 import configparser
+import hashlib
 import os
 import re
 
+import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
 from Bio import Seq, SeqIO, SeqRecord
-import matplotlib.patches as mpatches
 
-import wgdi
+
+def gen_md5_id(item):
+    return hashlib.md5(item.encode('utf-8')).hexdigest()
 
 
 def config():
@@ -254,10 +258,12 @@ def Bezier4(plist, t):
     p0, p1, p2, p3, p4 = plist
     return p0*(1-t)**4+4*p1*t*(1-t)**3+6*p2*t**2*(1-t)**2+4*p3*(1-t)*t**3+p4*t**4
 
+
 def Rectangle(ax, loc, height, width, color, alpha):
     p = mpatches.Rectangle(
         loc, width, height, edgecolor=None, facecolor=color, alpha=alpha)
     ax.add_patch(p)
+
 
 def read_calassfication(file):
     classification = pd.read_csv(file, sep="\t", header=None)

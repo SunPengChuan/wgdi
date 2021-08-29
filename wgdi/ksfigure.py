@@ -46,10 +46,10 @@ class ksfigure():
         t = np.arange(self.area[0], self.area[1], 0.005)
         col = [k for k in ksfit.columns if re.match('Unnamed:', k)]
         for index, row in ksfit.iterrows():
-            # ax.plot(t, self.Gaussian_distribution(
-            #     t, row[col].values), linestyle=row['linestyle'], color=row['color'], label=index, linewidth=row['linewidth'])
+            ax.plot(t, self.Gaussian_distribution(
+                t, row[col].values), linestyle=row['linestyle'], color=row['color'],alpha=0.8, label=index, linewidth=row['linewidth'])
             ax.fill_between(t, 0, self.Gaussian_distribution(
-                t, row[col].values),  color=row['color'], alpha=0.3, interpolate=True, edgecolor=None, label=index,)
+                t, row[col].values),  color=row['color'], alpha=0.15, interpolate=True, edgecolor=None, label=index,)
         align = dict(family='Arial', verticalalignment="center",
                      horizontalalignment="center")
         ax.set_xlabel(self.xlabel, fontsize=self.labelfontsize,
@@ -59,7 +59,8 @@ class ksfigure():
         ax.set_title(self.title, weight='bold',
                      fontsize=self.labelfontsize, **align)
         plt.tick_params(labelsize=10)
-        plt.legend(loc='upper right', prop={
+        handles,labels = ax.get_legend_handles_labels()
+        plt.legend(handles=handles[:int(len(labels)/2)],labels=labels[:int(len(labels)/2)],loc='upper right', prop={
                    'family': 'Arial', 'style': 'italic', 'size': self.legendfontsize})
         plt.gca().spines['top'].set_visible(False)
         plt.gca().spines['right'].set_visible(False)

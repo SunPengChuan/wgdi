@@ -49,7 +49,12 @@ If you use wgdi in your work, please cite:
 > Sun P, Jiao B, Yang Y, et al. WGDI: A user-friendly toolkit for evolutionary analyses of whole-genome duplications and ancestral karyotypes[J]. bioRxiv, 2021. **doi:** https://doi.org/10.1101/2021.04.29.441969
 
 ## News
+## 0.5.1
+* Fixed the error of the command (-conf).
+* Improved the karyotype_mapping (-km) effect.
+* Added the available data set of alignmenttree (-at). Low copy data set (for example, single-copy_groups.tsv of sonicparanoid2 software).
 
+## 0.4.9
 * The latest version adds karyotype_mapping (-km) and karyotype (-k) display.
 * The latest version changes the calculation of extracting pvalue from collinearity (-icl), making this parameter more sensitive. Therefore, it is recommended to set to 0.2 instead of 0.05.
 * The latest version has also changed the drawing display of ksfigure (-kf) to make it more beautiful.

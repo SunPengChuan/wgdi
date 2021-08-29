@@ -26,6 +26,7 @@ class peaksfit():
         self.peaks = 1
 
     def ks_values(self, df):
+        df.loc[df['ks'].str.startswith('_'),'ks']= df.loc[df['ks'].str.startswith('_'),'ks'].str[1:]
         ks = df['ks'].str.split('_')
         ks_total = []
         ks_average = []

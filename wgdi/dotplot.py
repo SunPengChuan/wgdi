@@ -57,7 +57,6 @@ class dotplot():
         return blast[blast['color'].str.contains('\w')]
 
     def run(self):
-        length = 1
         axis = [0, 1, 1, 0]
         left, right, top, bottom = 0.07, 0.97, 0.93, 0.03
         lens1 = base.newlens(self.lens1, self.position)

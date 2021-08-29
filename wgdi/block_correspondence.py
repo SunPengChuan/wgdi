@@ -57,7 +57,7 @@ class block_correspondence():
     def collinearity_region(self, cor, bkinfo, lens):
         arr = []
         for (chr1, chr2), group in bkinfo.groupby(['chr1', 'chr2']):
-            group = group.sort_values(by=['length'], ascending=[True])
+            group = group.sort_values(by=['length'], ascending=[False])
             df = pd.Series(0, index=range(1, int(lens[str(chr1)])+1))
             for index, row in group.iterrows():
                 if row['homo'+self.multiple] < float(self.homo[0]) or row['homo'+self.multiple] > float(self.homo[1]):

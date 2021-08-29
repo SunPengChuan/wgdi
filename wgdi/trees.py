@@ -34,7 +34,7 @@ class trees():
             os.makedirs(self.dir)
         cds = SeqIO.to_dict(SeqIO.parse(self.cds_file, "fasta"))
         for index, row in alignment.iterrows():
-            file = str(row['chr'])+'g'+str(row[self.position])
+            file = base.gen_md5_id(str(row.values))
             self.cdsfile = os.path.join(self.dir, file+'.fasta')
             self.alignfile = os.path.join(self.dir, file+'.aln')
             self.treefile = os.path.join(self.dir, file+'.aln.treefile')
@@ -42,9 +42,10 @@ class trees():
                 data.append(self.treefile)
                 continue
             ids = []
-            for i in range(len(row[:-2])):
+            for i in range(len(row)):
                 if type(row[i]) == float and np.isnan(row[i]):
                     continue
+                print(row[i])
                 gene_cds = cds[row[i]]
                 gene_cds.id = str(int(i)+1)
                 ids.append(gene_cds)
@@ -98,14 +99,16 @@ class trees():
     def run(self):
         alignment = pd.read_csv(self.alignment, header=None)
         alignment.replace('.', np.nan, inplace=True)
-        gff = base.newgff(self.gff)
-        lens = base.newlens(self.lens, self.position)
         alignment.dropna(thresh=int(self.minimum), inplace=True)
-        alignment = pd.merge(
-            alignment, gff[['chr', self.position]], left_on=0, right_on=gff.index, how='left')
-        alignment.dropna(subset=['chr', 'order'], inplace=True)
-        alignment['order'] = alignment['order'].astype(int)
-        alignment = alignment[alignment['chr'].isin(lens.index)]
+        if hasattr(self, 'gff') and hasattr(self, 'lens'):
+            gff = base.newgff(self.gff)
+            lens = base.newlens(self.lens, self.position)
+            alignment = pd.merge(
+                alignment, gff[['chr', self.position]], left_on=0, right_on=gff.index, how='left')
+            alignment.dropna(subset=['chr', 'order'], inplace=True)
+            alignment['order'] = alignment['order'].astype(int)
+            alignment = alignment[alignment['chr'].isin(lens.index)]
+            alignment.drop(alignment.columns[-2:], axis=1, inplace=True)
         data = self.grouping(alignment)
         fout = open(self.trees_file, 'w')
         fout.close()

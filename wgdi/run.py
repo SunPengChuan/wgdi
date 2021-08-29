@@ -25,7 +25,6 @@ from wgdi.retain import retain
 from wgdi.run_colliearity import mycollinearity
 from wgdi.trees import trees
 
-
 parser = argparse.ArgumentParser(
     prog='wgdi', usage='%(prog)s [options]', epilog="", formatter_class=argparse.RawDescriptionHelpFormatter,)
 parser.description = '''\
@@ -33,7 +32,7 @@ WGDI(Whole-Genome Duplication Integrated analysis) is a Python-based command-lin
 
     https://wgdi.readthedocs.io/en/latest/
     -------------------------------------- '''
-parser.add_argument("-v", "--version", action='version', version='0.4.9')
+parser.add_argument("-v", "--version", action='version', version='0.5.1')
 parser.add_argument("-d", dest="dotplot",
                     help="Show homologous gene dotplot")
 parser.add_argument("-icl", dest="improvedcollinearity",
@@ -104,8 +103,11 @@ def module_to_run(argument, conf):
         'karyotype': (karyotype, conf, 'karyotype'),
         'karyotype_mapping': (karyotype_mapping, conf, 'karyotype_mapping'),
     }
-    program, conf, name = tuple(switcher.get(argument))
-    run_subprogram(program, conf, name)
+    if argument == 'configure':
+        run_configure()
+    else:
+        program, conf, name = tuple(switcher.get(argument))
+        run_subprogram(program, conf, name)
 
 
 def main():
