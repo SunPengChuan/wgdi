@@ -59,4 +59,11 @@ If you use wgdi in your work, please cite:
 * The latest version changes the calculation of extracting pvalue from collinearity (-icl), making this parameter more sensitive. Therefore, it is recommended to set to 0.2 instead of 0.05.
 * The latest version has also changed the drawing display of ksfigure (-kf) to make it more beautiful.
 
-
+## Already cited WGDI articles
+1. Genomic analysis of Medicago ruthenica provides insights into its tolerance to abiotic stress and demographic history
+2. Chromosomal‐scale genome assembly of Eleutherococcus senticosus provides insights into chromosome evolution in Araliaceae
+3. The Corylus mandshurica genome provides insights into the evolution of Betulaceae genomes and hazelnut breeding
+4. An ancient whole-genome duplication event and its contribution to flavor compounds in the tea plant (Camellia sinensis)
+5. A tetraploidization event shaped the Aquilaria sinensis genome and contributed to the ability of sesquiterpenes synthesis
+6. High-quality genome assembly of Cinnamomum burmami (chvar. Borneol) provides insights into the natural borneol biosynthesis
+7. The genome sequence provides insights into salt tolerance of Achnatherum splendens (Gramineae), a constructive species of alkaline grassland
