@@ -1,13 +1,10 @@
-import fileinput
 import os
-import re
-import sys
 from io import StringIO
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from Bio import AlignIO, SeqIO
+from Bio import AlignIO, Seq, SeqIO, SeqRecord
 from Bio.Align.Applications import MafftCommandline, MuscleCommandline
 
 import wgdi.base as base
@@ -18,9 +15,9 @@ class trees():
         base_conf = base.config()
         self.position = 'order'
         self.alignfile = ''
-        self.cdsfile = ''
         self.trimming = 'trimal'
-        self.minimum = 3
+        self.minimum = 4
+        self.tree_software = 'iqtree'
         self.delete_detail = 'true'
         for k, v in base_conf:
             setattr(self, str(k), v)
@@ -30,44 +27,86 @@ class trees():
 
     def grouping(self, alignment):
         data = []
+        indexs = []
         if not os.path.exists(self.dir):
             os.makedirs(self.dir)
-        cds = SeqIO.to_dict(SeqIO.parse(self.cds_file, "fasta"))
+        sequence = SeqIO.to_dict(SeqIO.parse(self.sequence_file, "fasta"))
+        if hasattr(self, 'cds_file'):
+            seq_cds = SeqIO.to_dict(SeqIO.parse(self.cds_file, "fasta"))
         for index, row in alignment.iterrows():
             file = base.gen_md5_id(str(row.values))
-            self.cdsfile = os.path.join(self.dir, file+'.fasta')
+            self.sequencefile = os.path.join(self.dir, file+'.fasta')
             self.alignfile = os.path.join(self.dir, file+'.aln')
             self.treefile = os.path.join(self.dir, file+'.aln.treefile')
             if os.path.isfile(self.treefile):
+                # shutil.copyfile(self.alignfile, os.path.join(self.dir, file+'.newaln'))
                 data.append(self.treefile)
+                indexs.append(index)
+                continue
+            if os.path.isfile(self.alignfile):
                 continue
             ids = []
+            ids_cds = []
             for i in range(len(row)):
                 if type(row[i]) == float and np.isnan(row[i]):
                     continue
-                print(row[i])
-                gene_cds = cds[row[i]]
-                gene_cds.id = str(int(i)+1)
-                ids.append(gene_cds)
-
-            SeqIO.write(ids, self.cdsfile, "fasta")
+                gene_sequence = sequence[row[i]]
+                gene_sequence.id = str(int(i)+1)
+                ids.append(gene_sequence)
+            SeqIO.write(ids, self.sequencefile, "fasta")
             self.align()
+            if hasattr(self, 'cds_file'):
+                self.seqcdsfile = os.path.join(self.dir, file+'.cds.fasta')
+                for i in range(len(row)):
+                    if type(row[i]) == float and np.isnan(row[i]):
+                        continue
+                    gene_cds = seq_cds[row[i]]
+                    gene_cds.id = str(int(i)+1)
+                    ids_cds.append(gene_cds)
+                SeqIO.write(ids_cds, self.seqcdsfile, "fasta")
+                self.pal2nal()
+                if not self.codon():
+                    continue
             if self.trimming.upper() == 'TRIMAL':
                 self.trimal()
             self.buildtrees()
             data.append(self.treefile)
+        alignment.loc[indexs,:].to_csv('out.csv',header=False,index=False)
         return data
+
+    def codon(self):
+        records = list(SeqIO.parse(self.alignfile+'.mrtrans', 'fasta'))
+        if len(records)==0:
+            print(self.alignfile)
+            return False
+        newrecords = []
+        for k in records:
+            k.seq = ''.join([k.seq[i]
+                             for i in range(len(k.seq)) if (i+1) % 3 > 0])
+            newrecords.append(SeqRecord.SeqRecord(Seq.Seq(k.seq), id=k.id))
+        SeqIO.write(newrecords, self.alignfile, 'fasta')
+        return True
+
+    def pal2nal(self):
+        args = ['perl', self.pal2nal_path, self.alignfile,
+                self.seqcdsfile, '-output fasta', '>'+self.alignfile+'.mrtrans']
+        command = ' '.join(args)
+        try:
+            os.system(command)
+        except:
+            return False
+        return True
 
     def align(self):
         if self.align_software == 'mafft':
             mafft_cline = MafftCommandline(
-                cmd=self.mafft_path, input=self.cdsfile, auto=True)
+                cmd=self.mafft_path, input=self.sequencefile, auto=True)
             stdout, stderr = mafft_cline()
             align = AlignIO.read(StringIO(stdout), "fasta")
             AlignIO.write(align, self.alignfile, "fasta")
         if self.align_software == 'muscle':
             muscle_cline = MuscleCommandline(
-                cmd=self.muscle_path, input=self.cdsfile, out=self.alignfile, seqtype="nucleo", clwstrict=True)
+                cmd=self.muscle_path, input=self.sequencefile, out=self.alignfile, seqtype="nucleo", clwstrict=True)
             stdout, stderr = muscle_cline()
 
     def trimal(self):
@@ -81,14 +120,18 @@ class trees():
         return True
 
     def buildtrees(self):
-        args = [self.iqtree_path, '-s', self.alignfile, '-m', self.model]
-        command = ' '.join(args)
+        if self.tree_software.upper() == 'IQTREE':
+            args = [self.iqtree_path, '-s', self.alignfile, '-m', self.model, '--quiet']
+            command = ' '.join(args)
+        elif self.tree_software.upper() == 'FASTTREE':
+            args = [self.fasttree_path,  self.alignfile, '>', self.treefile]
+            command = ' '.join(args)
         try:
             os.system(command)
         except:
             return False
         if self.delete_detail.upper() == 'TRUE':
-            for file in (self.cdsfile, self.alignfile, self.alignfile+'.bionj', self.alignfile+'.iqtree',
+            for file in (self.sequencefile, self.alignfile+'.bionj', self.alignfile+'.iqtree',self.alignfile+'.ckp.gz',
                          self.alignfile+'.log', self.alignfile+'.mldist', self.alignfile+'.model.gz'):
                 try:
                     os.remove(file)

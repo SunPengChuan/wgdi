@@ -10,6 +10,7 @@ import wgdi.base as base
 class karyotype_mapping():
     def __init__(self, options):
         self.position = 'order'
+        self.block_length = 5
         self.limit_length = 5
         for k, v in options:
             setattr(self, str(k), v)
@@ -17,8 +18,9 @@ class karyotype_mapping():
 
     def karyotype_left(self, pairs, ancestor, gff1, gff2):
         for index, row in ancestor.iterrows():
+            (loc_min, loc_max) = sorted([row[1], row[2]])
             index1 = gff1[(gff1['chr'] == row[0]) & (
-                gff1['order'] >= row[1]) & (gff1['order'] <= row[2])].index
+                gff1['order'] >= loc_min) & (gff1['order'] <= loc_max)].index
             gff1.loc[index1, 'color'] = row[3]
             gff1.loc[index1, 'classification'] = row[4]
         data = pd.merge(pairs, gff1, left_on=0,
@@ -31,16 +33,19 @@ class karyotype_mapping():
 
     def karyotype_top(self, pairs, ancestor, gff1, gff2):
         for index, row in ancestor.iterrows():
+            (loc_min, loc_max) = sorted([row[1], row[2]])
             index1 = gff2[(gff2['chr'] == row[0]) & (
-                gff2['order'] >= row[1]) & (gff2['order'] <= row[2])].index
+                gff2['order'] >= loc_min) & (gff2['order'] <= loc_max)].index
             gff2.loc[index1, 'color'] = row[3]
             gff2.loc[index1, 'classification'] = row[4]
+        gff2.to_csv('out1.csv',sep='\t')
         data = pd.merge(pairs, gff2, left_on=1,
                         right_on=gff2.index, how='left')
         data.drop_duplicates(subset=[0], inplace=True)
         data.index = data[0].values
         gff1.loc[data.index, 'color'] = data['color']
         gff1.loc[data.index, 'classification'] = data['classification']
+        # gff1.to_csv('out.csv',sep='\t')
         return gff1
 
     def karyotype_map(self, gff, lens):
@@ -73,7 +78,7 @@ class karyotype_mapping():
             ancestor.loc[group.index[0], 1] = 1
             ancestor.loc[group.index[-1], 2] = lens[chr]
         ancestor[4] = ancestor[4].astype(int)
-        return ancestor[[0,1,2,3,4]]
+        return ancestor[[0, 1, 2, 3, 4]]
 
     def colinear_gene_pairs(self, bkinfo, gff1, gff2):
         data = []
@@ -90,12 +95,14 @@ class karyotype_mapping():
                                    ].index[0], newgff2.loc[newgff2['order'] == b2[i]].index[0]
                 data.append([a, b])
         data = pd.DataFrame(data)
+        data.to_csv('out.csv',sep='\t')
         return data
 
     def run(self):
         bkinfo = pd.read_csv(self.blockinfo, index_col='id')
         bkinfo['chr1'] = bkinfo['chr1'].astype(str)
         bkinfo['chr2'] = bkinfo['chr2'].astype(str)
+        bkinfo = bkinfo[bkinfo['length'] > int(self.block_length)]
         bkinfo['class1'] = ''
         bkinfo['col1'] = ''
         bkinfo['class2'] = ''

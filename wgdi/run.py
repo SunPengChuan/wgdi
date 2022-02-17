@@ -32,7 +32,7 @@ WGDI(Whole-Genome Duplication Integrated analysis) is a Python-based command-lin
 
     https://wgdi.readthedocs.io/en/latest/
     -------------------------------------- '''
-parser.add_argument("-v", "--version", action='version', version='0.5.1')
+parser.add_argument("-v", "--version", action='version', version='0.5.2')
 parser.add_argument("-d", dest="dotplot",
                     help="Show homologous gene dotplot")
 parser.add_argument("-icl", dest="improvedcollinearity",

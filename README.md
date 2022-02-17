@@ -49,6 +49,12 @@ If you use wgdi in your work, please cite:
 > Sun P, Jiao B, Yang Y, et al. WGDI: A user-friendly toolkit for evolutionary analyses of whole-genome duplications and ancestral karyotypes[J]. bioRxiv, 2021. **doi:** https://doi.org/10.1101/2021.04.29.441969
 
 ## News
+## 0.5.3
+
+
+## 0.5.2
+* Fixed some bugs.
+
 ## 0.5.1
 * Fixed the error of the command (-conf).
 * Improved the karyotype_mapping (-km) effect.
@@ -67,3 +73,13 @@ If you use wgdi in your work, please cite:
 5. A tetraploidization event shaped the Aquilaria sinensis genome and contributed to the ability of sesquiterpenes synthesis
 6. High-quality genome assembly of Cinnamomum burmami (chvar. Borneol) provides insights into the natural borneol biosynthesis
 7. The genome sequence provides insights into salt tolerance of Achnatherum splendens (Gramineae), a constructive species of alkaline grassland
+8. Chromosome-level assembly of the common vetch reference genome (Vicia sativa)
+9. A chromosome-level genome assembly of an alpine plant Crucihimalaya lasiocarpa provides insights into high-altitude adaptation
+10. Chromosome-scale genome assembly of the diploid oat Avena longiglumis reveals the landscape of repetitive sequences, genes and chromosome evolution in grasses
+11. The chromosome-level rambutan genome reveals a significant role of segmental duplication in the expansion of resistance genes
+12. A chromosome-level genome assembly for the tertiary relict plant Tetracentron sinense oliv. (trochodendraceae)
+13. Multi-omics reveal differentiation and maintenance of dimorphic flowers in an alpine plant on the Qinghai-Tibet Plateau
+14. The Chromosome-Level Genome of Miracle Fruit (Synsepalum dulcificum) Provides New Insights Into the Evolution and Function of Miraculin.
+15. A chromosome-level reference genome of Ensete glaucum gives insight into diversity, chromosomal and repetitive sequence evolution in the Musaceae
+16. High-quality genome assembly of Cinnamomum burmannii (chvar. Borneol) provides insights into the natural borneol biosynthesis
+17. The Chloranthus sessilifolius genome provides insight into early diversification of angiosperms

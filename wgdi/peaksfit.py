@@ -72,12 +72,12 @@ class peaksfit():
         data = [k for k in data if self.area[0] <= k <= self.area[1]]
         x = np.linspace(self.area[0], self.area[1], self.bins_number)
         n, bins, patches = ax.hist(data, int(
-            self.bins_number), density=1, facecolor='blue', alpha=0.3, label='histogram')
+            self.bins_number), density=1, facecolor='blue', alpha=0.3, label='Histogram')
         if self.histogram_only == True or self.histogram_only.upper() == 'TRUE':
             pass
         else:
             y, fit = self.kde_fit(data, x)
-            ax.plot(x, y, color='black', linestyle='-', label='Gaussian fit')
+            ax.plot(x, y, color='black', linestyle='-', label='Gaussian fitting')
         ax.grid()
         align = dict(family='Arial', verticalalignment="center",
                      horizontalalignment="center")
