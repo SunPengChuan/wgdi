@@ -30,8 +30,8 @@ class ks():
 
     def auto_file(self):
         pairs = []
-        p = pd.read_csv(self.pairs_file, sep='\n', header=None, nrows=30)
-        p = '\n'.join(p[0])
+        f=open(self.pairs_file)
+        p=' '.join(f.readlines()[0:30])
         if 'path length' in p or 'MAXIMUM GAP' in p:
             collinearity = base.read_colinearscan(self.pairs_file)
             pairs = [[v[0], v[2]] for k in collinearity for v in k[1]]
@@ -39,7 +39,7 @@ class ks():
             collinearity = base.read_mcscanx(self.pairs_file)
             pairs = [[v[0], v[2]] for k in collinearity for v in k[1]]
         elif '# Alignment' in p:
-            collinearity = base.read_coliearity(self.pairs_file)
+            collinearity = base.read_collinearity(self.pairs_file)
             pairs = [[v[0], v[2]] for k in collinearity for v in k[1]]
         elif '###' in p:
             collinearity = base.read_jcvi(self.pairs_file)

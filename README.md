@@ -50,7 +50,10 @@ If you use wgdi in your work, please cite:
 
 ## News
 ## 0.5.3
-
+* Fixed legend issue with (-kf).
+* Fixed calculate Ks issue with (-ks).
+* Improved the karyotype_mapping (-km) effect.
+* Improved the alignmenttrees (-at) effect.
 
 ## 0.5.2
 * Fixed some bugs.

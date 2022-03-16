@@ -13,6 +13,7 @@ class ksfigure():
         self.legendfontsize = 30
         self.labelfontsize = 9
         self.area = 0, 3
+        self.shadow = True
         self.mode = 'median'
         for k, v in options:
             setattr(self, str(k), v)
@@ -20,7 +21,7 @@ class ksfigure():
         if self.xlabel == 'none' or self.xlabel == '':
             self.xlabel = r'Synonymous nucleotide subsititution (${K_{s}}$)'
         if self.ylabel == 'none' or self.ylabel == '':
-            self.ylabel = 'No. of syntenic blocks kernel density'
+            self.ylabel = 'kernel density of syntenic blocks'
         if self.title == 'none' or self.title == '':
             self.title = ''
         self.figsize = [float(k) for k in self.figsize.split(',')]
@@ -48,8 +49,8 @@ class ksfigure():
         for index, row in ksfit.iterrows():
             ax.plot(t, self.Gaussian_distribution(
                 t, row[col].values), linestyle=row['linestyle'], color=row['color'],alpha=0.8, label=index, linewidth=row['linewidth'])
-            ax.fill_between(t, 0, self.Gaussian_distribution(
-                t, row[col].values),  color=row['color'], alpha=0.15, interpolate=True, edgecolor=None, label=index,)
+            if self.shadow == True or self.shadow.upper() == 'TRUE':
+                ax.fill_between(t, 0, self.Gaussian_distribution(t, row[col].values),  color=row['color'], alpha=0.15, interpolate=True, edgecolor=None, label=index,)
         align = dict(family='Arial', verticalalignment="center",
                      horizontalalignment="center")
         ax.set_xlabel(self.xlabel, fontsize=self.labelfontsize,
@@ -60,7 +61,11 @@ class ksfigure():
                      fontsize=self.labelfontsize, **align)
         plt.tick_params(labelsize=10)
         handles,labels = ax.get_legend_handles_labels()
-        plt.legend(handles=handles[:int(len(labels)/2)],labels=labels[:int(len(labels)/2)],loc='upper right', prop={
+        if self.shadow == True or self.shadow.upper() == 'TRUE':
+            plt.legend(handles=handles[:int(len(labels)/2)],labels=labels[:int(len(labels)/2)],loc='upper right', prop={
+                   'family': 'Arial', 'style': 'italic', 'size': self.legendfontsize})
+        else:
+            plt.legend(handles=handles[:int(len(labels))],labels=labels[:int(len(labels))],loc='upper right', prop={
                    'family': 'Arial', 'style': 'italic', 'size': self.legendfontsize})
         plt.gca().spines['top'].set_visible(False)
         plt.gca().spines['right'].set_visible(False)

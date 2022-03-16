@@ -28,11 +28,11 @@ from wgdi.trees import trees
 parser = argparse.ArgumentParser(
     prog='wgdi', usage='%(prog)s [options]', epilog="", formatter_class=argparse.RawDescriptionHelpFormatter,)
 parser.description = '''\
-WGDI(Whole-Genome Duplication Integrated analysis) is a Python-based command-line tool that facilitates comprehensive analysis of recursive polyploidization events and cross-species genome alignments. 
+WGDI(Whole-Genome Duplication Integrated analysis):  A user-friendly toolkit for evolutionary analyses of whole-genome duplications and ancestral karyotypes.
 
     https://wgdi.readthedocs.io/en/latest/
     -------------------------------------- '''
-parser.add_argument("-v", "--version", action='version', version='0.5.2')
+parser.add_argument("-v", "--version", action='version', version='0.5.3')
 parser.add_argument("-d", dest="dotplot",
                     help="Show homologous gene dotplot")
 parser.add_argument("-icl", dest="improvedcollinearity",

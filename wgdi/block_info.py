@@ -100,15 +100,18 @@ class block_info():
         blast = self.blast_homo(blast, gff1, gff2, int(self.repeat_number))
         blast.index = blast[0]+','+blast[1]
         collinearity = self.auto_file(gff1, gff2)
-        ks = base.read_ks(self.ks, self.ks_col)
+        if self.ks =='none' or self.ks == ''  or not hasattr(self, 'ks'):
+            ks = pd.Series([])
+        else:
+            ks = base.read_ks(self.ks, self.ks_col)
         data = self.block_position(collinearity, blast, gff1, gff2, ks)
         data['class1'] = 0
         data['class2'] = 0
         data.to_csv(self.savefile, index=None)
 
     def auto_file(self, gff1, gff2):
-        p = pd.read_csv(self.collinearity, sep='\n', header=None, nrows=30)
-        p = '\n'.join(p[0])
+        f=open(self.collinearity)
+        p=' '.join(f.readlines()[0:30])
         if 'path length' in p or 'MAXIMUM GAP' in p:
             collinearity = base.read_colinearscan(self.collinearity)
         elif 'MATCH_SIZE' in p or '## Alignment' in p:
@@ -125,7 +128,7 @@ class block_info():
                     continue
                 collinearity.append([block[0], newblock, block[2]])
         elif '# Alignment' in p:
-            collinearity = base.read_coliearity(self.collinearity)
+            collinearity = base.read_collinearity(self.collinearity)
         elif '###' in p:
             col = base.read_jcvi(self.collinearity)
             collinearity = []

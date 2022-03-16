@@ -83,6 +83,7 @@ class kspeaks():
         ax.set_xlabel(r'${K_{s}}$', fontsize=20)
         ax.set_ylabel('Frequency', fontsize=20)
         ax.tick_params(labelsize=18)
+        ax.set_xlim(self.area)
         ax.legend(fontsize=20)
         plt.subplots_adjust(left=0.09, right=0.96, top=0.93, bottom=0.12)
         plt.savefig(self.savefig, dpi=500)

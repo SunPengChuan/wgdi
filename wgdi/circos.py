@@ -72,7 +72,7 @@ class circos():
             plt.plot(x, y, linestyle='-',
                      color=color[str(k)], lw=lw, alpha=alpha)
 
-    def chr_loction(self, lens, angle_gap, angle):
+    def chr_location(self, lens, angle_gap, angle):
         start, end, loc_chr = 0, 0.2*angle_gap, {}
         for k in lens.index:
             end += angle_gap + angle * (float(lens[k]))
@@ -170,7 +170,7 @@ class circos():
         radius, angle_gap = float(self.radius), float(self.angle_gap)
         angle = (2 * np.pi - (int(len(lens))+1.5)
                  * angle_gap) / (int(lens.sum()))
-        loc_chr = self.chr_loction(lens, angle_gap, angle)
+        loc_chr = self.chr_location(lens, angle_gap, angle)
         list_colors = [str(k).strip() for k in re.split(',|:', self.colors)]
         chr_color = dict(zip(list_colors[::2], list_colors[1::2]))
         gff = base.newgff(self.gff)

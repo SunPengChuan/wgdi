@@ -34,7 +34,7 @@ class mycollinearity():
         else:
             self.process = 4
 
-    def deal_blast(self, blast, gff1, gff2, rednum, repeat_number):
+    def deal_blast(self, blast, rednum, repeat_number):
         blast['grading'] = 0
         bluenum = 4+rednum
         index = [group.sort_values(by=[11], ascending=[False])[:repeat_number].index.tolist()
@@ -69,8 +69,7 @@ class mycollinearity():
         gff2 = gff2[gff2['chr'].isin(lens2.index)]
         blast = base.newblast(self.blast, int(self.score), float(
             self.evalue), gff1, gff2, self.blast_reverse)
-        blast = self.deal_blast(blast, gff1, gff2, int(
-            self.multiple), int(self.repeat_number))
+        blast = self.deal_blast(blast, int(self.multiple), int(self.repeat_number))
         blast['loc1'] = blast[0].map(gff1.loc[:, self.position])
         blast['loc2'] = blast[1].map(gff2.loc[:, self.position])
         blast['chr1'] = blast[0].map(gff1.loc[:, 'chr'])
@@ -124,7 +123,7 @@ class mycollinearity():
             blocks, evalues, socres = data
             n = 1
             for i in range(len(blocks)):
-                if len(blocks[i]) < self.over_windows:
+                if len(blocks[i]) < int(self.over_windows):
                     continue
                 if blocks[i][1][0]-blocks[i][0][0] > 0:
                     mark = 'plus'

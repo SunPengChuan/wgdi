@@ -107,7 +107,7 @@ def read_jcvi(fn):
     return data
 
 
-def read_coliearity(fn):
+def read_collinearity(fn):
     f1 = open(fn)
     data, b = [], []
     flag, num = 0, 0
@@ -230,8 +230,6 @@ def dotplot_frame(fig, ax, lens1, lens2, step1, step2, genome1_name, genome2_nam
     ax.set_xticklabels(lens2.index, fontsize=13, **align)
     ax.xaxis.set_ticks_position('none')
     ax.yaxis.set_ticks_position('none')
-    align = dict(family='Arial', style='normal',
-                 horizontalalignment="center", verticalalignment="center")
     if arr[0] < 0:
         ax.text(-0.065, 0.5, genome1_name, weight='semibold',
                 fontsize=18, rotation=90, **align)
