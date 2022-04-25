@@ -50,6 +50,11 @@ If you use wgdi in your work, please cite:
 
 ## News
 ## 0.5.3
+* Improved the alignmenttrees (-km) effect.
+* little change (-at).
+
+
+## 0.5.3
 * Fixed legend issue with (-kf).
 * Fixed calculate Ks issue with (-ks).
 * Improved the karyotype_mapping (-km) effect.
@@ -89,3 +94,8 @@ If you use wgdi in your work, please cite:
 18. Chromosome‐level pepino genome provides insights into genome evolution and anthocyanin biosynthesis in Solanaceae 《The Plant Journal》
 19. The genome of Hibiscus hamabo reveals its adaptation to saline and waterlogged habitat 《Horticulture Research》
 20. Chromosome-Level Genome Assembly of the Rare and Endangered Tropical Plant Speranskia yunnanensis (Euphorbiaceae) 《Frontiers in Genetics》
+21. The chromosome-level genome assembly of Gentiana dahurica (Gentianaceae) provides insights into gentiopicroside biosynthesis《DNA Research》
+22. Genomic insights into present local adaptation and future climate change vulnerability of a keystone forest tree species in East Asian 《BioRxiv》
+23. PolyReco: A Method to Automatically Label Collinear Regions and Recognize Polyploidy Events Based on the K S Dotplot 《Frontiers in Genetics》
+24. Reshuffling of the ancestral core-eudicot genome shaped chromatin topology and epigenetic modification in Panax 《Nature Communications》
+25. Deletion and tandem duplications of biosynthetic genes drive the diversity of triterpenoids in Aralia elata 《Nature Communications》

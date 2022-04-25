@@ -43,7 +43,6 @@ class karyotype_mapping():
                 gff2['order'] >= loc_min) & (gff2['order'] <= loc_max)].index
             gff2.loc[index1, 'color'] = row[3]
             gff2.loc[index1, 'classification'] = row[4]
-        gff2.to_csv('out1.csv', sep='\t')
         data = pd.merge(pairs, gff2, left_on=1,
                         right_on=gff2.index, how='left')
         data.drop_duplicates(subset=[0], inplace=True)
@@ -109,7 +108,7 @@ class karyotype_mapping():
                 class_old = row[4]
                 area_mo = row[2]
                 continue
-            if (chr_old == row[0]) and (class_old == row[4]):
+            if (chr_old == row[0]):
                 area = row[1]-area_mo
                 if area == 1:
                     area_mo = row[2]
