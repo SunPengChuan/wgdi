@@ -42,6 +42,8 @@ Here are some videos with simple examples of WGDI.
 
 ###### [WGDI的简单使用（二）](https://www.bilibili.com/video/BV195411P7L1)
 
+chatting group QQ : 966612552
+
 ## Citating WGDI
 
 If you use wgdi in your work, please cite:
@@ -49,7 +51,12 @@ If you use wgdi in your work, please cite:
 > Sun P, Jiao B, Yang Y, et al. WGDI: A user-friendly toolkit for evolutionary analyses of whole-genome duplications and ancestral karyotypes[J]. bioRxiv, 2021. **doi:** https://doi.org/10.1101/2021.04.29.441969
 
 ## News
-## 0.5.3
+## 0.5.5
+* Add ancestral karyotype (-ak)
+* Add ancestral karyotype repertoire (-akr)
+
+
+## 0.5.4
 * Improved the alignmenttrees (-km) effect.
 * little change (-at).
 

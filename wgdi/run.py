@@ -24,6 +24,8 @@ from wgdi.polyploidy_classification import polyploidy_classification
 from wgdi.retain import retain
 from wgdi.run_colliearity import mycollinearity
 from wgdi.trees import trees
+from wgdi.ancestral_karyotype import ancestral_karyotype
+from wgdi.ancestral_karyotype_repertoire import ancestral_karyotype_repertoire
 
 parser = argparse.ArgumentParser(
     prog='wgdi', usage='%(prog)s [options]', epilog="", formatter_class=argparse.RawDescriptionHelpFormatter,)
@@ -32,7 +34,7 @@ WGDI(Whole-Genome Duplication Integrated analysis):  A user-friendly toolkit for
 
     https://wgdi.readthedocs.io/en/latest/
     -------------------------------------- '''
-parser.add_argument("-v", "--version", action='version', version='0.5.4')
+parser.add_argument("-v", "--version", action='version', version='0.5.5')
 parser.add_argument("-d", dest="dotplot",
                     help="Show homologous gene dotplot")
 parser.add_argument("-icl", dest="improvedcollinearity",
@@ -57,8 +59,12 @@ parser.add_argument("-a", dest="alignment",
                     help="Show event-related genomic alignment in a dotplot")
 parser.add_argument("-k", dest="karyotype",
                     help="Show genome evolution from reconstructed ancestors")
+parser.add_argument("-ak", dest="ancestral_karyotype",
+                    help="Generation of ancestral karyotypes from chromosomes that retain the same structure in modern genomes")
+parser.add_argument("-akr", dest="ancestral_karyotype_repertoire",
+                    help="Incorporate genes from collinearity blocks into the ancestral karyotype repertoire")
 parser.add_argument("-km", dest="karyotype_mapping",
-                    help="Mapping from the known karyotype result to this species")
+                    help="Mapping from the known karyotype result to this species")                    
 parser.add_argument("-at", dest="alignmenttrees",
                     help="Collinear genes construct phylogenetic trees")
 parser.add_argument("-p", dest="pindex",
@@ -101,7 +107,9 @@ def module_to_run(argument, conf):
         'configure': run_configure,
         'polyploidy_classification': (polyploidy_classification, conf, 'polyploidy classification'),
         'karyotype': (karyotype, conf, 'karyotype'),
+        'ancestral_karyotype': (ancestral_karyotype, conf, 'ancestral_karyotype'),
         'karyotype_mapping': (karyotype_mapping, conf, 'karyotype_mapping'),
+        'ancestral_karyotype_repertoire': (ancestral_karyotype_repertoire, conf, 'ancestral_karyotype_repertoire'),
     }
     if argument == 'configure':
         run_configure()
@@ -129,6 +137,8 @@ def main():
                'improvedcollinearity': 'collinearity.conf',
                'polyploidy_classification': 'polyploidy_classification.conf',
                'karyotype': 'karyotype.conf',
+               'ancestral_karyotype': 'ancestral_karyotype.conf',
+               'ancestral_karyotype_repertoire': 'ancestral_karyotype_repertoire.conf',
                'karyotype_mapping': 'karyotype_mapping.conf',
                }
     for arg in vars(args):

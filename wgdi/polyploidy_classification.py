@@ -28,6 +28,8 @@ class polyploidy_classification():
             bkinfo['chr2'].isin(ancestor_top[0].values))]
         bkinfo[self.classid[0]] = 0
         bkinfo[self.classid[1]] = 0
+        bkinfo[self.classid[0]+'_color'] = ''
+        bkinfo[self.classid[1]+'_color'] = ''
         bkinfo['diff'] = 0
         for name, group in bkinfo.groupby('chr1'):
             d1 = ancestor_left[ancestor_left[0] == name]
@@ -40,6 +42,7 @@ class polyploidy_classification():
                     if h > bkinfo.loc[index1,'diff']:
                         bkinfo.loc[index1,'diff']=h
                         bkinfo.loc[index1, self.classid[0]] = row2[4]
+                        bkinfo.loc[index1, self.classid[0]+'_color'] = row2[3]
         bkinfo['diff'] = 0
         for name, group in bkinfo.groupby('chr2'):
             d2 = ancestor_top[ancestor_top[0] == name]
@@ -52,5 +55,6 @@ class polyploidy_classification():
                     if h > bkinfo.loc[index1,'diff']:
                         bkinfo.loc[index1,'diff']=h
                         bkinfo.loc[index1, self.classid[1]] = row2[4]
+                        bkinfo.loc[index1, self.classid[1]+'_color'] = row2[3]
         bkinfo.to_csv(self.savefile, index=None)
         sys.exit(0)
