@@ -1,6 +1,5 @@
 import re
 import sys
-from turtle import bk
 
 import numpy as np
 import pandas as pd
@@ -62,8 +61,10 @@ class ancestral_karyotype_repertoire():
         lens.to_csv(self.ancestor_lens, sep="\t", header=None)
         ancestor = base.read_calassfication(self.ancestor)
         for index, row in ancestor.iterrows():
-            id1 = gff1[(gff1['chr'] == str(row[0])) & (gff1['order'] == row[1])].index[0]
-            id2 = gff1[(gff1['chr'] == str(row[0])) & (gff1['order'] == row[2])].index[0]
+            id1 = gff1[(gff1['chr'] == str(row[0])) & (
+                gff1['order'] == row[1])].index[0]
+            id2 = gff1[(gff1['chr'] == str(row[0])) & (
+                gff1['order'] == row[2])].index[0]
             ancestor.loc[index, 1] = df.loc[id1, 'order']
             ancestor.loc[index, 2] = df.loc[id2, 'order']
         ancestor.to_csv(self.ancestor_new, sep="\t", index=False, header=None)

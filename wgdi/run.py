@@ -34,7 +34,7 @@ WGDI(Whole-Genome Duplication Integrated analysis):  A user-friendly toolkit for
 
     https://wgdi.readthedocs.io/en/latest/
     -------------------------------------- '''
-parser.add_argument("-v", "--version", action='version', version='0.5.5')
+parser.add_argument("-v", "--version", action='version', version='0.5.6')
 parser.add_argument("-d", dest="dotplot",
                     help="Show homologous gene dotplot")
 parser.add_argument("-icl", dest="improvedcollinearity",
@@ -60,7 +60,7 @@ parser.add_argument("-a", dest="alignment",
 parser.add_argument("-k", dest="karyotype",
                     help="Show genome evolution from reconstructed ancestors")
 parser.add_argument("-ak", dest="ancestral_karyotype",
-                    help="Generation of ancestral karyotypes from chromosomes that retain the same structure in modern genomes")
+                    help="Generation of ancestral karyotypes from chromosomes that retain same structures in genomes")
 parser.add_argument("-akr", dest="ancestral_karyotype_repertoire",
                     help="Incorporate genes from collinearity blocks into the ancestral karyotype repertoire")
 parser.add_argument("-km", dest="karyotype_mapping",
