@@ -51,15 +51,18 @@ If you use wgdi in your work, please cite:
 > Sun P, Jiao B, Yang Y, et al. WGDI: A user-friendly toolkit for evolutionary analyses of whole-genome duplications and ancestral karyotypes[J]. bioRxiv, 2021. **doi:** https://doi.org/10.1101/2021.04.29.441969
 
 ## News
-## 0.5.5
+
+## 0.5.7
+- Fixed issue with chromosome order (-ak).
+- Fixed issue with gene names (-ks).
+
+## 0.5.5 and 0.5.6
 * Add ancestral karyotype (-ak)
 * Add ancestral karyotype repertoire (-akr)
-
 
 ## 0.5.4
 * Improved the alignmenttrees (-km) effect.
 * little change (-at).
-
 
 ## 0.5.3
 * Fixed legend issue with (-kf).

@@ -188,6 +188,5 @@ class trees():
             command = ' '.join([str(k) for k in args])
             os.system(command)
         df = pd.read_csv(self.trees_file, header=None, sep='\t')
-        df[1] = data
         df[0].to_csv(self.trees_file, index=None, sep='\t', header=False)
         print("done")

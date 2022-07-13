@@ -20,12 +20,12 @@ class ancestral_karyotype():
         ancestor = base.read_calassfication(self.ancestor)
         gff = gff[gff['chr'].isin(ancestor[0].values.tolist())]
         newgff = gff.copy()
-        data = []
+        data,num = [],1
         chr_arr = ancestor[3].drop_duplicates().to_list()
         chr_dict = dict(zip(chr_arr, range(1, len(chr_arr)+1)))
+        ancestor['order'] = ancestor[3].map(chr_dict)
         dict1, dict2 = {}, {}
-        for (cla, color), group in ancestor.groupby([4, 3], sort=[False, False]):
-            num = chr_dict[color] + len(chr_arr)*(int(cla)-1)
+        for (cla, order), group in ancestor.groupby([4, 'order'], sort=[False, False]):
             for index, row in group.iterrows():
                 index1 = gff[(gff['chr'] == row[0]) & (
                     gff['order'] >= row[1]) & (gff['order'] <= row[2])].index
@@ -33,7 +33,8 @@ class ancestral_karyotype():
                 for k in index1:
                     data.append(newgff.loc[k, :].values.tolist()+[k])
             dict1[str(num)] = cla
-            dict2[str(num)] = color
+            dict2[str(num)] = group[3].values[0]
+            num+=1
         df = pd.DataFrame(data)
         pep = SeqIO.to_dict(SeqIO.parse(self.pep_file, "fasta"))
         df = df[df[6].isin(pep.keys())]
