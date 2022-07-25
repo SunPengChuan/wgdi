@@ -30,8 +30,8 @@ class ks():
 
     def auto_file(self):
         pairs = []
-        f=open(self.pairs_file)
-        p=' '.join(f.readlines()[0:30])
+        f = open(self.pairs_file)
+        p = ' '.join(f.readlines()[0:30])
         if 'path length' in p or 'MAXIMUM GAP' in p:
             collinearity = base.read_colinearscan(self.pairs_file)
             pairs = [[v[0], v[2]] for k in collinearity for v in k[1]]
@@ -96,11 +96,16 @@ class ks():
                     allpairs.append(k)
             pairs = allpairs
         for k in pairs:
+            cds_gene1, cds_gene2 = cds[k[0]], cds[k[1]]
+            cds_gene1.id, cds_gene2.id = 'gene1', 'gene2'
+            pep_gene1, pep_gene2 = pep[k[0]], pep[k[1]]
+            pep_gene1.id, pep_gene2.id = 'gene1', 'gene2'
             SeqIO.write([cds[k[0]], cds[k[1]]], self.pair_cds_file, "fasta")
             SeqIO.write([pep[k[0]], pep[k[1]]], self.pair_pep_file, "fasta")
-            kaks = self.pair_kaks(k)
+            kaks = self.pair_kaks(['gene1', 'gene2'])
             if kaks == None:
                 continue
+            print([str(i) for i in list(k)+list(kaks)])
             ks_file.write('\t'.join([str(i) for i in list(k)+list(kaks)])+'\n')
         ks_file.close()
         for file in (self.pair_pep_file, self.pair_cds_file, self.mrtrans, self.pair_yn, self.prot_align_file, '2YN.dN', '2YN.dS', '2YN.t', 'rst', 'rst1', 'yn00.ctl', 'rub'):
