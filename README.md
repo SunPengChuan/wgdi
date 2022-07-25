@@ -52,9 +52,13 @@ If you use wgdi in your work, please cite:
 
 ## News
 
+## 0.5.8
+
+Fixed issue with gene names (-ks).
+
 ## 0.5.7
 - Fixed issue with chromosome order (-ak).
-- Fixed issue with gene names (-ks).
+- Fixed issue with gene names (-ks).  This version is not fixed, please install the latest version.
 
 ## 0.5.5 and 0.5.6
 * Add ancestral karyotype (-ak)
@@ -109,3 +113,4 @@ If you use wgdi in your work, please cite:
 23. PolyReco: A Method to Automatically Label Collinear Regions and Recognize Polyploidy Events Based on the K S Dotplot 《Frontiers in Genetics》
 24. Reshuffling of the ancestral core-eudicot genome shaped chromatin topology and epigenetic modification in Panax 《Nature Communications》
 25. Deletion and tandem duplications of biosynthetic genes drive the diversity of triterpenoids in Aralia elata 《Nature Communications》
+
