@@ -1,5 +1,3 @@
-from pickletools import long1
-import wgdi
 import configparser
 import hashlib
 import os
@@ -9,6 +7,8 @@ import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
 from Bio import Seq, SeqIO, SeqRecord
+
+import wgdi
 
 
 def gen_md5_id(item):
