@@ -25,7 +25,6 @@ class ancestral_karyotype_repertoire():
         if self.blockinfo_reverse == True or self.blockinfo_reverse.upper() == 'TRUE':
             bkinfo[['chr1', 'chr2']] = bkinfo[['chr2', 'chr1']]
             bkinfo[['block1', 'block2']] = bkinfo[['block2', 'block1']]
-        bkinfo = bkinfo.head(5)
         for index, row in bkinfo.iterrows():
             block1, block2 = row['block1'].split('_'), row['block2'].split('_')
             block1, block2 = [int(k) for k in block1], [int(k) for k in block2]

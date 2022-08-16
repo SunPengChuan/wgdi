@@ -1,3 +1,4 @@
+from pickletools import long1
 import wgdi
 import configparser
 import hashlib
@@ -173,8 +174,8 @@ def newgff(file):
     gff.rename(columns={0: 'chr', 2: 'start',
                         3: 'end', 4: 'stand', 5: 'order'}, inplace=True)
     gff['chr'] = gff['chr'].astype(str)
-    gff['start'] = gff['start'].astype(int)
-    gff['end'] = gff['end'].astype(int)
+    gff['start'] = gff['start'].astype(np.int64)
+    gff['end'] = gff['end'].astype(np.int64)
     gff['stand'] = gff['stand'].astype(str)
     gff['order'] = gff['order'].astype(int)
     return gff

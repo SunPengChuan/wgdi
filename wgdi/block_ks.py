@@ -79,7 +79,7 @@ class block_ks():
             bkinfo[['block1', 'block2']] = bkinfo[['block2', 'block1']]
         bkinfo['chr1'] = bkinfo['chr1'].astype(str)
         bkinfo['chr2'] = bkinfo['chr2'].astype(str)
-        bkinfo = bkinfo[(bkinfo['length'] > int(self.block_length)) & (bkinfo['chr1'].isin(
+        bkinfo = bkinfo[(bkinfo['length'] >= int(self.block_length)) & (bkinfo['chr1'].isin(
             lens1.index)) & (bkinfo['chr2'].isin(lens2.index)) & (bkinfo['pvalue'] < float(self.pvalue))]
         if self.tandem == False or self.tandem.upper() == 'FALSE':
             bkinfo = self.remove_tandem(bkinfo)

@@ -1,22 +1,18 @@
-import re
-
 import numpy as np
 import pandas as pd
 
-from wgdi import base
-
 
 class collinearity:
-    def __init__(self, options, matrix):
+    def __init__(self, options, points):
         self.gap_penality = -1
-        self.over_length = 100000
+        self.over_length = 0
         self.mg1 = 40
         self.mg2 = 40
         self.pvalue = 1
         self.over_gap = 5
-        self.path_dict = {}
-        self.mat = matrix
+        self.points = points
         self.p_value = 0
+        self.coverage_ratio = 0.8
         for k, v in options:
             setattr(self, str(k), v)
         if hasattr(self, 'grading'):
@@ -28,162 +24,116 @@ class collinearity:
         else:
             self.mg1, self.mg2 = [40, 40]
         self.pvalue = float(self.pvalue)
+        self.coverage_ratio = float(self.coverage_ratio)
 
     def get_martix(self):
-        self.mat.columns = self.mat.columns.astype(int)
-        self.mat.index = self.mat.index.astype(int)
-        (m, n) = self.mat.shape
-        self.score1 = self.mat.copy()
-        self.score2 = self.mat.copy()
-        self.mat_new = self.mat.copy()
-        self.matold = self.mat.copy()
-        self.matold[self.matold > 0] = 1
-        self.path1 = pd.DataFrame([['' for i in range(n)] for j in range(
-            m)], index=self.mat.index, columns=self.mat.columns)
-        self.path2 = pd.DataFrame([['' for i in range(n)] for j in range(
-            m)], index=self.mat.index, columns=self.mat.columns)
+        self.points['usedtimes1'] = 0
+        self.points['usedtimes2'] = 0
+        self.points['times'] = 1
+        self.points['score1'] = self.points['grading']
+        self.points['score2'] = self.points['grading']
+        self.points['score2'] = self.points['grading']
+        self.points['path1'] = self.points.index.to_numpy().reshape(
+            len(self.points), 1).tolist()
+        self.points['path2'] = self.points['path1']
+        self.points_init = self.points.copy()
+        self.mat_points = self.points
 
     def run(self):
         self.get_martix()
-        loc, pvalues, scores = [], [], []
-        while(self.over_length >= 3):
-            if self.maxPath():
+        self.score_matrix()
+        data = []
+        # plus
+        points1 = self.points[['loc1', 'loc2',
+                               'score1', 'path1', 'usedtimes1']]
+        points1 = points1.sort_values(by=['score1'], ascending=[False])
+        points1.drop(
+            index=points1[points1['usedtimes1'] < 1].index, inplace=True)
+        points1.columns = ['loc1', 'loc2', 'score', 'path', 'usedtimes']
+        while (self.over_length >= self.over_gap or len(points1) >= self.over_gap):
+            if self.maxPath(points1):
                 if self.p_value > self.pvalue:
                     continue
-                loc.append(self.path)
-                pvalues.append(self.p_value)
-                scores.append(self.score)
-        return loc, pvalues, scores
-
-    def maxPath(self):
-        mat_new_index, mat_new_columns = self.mat_new.index, self.mat_new.columns
-        for i, row in enumerate(mat_new_index):
-            for j, col in enumerate(mat_new_columns):
-                #Point (i, j) as the starting point, search for synteny blocks.
-                if self.mat_new.loc[row, col] == 0:
+                data.append([self.path, self.p_value, self.score])
+        # minus
+        points2 = self.points[['loc1', 'loc2',
+                               'score2', 'path2', 'usedtimes2']]
+        points2 = points2.sort_values(by=['score2'], ascending=[False])
+        points2.drop(
+            index=points2[points2['usedtimes2'] < 1].index, inplace=True)
+        points2.columns = ['loc1', 'loc2', 'score', 'path', 'usedtimes']
+        while (self.over_length >= self.over_gap) or (len(points2) >= self.over_gap):
+            if self.maxPath(points2):
+                if self.p_value > self.pvalue:
                     continue
-                gap = self.mg2
-                for row_i in mat_new_index[i+1:i+1+self.mg1]:
-                    if row_i - row > self.mg1:
-                        break
-                    for col_j in mat_new_columns[j+1:j+1+self.mg2]:
-                        if col_j - col > gap:
-                            break
-                        if self.mat_new.loc[row_i, col_j] == 0:
-                            continue
-                        s = self.score1.loc[row, col]+self.mat_new.loc[row_i,
-                                                                       col_j]+(row_i-row-1+col_j-col-1)*self.gap_penality
-                        if self.score1.loc[row_i, col_j] < s:
-                            self.score1.loc[row_i, col_j] = s
-                            self.path1.loc[row_i,
-                                           col_j] = self.path1.loc[row, col]
-                            self.path1.loc[row_i,
-                                           col_j] += str(row)+':'+str(col)+'_'
-                            gap = min(col_j-col, gap)
+                data.append([self.path, self.p_value, self.score])
+        return data
 
-        mat_new_index = mat_new_index[::-1]
-        for i, row in enumerate(mat_new_index):
-            for j, col in enumerate(mat_new_columns):
-                if self.mat_new.loc[row, col] == 0:
-                    continue
-                gap = self.mg2
-                for row_i in mat_new_index[i+1:i+1+self.mg1]:
-                    if row - row_i > self.mg1 or row_i >= row:
-                        break
-                    for col_j in mat_new_columns[j+1:j+1+self.mg2]:
-                        if col_j - col > gap:
-                            break
-                        if self.mat_new.loc[row_i, col_j] == 0:
-                            continue
-                        s = self.score2.loc[row, col]+self.mat_new.loc[row_i,
-                                                                       col_j]+(row-row_i-1+col_j-col-1)*self.gap_penality
-                        if self.score2.loc[row_i, col_j] < s:
-                            self.score2.loc[row_i, col_j] = s
-                            self.path2.loc[row_i,
-                                           col_j] = self.path2.loc[row, col]
-                            self.path2.loc[row_i,
-                                           col_j] += str(row)+':'+str(col)+'_'
-                            gap = min(col_j-col, gap)
+    def score_matrix(self):
+        for index, row, col in self.points[['loc1', 'loc2', ]].itertuples():
+            points = self.points[(self.points['loc1'] > row) & (self.points['loc2'] > col) & (
+                self.points['loc1'] < row+self.mg1) & (self.points['loc2'] < col+self.mg2)]
+            row_i_old, gap = row, self.mg2
+            for index_ij, row_i, col_j, grading in points[['loc1', 'loc2', 'grading']].itertuples():
+                if col_j - col > gap and row_i > row_i_old:
+                    break
+                s = grading + (row_i-row+col_j-col)*self.gap_penality
+                s1 = s+self.points.at[index, 'score1']
+                if s > 0 and self.points.at[index_ij, 'score1'] < s1:
+                    self.points.at[index_ij, 'score1'] = s1
+                    self.points.at[index, 'usedtimes1'] += 1
+                    self.points.at[index_ij, 'usedtimes1'] += 1
+                    self.points.at[index_ij,
+                                   'path1'] = self.points.at[index, 'path1']+[index_ij]
+                    gap = min(col_j-col, gap)
+                    row_i_old = row_i
+        points_revese = self.points.sort_values(
+            by=['loc1', 'loc2'], ascending=[False, True])
+        for index, row, col in points_revese[['loc1', 'loc2']].itertuples():
+            points = points_revese[(points_revese['loc1'] < row) & (points_revese['loc2'] > col) & (
+                points_revese['loc1'] > row-self.mg1) & (points_revese['loc2'] < col+self.mg2)]
+            row_i_old, gap = row, self.mg2
+            for index_ij, row_i, col_j, grading in points[['loc1', 'loc2', 'grading']].itertuples():
+                if col_j - col > gap and row_i < row_i_old:
+                    break
+                s = grading + (row-row_i+col_j-col)*self.gap_penality
+                s1 = s + self.points.at[index, 'score2']
+                if s > 0 and self.points.at[index_ij, 'score2'] < s1:
+                    self.points.at[index_ij, 'score2'] = s1
+                    self.points.at[index, 'usedtimes2'] += 1
+                    self.points.at[index_ij, 'usedtimes2'] += 1
+                    self.points.at[index_ij,
+                                   'path2'] = self.points.at[index, 'path2']+[index_ij]
+                    gap = min(col_j-col, gap)
+                    row_i_old = row_i
+        return self.points
 
-        if self.score1.empty or self.score2.empty or self.score1.stack().max() == self.score2.stack().max() == 0:
-            self.over_length = 0
-            self.path = []
-            self.p_value = np.nan
-            self.score = 0
-            return False
-        if self.score1.stack().max() >= self.score2.stack().max():
-            (x, y) = self.score1.stack().idxmax()
-            self.score = self.score1.loc[x, y]
-            self.path1.loc[x, y] += str(int(x))+':'+str(y)+'_'
-            array = re.findall('\d+', self.path1.loc[x, y])
-            self.path = [[int(array[i]), int(array[i+1])]
-                         for i in range(0, len(array), 2)]
+    def maxPath(self, points):
+        self.score, self.path_index = points.loc[points.index[0], [
+            'score', 'path']]
+        self.path = points[points.index.isin(self.path_index)]
+        self.over_length = len(self.path_index)
+        # Whether the block overlaps with other blocks
+        if self.over_length >= self.over_gap and len(self.path)/self.over_length > self.coverage_ratio:
+            points.drop(index=self.path.index, inplace=True)
+            [[loc1_min, loc2_min], [loc1_max, loc2_max]] = self.path[[
+                'loc1', 'loc2']].agg(['min', 'max']).to_numpy()
+            # calculate pvalues
+            gap_init = self.points_init[(loc1_min <= self.points_init['loc1']) & (self.points_init['loc1'] <= loc1_max) &
+                                        (loc2_min <= self.points_init['loc2']) & (self.points_init['loc2'] <= loc2_max)].copy()
+            self.p_value = self.pvalue_estimated(
+                gap_init, loc1_max-loc1_min+1, loc2_max-loc2_min+1)
+            self.path = self.path.sort_values(by=['loc1'], ascending=[True])[
+                ['loc1', 'loc2']]
+            return True
         else:
-            (x, y) = self.score2.stack().idxmax()
-            self.score = self.score2.loc[x, y]
-            self.path2.loc[x, y] += str(int(x))+':'+str(y)+'_'
-            array = re.findall('\d+', self.path2.loc[x, y])
-            self.path = [[int(array[i]), int(array[i+1])]
-                         for i in range(0, len(array), 2)]
-        self.over_length = len(self.path)
-        (x1, y1), (x2, y2) = self.path[0], self.path[-1]
-        x1, x2 = sorted([x1, x2])
-        y1, y2 = sorted([y1, y2])
-        #The interval of the path on the block.
-        x_gap, y_gap = [], []
-        x_gap1, y_gap1 = [], []
-        x_gap2, y_gap2 = [], []
-        for k in self.mat.index:
-            if k > x2+self.mg1:
-                break
-            if k >= x1 - self.mg1:
-                x_gap.append(k)
-            if k >= x1:
-                x_gap1.append(k)
-            if k <= x2 and k >= x1 - self.mg1:
-                x_gap2.append(k)
-        for k in self.mat.columns:
-            if k > y2 + self.mg2:
-                break
-            if k >= y1-self.mg2:
-                y_gap.append(k)
-            if k >= y1:
-                y_gap1.append(k)
-        y_gap2 = y_gap1
-        mark = False
-        if self.right_path():
-            for row, col in self.path:
-                self.mat.loc[row, col] = 0
-        else:
-            mark = True
-        self.score1.loc[x_gap1, y_gap1] = 0
-        self.score2.loc[x_gap2, y_gap2] = 0
-        self.path1.loc[x_gap1, y_gap1] = ''
-        self.path2.loc[x_gap2, y_gap2] = ''
-        self.mat_new = self.mat.loc[x_gap, y_gap]
-        self.mat_new = self.mat_new.loc[:, self.mat_new.sum(axis=0) != 0]
-        self.mat_new = self.mat_new.loc[self.mat_new.sum(axis=1) != 0, :]
-        if mark:
-            return False
-        self.p_value = self.pvalue_estimated(x1, x2, y1, y2, x_gap, y_gap)
-        return True
+            points.drop(index=points.index[0], inplace=True)
+        return False
 
-    def right_path(self):
-        for k in self.path:
-            if str(k[0])+':'+str(k[1]) in self.path_dict:
-                return False
-        for k in self.path:
-            self.path_dict[str(k[0])+':'+str(k[1])] = 1
-        return True
-
-    def pvalue_estimated(self, x1, x2, y1, y2, x_gap, y_gap):
-        N = 0
-        mat = self.matold.loc[x_gap, y_gap]
-        N1 = mat.sum().sum()
-        N = mat[mat > 0].count().sum()
-        mat[mat > 0] += 1
-        self.matold.loc[x_gap, y_gap] = mat
+    def pvalue_estimated(self, gap, L1, L2):
+        N1 = gap['times'].sum()
+        N = len(gap)
+        self.points_init.loc[gap.index, 'times'] += 1
         m = len(self.path)
-        L1, L2 = x2-x1+1, y2-y1+1
         a = (1-self.score/m/self.grading[0])*(N1-m+1)/N*(L1-m+1)*(L2-m+1)/L1/L2
         return round(a, 4)

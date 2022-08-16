@@ -105,7 +105,6 @@ class ks():
             kaks = self.pair_kaks(['gene1', 'gene2'])
             if kaks == None:
                 continue
-            print([str(i) for i in list(k)+list(kaks)])
             ks_file.write('\t'.join([str(i) for i in list(k)+list(kaks)])+'\n')
         ks_file.close()
         for file in (self.pair_pep_file, self.pair_cds_file, self.mrtrans, self.pair_yn, self.prot_align_file, '2YN.dN', '2YN.dS', '2YN.t', 'rst', 'rst1', 'yn00.ctl', 'rub'):

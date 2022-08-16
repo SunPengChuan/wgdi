@@ -42,9 +42,7 @@ class retain():
         groups = self.retain.groupby(['chr'])
         for i in range(len(lens)):
             group = groups.get_group(lens.index[i])
-            print(group)
             for j in self.retain.columns[:-2]:
-                print(len(group['order'].values),len(group[j].values))
                 axs[i].plot(group['order'].values, group[j].values,
                             linestyle='-', color=self.colors[j-1], linewidth=1)
             axs[i].spines['right'].set_visible(False)

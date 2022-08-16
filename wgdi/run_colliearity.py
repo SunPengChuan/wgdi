@@ -1,7 +1,5 @@
 import gc
-import os
 import re
-import shutil
 import sys
 from multiprocessing import Pool
 
@@ -33,6 +31,7 @@ class mycollinearity():
             self.process = int(self.process)
         else:
             self.process = 4
+        self.over_windows = int(self.over_windows)
 
     def deal_blast(self, blast, rednum, repeat_number):
         blast['grading'] = 0
@@ -69,7 +68,8 @@ class mycollinearity():
         gff2 = gff2[gff2['chr'].isin(lens2.index)]
         blast = base.newblast(self.blast, int(self.score), float(
             self.evalue), gff1, gff2, self.blast_reverse)
-        blast = self.deal_blast(blast, int(self.multiple), int(self.repeat_number))
+        blast = self.deal_blast(blast, int(
+            self.multiple), int(self.repeat_number))
         blast['loc1'] = blast[0].map(gff1.loc[:, self.position])
         blast['loc2'] = blast[1].map(gff2.loc[:, self.position])
         blast['chr1'] = blast[0].map(gff1.loc[:, 'chr'])
@@ -111,34 +111,33 @@ class mycollinearity():
         for bk in group:
             chr1, chr2 = str(bk[0]), str(bk[1])
             print('runing ', chr1, 'vs', chr2)
-            df = pd.DataFrame(np.zeros((lens1[chr1], lens2[chr2])),columns=range(1,lens2[chr2]+1),index=range(1,lens1[chr1]+1))
-            for index, row in bk[2].iterrows():
-                df.loc[row['loc1'], row['loc2']] = row['grading']
-            df = df.loc[:, df.sum(axis=0) != 0]
-            df = df.loc[df.sum(axis=1) != 0, :]
+            points = bk[2][['loc1', 'loc2', 'grading']].sort_values(
+                by=['loc1', 'loc2'], ascending=[True, True])
             collinearity = improvedcollinearity.collinearity(
-                self.options, df)
+                self.options, points)
             data = collinearity.run()
             gf1, gf2 = gff1[gff1['chr'] == chr1], gff2[gff2['chr'] == chr2]
-            blocks, evalues, socres = data
+            gf1, gf2 = gf1.reset_index().set_index(
+                'order')[[1, 'stand']], gf2.reset_index().set_index('order')[[1, 'stand']]
             n = 1
-            for i in range(len(blocks)):
-                if len(blocks[i]) < int(self.over_windows):
+            for (block, evalue, socre) in data:
+                if len(block) < self.over_windows:
                     continue
-                if blocks[i][1][0]-blocks[i][0][0] > 0:
+                block['name1'] = block['loc1'].map(gf1[1])
+                block['name2'] = block['loc2'].map(gf2[1])
+                block['stand1'] = block['loc1'].map(gf1['stand'])
+                block['stand2'] = block['loc2'].map(gf2['stand'])
+                block['stand'] = np.where(
+                    block['stand1'] == block['stand2'], '1', '-1')
+                block['text'] = block.apply(lambda x: str(x['name1'])+' '+str(
+                    x['loc1'])+' '+str(x['name2'])+' '+str(x['loc2'])+' '+x['stand']+'\n', axis=1)
+                a, b = block['loc2'].head(2).values
+                if a < b:
                     mark = 'plus'
                 else:
                     mark = 'minus'
-                text += '# Alignment '+str(n)+': score='+str(socres[i])+' pvalue=' + str(
-                    evalues[i])+' N=' + str(len(blocks[i])) + ' '+str(chr1)+'&'+str(chr2) + ' ' + mark+'\n'
+                text += '# Alignment '+str(n)+': score='+str(socre)+' pvalue=' + str(
+                    evalue)+' N=' + str(len(block)) + ' '+str(chr1)+'&'+str(chr2) + ' ' + mark+'\n'
+                text += ''.join(block['text'].values)
                 n += 1
-                for k in blocks[i]:
-                    name1 = gf1[gf1['order'] == k[0]].index[0]
-                    name2 = gf2[gf2['order'] == k[1]].index[0]
-                    if gf1.loc[name1, 'stand'] == gf2.loc[name2, 'stand']:
-                        order = '1'
-                    else:
-                        order = '-1'
-                    s = ' '.join([name1, str(k[0]), name2, str(k[1]), order])
-                    text += s+'\n'
         return text
