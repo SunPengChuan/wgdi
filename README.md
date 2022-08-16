@@ -54,8 +54,8 @@ If you use wgdi in your work, please cite:
 
 ## 0.5.9
 
-Update the improved collinearity (-icl). Faster than before, but lower than MCscanX, JCVI. 
-Fixed issue with ancestral karyotype repertoire (-akr).
+- Update the improved collinearity (-icl). Faster than before, but lower than MCscanX, JCVI.
+- Fixed issue with ancestral karyotype repertoire (-akr).
 
 ## 0.5.8
 
