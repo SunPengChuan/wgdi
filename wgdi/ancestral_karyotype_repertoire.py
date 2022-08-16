@@ -42,30 +42,25 @@ class ancestral_karyotype_repertoire():
                                   & (gff2['order'] == num)].index[0]
                         gff1_row['order'] = order
                         gff1.loc[id, :] = gff1_row
-        gff1.to_csv('out.csv')
         df = gff1.copy()
         df = df.sort_values(by=['chr', 'order'])
         for name, group in df.groupby(['chr']):
             df.loc[group.index, 'order'] = list(range(1, len(group)+1))
             df.loc[group.index, 'newname'] = list(
                 [str(self.mark)+str(name)+'g'+str(i).zfill(5) for i in range(1, len(group)+1)])
-        df['order'] = df['order'].astype('int')
+        df['order'] = df['order'].astype(int)
         df['oldname'] = df.index
         columns = ['chr', 'newname', 'start',
                    'end', 'stand', 'order', 'oldname']
         df[columns].to_csv(self.ancestor_gff, sep="\t",
                            index=False, header=None)
-
         lens = df.groupby('chr').max()[['end', 'order']]
+        lens['end'] = lens['end'].astype(np.int64)
         lens.to_csv(self.ancestor_lens, sep="\t", header=None)
         ancestor = base.read_calassfication(self.ancestor)
         for index, row in ancestor.iterrows():
-            id1 = gff1[(gff1['chr'] == str(row[0])) & (
-                gff1['order'] == row[1])].index[0]
-            id2 = gff1[(gff1['chr'] == str(row[0])) & (
-                gff1['order'] == row[2])].index[0]
-            ancestor.loc[index, 1] = df.loc[id1, 'order']
-            ancestor.loc[index, 2] = df.loc[id2, 'order']
+            ancestor.at[index, 1] = 1
+            ancestor.at[index, 2] = lens.at[str(row[0]),'order']
         ancestor.to_csv(self.ancestor_new, sep="\t", index=False, header=None)
         id_dict = df['newname'].to_dict()
         seqs = []
