@@ -12,6 +12,7 @@ class block_info():
         for k, v in options:
             setattr(self, str(k), v)
             print(str(k), ' = ', v)
+        self.repeat_number = int(self.repeat_number)
 
     def block_position(self, collinearity, blast, gff1, gff2, ks):
         data = []
@@ -19,8 +20,8 @@ class block_info():
             blk_homo, blk_ks = [],  []
             if block[1][0][0] not in gff1.index or block[1][0][2] not in gff2.index:
                 continue
-            chr1, chr2 = gff1.loc[block[1][0][0],
-                                  'chr'], gff2.loc[block[1][0][2], 'chr']
+            chr1, chr2 = gff1.at[block[1][0][0],
+                                 'chr'], gff2.at[block[1][0][2], 'chr']
             array1, array2 = [float(i[1]) for i in block[1]], [
                 float(i[3]) for i in block[1]]
             start1, end1 = array1[0], array1[-1]
@@ -57,11 +58,12 @@ class block_info():
             block1 = '_'.join([str(k) for k in block1])
             block2 = '_'.join([str(k) for k in block2])
             blkks = '_' + blkks
+            tandem_ratio = self.tandem_ratio(blast, gff2, block[1])
             data.append([block[0], chr1, chr2, start1, end1, start2, end2, block[2], len(
-                block[1]), ks_median, ks_average, homo[0], homo[1], homo[2], homo[3], homo[4], block1, block2, blkks])
+                block[1]), ks_median, ks_average, homo[0], homo[1], homo[2], homo[3], homo[4], block1, block2, blkks, tandem_ratio])
         data = pd.DataFrame(data, columns=['id', 'chr1', 'chr2', 'start1', 'end1', 'start2', 'end2',
                                            'pvalue', 'length', 'ks_median', 'ks_average', 'homo1', 'homo2', 'homo3',
-                                           'homo4', 'homo5', 'block1', 'block2', 'ks'])
+                                           'homo4', 'homo5', 'block1', 'block2', 'ks', 'tandem_ratio'])
         data['density1'] = data['length'] / \
             ((data['end1']-data['start1']).abs()+1)
         data['density2'] = data['length'] / \
@@ -86,7 +88,24 @@ class block_info():
             blast.loc[redindex, 'homo'+str(i)] = 1
             blast.loc[blueindex, 'homo'+str(i)] = 0
             blast.loc[grayindex, 'homo'+str(i)] = -1
+        blast['chr1_order'] = blast[0].map(gff1['order'])
+        blast['chr2_order'] = blast[1].map(gff2['order'])
         return blast
+
+    def tandem_ratio(self, blast, gff2, block):
+        block = pd.DataFrame(block)
+        block = block[[0, 2]]
+        block.columns = ['id1', 'id2']
+        block['order2'] = block['id2'].map(gff2['order'])
+        block_blast = blast[(blast[0].isin(block['id1'].values.tolist())) & (
+            blast[1].isin(block['id2'].values.tolist()))].copy()
+        block_blast = pd.merge(
+            block_blast, block, left_on=0, right_on='id1', how='left')
+        block_blast['difference'] = (
+            block_blast['chr2_order'] - block_blast['order2']).abs()
+        block_blast = block_blast[(block_blast['difference'] <= self.repeat_number) & (
+            block_blast['difference'] > 0)]
+        return len(block_blast[0].unique())/len(block)*len(block_blast)/(len(block)+len(block_blast))
 
     def run(self):
         lens1 = base.newlens(self.lens1, self.position)
@@ -97,10 +116,10 @@ class block_info():
         gff2 = gff2[gff2['chr'].isin(lens2.index)]
         blast = base.newblast(self.blast, int(self.score), float(
             self.evalue), gff1, gff2, self.blast_reverse)
-        blast = self.blast_homo(blast, gff1, gff2, int(self.repeat_number))
+        blast = self.blast_homo(blast, gff1, gff2, self.repeat_number)
         blast.index = blast[0]+','+blast[1]
         collinearity = self.auto_file(gff1, gff2)
-        if self.ks =='none' or self.ks == ''  or not hasattr(self, 'ks'):
+        if self.ks == 'none' or self.ks == '' or not hasattr(self, 'ks'):
             ks = pd.Series([])
         else:
             ks = base.read_ks(self.ks, self.ks_col)
@@ -110,8 +129,8 @@ class block_info():
         data.to_csv(self.savefile, index=None)
 
     def auto_file(self, gff1, gff2):
-        f=open(self.collinearity)
-        p=' '.join(f.readlines()[0:30])
+        f = open(self.collinearity)
+        p = ' '.join(f.readlines()[0:30])
         if 'path length' in p or 'MAXIMUM GAP' in p:
             collinearity = base.read_colinearscan(self.collinearity)
         elif 'MATCH_SIZE' in p or '## Alignment' in p:
@@ -122,7 +141,7 @@ class block_info():
                 for k in block[1]:
                     if k[0] not in gff1.index or k[2] not in gff2.index:
                         continue
-                    k[1], k[3] = gff1.loc[k[0], 'order'], gff2.loc[k[2], 'order']
+                    k[1], k[3] = gff1.at[k[0], 'order'], gff2.at[k[2], 'order']
                     newblock.append(k)
                 if len(newblock) == 0:
                     continue
@@ -137,7 +156,7 @@ class block_info():
                 for k in block[1]:
                     if k[0] not in gff1.index or k[2] not in gff2.index:
                         continue
-                    k[1], k[3] = gff1.loc[k[0], 'order'], gff2.loc[k[2], 'order']
+                    k[1], k[3] = gff1.at[k[0], 'order'], gff2.at[k[2], 'order']
                     newblock.append(k)
                 if len(newblock) == 0:
                     continue

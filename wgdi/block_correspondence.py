@@ -1,5 +1,4 @@
 import re
-import sys
 
 import numpy as np
 import pandas as pd
@@ -14,6 +13,7 @@ class block_correspondence():
         self.position = 'order'
         self.block_length = 5
         self.tandem_length = 200
+        self.tandem_ratio = 1
         self.ks_hit = 0.5
         for k, v in options:
             setattr(self, str(k), v)
@@ -23,6 +23,7 @@ class block_correspondence():
         else:
             self.ks_area = [-1, 3]
         self.homo = [float(k) for k in self.homo.split(',')]
+        self.tandem_ratio  = float(self.tandem_ratio)
 
     def run(self):
         lens1 = base.newlens(self.lens1, self.position)
@@ -32,6 +33,8 @@ class block_correspondence():
         bkinfo['chr2'] = bkinfo['chr2'].astype(str)
         bkinfo = bkinfo[(bkinfo['length'] >= int(self.block_length)) & (bkinfo['chr1'].isin(
             lens1.index)) & (bkinfo['chr2'].isin(lens2.index)) & (bkinfo['pvalue'] <= float(self.pvalue))]
+        if 'tandem_ratio' in bkinfo.columns:
+            bkinfo = bkinfo[bkinfo['tandem_ratio']<=self.tandem_ratio]
         cor = [[k, i, 0, lens1[i], j, 0, lens2[j], float(self.homo[0]), float(self.homo[1])] for k in range(
             1, int(self.multiple)+1) for i in lens1.index for j in lens2.index]
         cor = pd.DataFrame(

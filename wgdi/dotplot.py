@@ -106,6 +106,9 @@ class dotplot():
 
         blast = base.newblast(self.blast, int(self.score),
                               float(self.evalue), gff1, gff2, self.blast_reverse)
+        if len(blast) ==0:
+            print('Stoped! \n\nThe gene id in blast file does not correspond to gff1 and gff2.')
+            exit(0)
         df = self.pair_positon(blast, gff1, gff2,
                                int(self.multiple), int(self.repeat_number))
         ax.scatter(df['loc2'], df['loc1'], s=float(self.markersize), c=df['color'],

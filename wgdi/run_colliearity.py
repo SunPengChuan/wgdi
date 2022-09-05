@@ -70,10 +70,10 @@ class mycollinearity():
             self.evalue), gff1, gff2, self.blast_reverse)
         blast = self.deal_blast(blast, int(
             self.multiple), int(self.repeat_number))
-        blast['loc1'] = blast[0].map(gff1.loc[:, self.position])
-        blast['loc2'] = blast[1].map(gff2.loc[:, self.position])
-        blast['chr1'] = blast[0].map(gff1.loc[:, 'chr'])
-        blast['chr2'] = blast[1].map(gff2.loc[:, 'chr'])
+        blast['loc1'] = blast[0].map(gff1[self.position])
+        blast['loc2'] = blast[1].map(gff2[self.position])
+        blast['chr1'] = blast[0].map(gff1['chr'])
+        blast['chr2'] = blast[1].map(gff2['chr'])
         total = []
         for (chr1, chr2), group in blast.groupby(['chr1', 'chr2']):
             total.append([chr1, chr2, group])
@@ -116,6 +116,8 @@ class mycollinearity():
             collinearity = improvedcollinearity.collinearity(
                 self.options, points)
             data = collinearity.run()
+            if len(data)==0:
+                continue
             gf1, gf2 = gff1[gff1['chr'] == chr1], gff2[gff2['chr'] == chr2]
             gf1, gf2 = gf1.reset_index().set_index(
                 'order')[[1, 'stand']], gf2.reset_index().set_index('order')[[1, 'stand']]

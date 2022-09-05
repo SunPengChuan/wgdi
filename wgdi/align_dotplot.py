@@ -116,6 +116,10 @@ class align_dotplot():
         sys.exit(0)
 
     def alignment(self, gff1, gff2, bkinfo):
+        gff1['uid']= gff1['chr']+gff1['order'].astype(str)
+        gff2['uid']= gff2['chr']+gff2['order'].astype(str)
+        gff1['id'] = gff1.index
+        gff2['id'] = gff2.index
         for cl, group in bkinfo.groupby([self.classid]):
             name = 'l'+cl
             gff1[name] = np.nan
@@ -128,22 +132,20 @@ class align_dotplot():
                     ks = list(map(float, ks[1:]))
                 else:
                     ks = list(map(float, ks))
-                block1, block2 = [], []
-                for i in range(len(ks)):
-                    if self.ks_area[0] <= ks[i] <= self.ks_area[1]:
-                        block1.append(int(b1[i]))
-                        block2.append(int(b2[i]))
-                block1 = list(map(int, block1))
-                block2 = list(map(int, block2))
-                if len(block1) < 1 or len(block2) < 1:
+                block = pd.DataFrame(np.array([b1,b2,ks]).T,columns=['block1','block2','ks'])
+                block['block1'] = block['block1'].astype(int)
+                block['block2'] = block['block2'].astype(int)
+                block['ks'] = block['ks'].astype(float)
+                block = block[(block['ks']<=self.ks_area[1]) & (block['ks']>=self.ks_area[0])]
+                if len(block)< 1:
                     continue
+                block.drop_duplicates(subset=['block1'], keep='first', inplace=True)
+                block1_min,block1_max = block['block1'].agg([min, max])
                 area = gff1[(gff1['chr'] == row['chr1']) & (
-                    gff1['order'] >= min(block1)) & (gff1['order'] <= max(block1))].index
-                index1 = gff1[(gff1['chr'] == row['chr1']) & (gff1['order'].isin(
-                    block1))].sort_values(by=['order'], key=lambda x: block1).index
-                index2 = gff2[(gff2['chr'] == row['chr2']) & (gff2['order'].isin(
-                    block2))].sort_values(by=['order'], key=lambda x: block2).index
-                gff1.loc[index1, name] = index2
+                    gff1['order'] >= block1_min) & (gff1['order'] <= block1_max)].index
+                block['id1'] = (row['chr1']+block['block1'].astype(str)).map(dict(zip(gff1['uid'],gff1.index)))
+                block['id2'] = (row['chr2']+block['block2'].astype(str)).map(dict(zip(gff2['uid'],gff2.index)))
+                gff1.loc[block['id1'].values, name] = block['id2'].values
                 gff1.loc[gff1.index.isin(area) & gff1[name].isna(), name] = '.'
         return gff1
 

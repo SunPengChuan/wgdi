@@ -202,8 +202,11 @@ def read_calassfication(file):
 
 
 def gene_location(gff, lens, step, position):
-    loc_gene, dict_chr, n = {}, {}, 0
+    dict_chr= {}
     gff = gff[gff['chr'].isin(lens.index)].copy()
+    if len(gff)==0:
+        print('Stoped! \n\nChromosomes in gff file and lens file do not correspond.')
+        exit(0)
     dict_chr = dict(zip(lens.index, np.append(
         np.array([0]), lens.cumsum()[:-1].values)))
     gff.loc[:, 'loc'] = ''

@@ -32,7 +32,6 @@ class collinearity:
         self.points['times'] = 1
         self.points['score1'] = self.points['grading']
         self.points['score2'] = self.points['grading']
-        self.points['score2'] = self.points['grading']
         self.points['path1'] = self.points.index.to_numpy().reshape(
             len(self.points), 1).tolist()
         self.points['path2'] = self.points['path1']
@@ -109,6 +108,9 @@ class collinearity:
         return self.points
 
     def maxPath(self, points):
+        if len(points) == 0:
+            self.over_length = 0
+            return False
         self.score, self.path_index = points.loc[points.index[0], [
             'score', 'path']]
         self.path = points[points.index.isin(self.path_index)]
