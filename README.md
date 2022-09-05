@@ -52,14 +52,19 @@ If you use wgdi in your work, please cite:
 
 ## News
 
+## 0.6.0
+
+* Fixed issue with improved collinearity (-icl).
+* Added a parameter 'tandem_ratio' to blockinfo (-bi).
+
 ## 0.5.9
 
-- Update the improved collinearity (-icl). Faster than before, but lower than MCscanX, JCVI.
-- Fixed issue with ancestral karyotype repertoire (-akr).
+* Update the improved collinearity (-icl). Faster than before, but lower than MCscanX, JCVI.
+* Fixed issue with ancestral karyotype repertoire (-akr).
 
 ## 0.5.8
 
-Fixed issue with gene names (-ks).
+* Fixed issue with gene names (-ks).
 
 ## 0.5.7
 - Fixed issue with chromosome order (-ak).
