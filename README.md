@@ -52,6 +52,10 @@ If you use wgdi in your work, please cite:
 
 ## News
 
+## 0.6.1
+
+* Fixed issue with alignment (-a). Only version 0.6.0 has this bug.
+
 ## 0.6.0
 
 * Fixed issue with improved collinearity (-icl).

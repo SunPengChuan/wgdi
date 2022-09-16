@@ -116,8 +116,8 @@ class align_dotplot():
         sys.exit(0)
 
     def alignment(self, gff1, gff2, bkinfo):
-        gff1['uid']= gff1['chr']+gff1['order'].astype(str)
-        gff2['uid']= gff2['chr']+gff2['order'].astype(str)
+        gff1['uid']= gff1['chr']+'g'+gff1['order'].astype(str)
+        gff2['uid']= gff2['chr']+'g'+gff2['order'].astype(str)
         gff1['id'] = gff1.index
         gff2['id'] = gff2.index
         for cl, group in bkinfo.groupby([self.classid]):
@@ -140,11 +140,11 @@ class align_dotplot():
                 if len(block)< 1:
                     continue
                 block.drop_duplicates(subset=['block1'], keep='first', inplace=True)
-                block1_min,block1_max = block['block1'].agg([min, max])
+                block1_min, block1_max = block['block1'].agg([min, max])
                 area = gff1[(gff1['chr'] == row['chr1']) & (
                     gff1['order'] >= block1_min) & (gff1['order'] <= block1_max)].index
-                block['id1'] = (row['chr1']+block['block1'].astype(str)).map(dict(zip(gff1['uid'],gff1.index)))
-                block['id2'] = (row['chr2']+block['block2'].astype(str)).map(dict(zip(gff2['uid'],gff2.index)))
+                block['id1'] = (row['chr1']+'g'+block['block1'].astype(str)).map(dict(zip(gff1['uid'],gff1.index)))
+                block['id2'] = (row['chr2']+'g'+block['block2'].astype(str)).map(dict(zip(gff2['uid'],gff2.index)))
                 gff1.loc[block['id1'].values, name] = block['id2'].values
                 gff1.loc[gff1.index.isin(area) & gff1[name].isna(), name] = '.'
         return gff1

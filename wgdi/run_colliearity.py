@@ -74,6 +74,7 @@ class mycollinearity():
         blast['loc2'] = blast[1].map(gff2[self.position])
         blast['chr1'] = blast[0].map(gff1['chr'])
         blast['chr2'] = blast[1].map(gff2['chr'])
+        print('The filtered homologous gene pairs are '+str(len(blast))+'.\n')
         total = []
         for (chr1, chr2), group in blast.groupby(['chr1', 'chr2']):
             total.append([chr1, chr2, group])
