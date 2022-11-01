@@ -48,7 +48,7 @@ chatting group QQ : 966612552
 
 If you use wgdi in your work, please cite:
 
-> Sun P, Jiao B, Yang Y, et al. WGDI: A user-friendly toolkit for evolutionary analyses of whole-genome duplications and ancestral karyotypes[J]. bioRxiv, 2021. **doi:** https://doi.org/10.1101/2021.04.29.441969
+> Sun P., Jiao B., Yang Y., Shan L., Li T., Li X., Xi Z., Wang X., and Liu J. (2022). WGDI: A user-friendly toolkit for evolutionary analyses of whole-genome duplications and ancestral karyotypes. Mol. Plant. doi: https://doi.org/10.1016/j.molp.2022.10.018.
 
 ## News
 
@@ -100,31 +100,3 @@ If you use wgdi in your work, please cite:
 * The latest version adds karyotype_mapping (-km) and karyotype (-k) display.
 * The latest version changes the calculation of extracting pvalue from collinearity (-icl), making this parameter more sensitive. Therefore, it is recommended to set to 0.2 instead of 0.05.
 * The latest version has also changed the drawing display of ksfigure (-kf) to make it more beautiful.
-
-## Already cited WGDI articles
-1. Genomic analysis of Medicago ruthenica provides insights into its tolerance to abiotic stress and demographic history 《Molecular Ecology Resources》
-2. Chromosomal‐scale genome assembly of Eleutherococcus senticosus provides insights into chromosome evolution in Araliaceae 《Molecular Ecology Resources》
-3. The Corylus mandshurica genome provides insights into the evolution of Betulaceae genomes and hazelnut breeding 《Horticulture Research》
-4. An ancient whole-genome duplication event and its contribution to flavor compounds in the tea plant (Camellia sinensis) 《Horticulture Research》
-5. A tetraploidization event shaped the Aquilaria sinensis genome and contributed to the ability of sesquiterpenes synthesis 《BMC Genomics》
-6. High-quality genome assembly of Cinnamomum burmami (chvar. Borneol) provides insights into the natural borneol biosynthesis 《BioRxiv》
-7. The genome sequence provides insights into salt tolerance of Achnatherum splendens (Gramineae), a constructive species of alkaline grassland 《Plant Biotechnology Journal》
-8. Chromosome-level assembly of the common vetch (Vicia sativa) reference genome 《Gigabyte》
-9. A chromosome-level genome assembly of an alpine plant Crucihimalaya lasiocarpa provides insights into high-altitude adaptation 《DNA Research》
-10. Chromosome-scale genome assembly of the diploid oat Avena longiglumis reveals the landscape of repetitive sequences, genes and chromosome evolution in grasses 《BioRxiv》
-11. The chromosome-level rambutan genome reveals a significant role of segmental duplication in the expansion of resistance genes 《Horticulture Research》
-12. A chromosome-level genome assembly for the tertiary relict plant Tetracentron sinense oliv. (trochodendraceae) 《Molecular Ecology Resources》
-13. Multi-omics reveal differentiation and maintenance of dimorphic flowers in an alpine plant on the Qinghai-Tibet Plateau 《Authorea》
-14. The Chromosome-Level Genome of Miracle Fruit (Synsepalum dulcificum) Provides New Insights Into the Evolution and Function of Miraculin. 《Frontiers in Plant Science》
-15. A chromosome-level reference genome of Ensete glaucum gives insight into diversity, chromosomal and repetitive sequence evolution in the Musaceae 《BioRxiv》
-16. High-quality genome assembly of Cinnamomum burmannii (chvar. Borneol) provides insights into the natural borneol biosynthesis 《BioRxiv》
-17. The Chloranthus sessilifolius genome provides insight into early diversification of angiosperms 《Nature Communications》
-18. Chromosome‐level pepino genome provides insights into genome evolution and anthocyanin biosynthesis in Solanaceae 《The Plant Journal》
-19. The genome of Hibiscus hamabo reveals its adaptation to saline and waterlogged habitat 《Horticulture Research》
-20. Chromosome-Level Genome Assembly of the Rare and Endangered Tropical Plant Speranskia yunnanensis (Euphorbiaceae) 《Frontiers in Genetics》
-21. The chromosome-level genome assembly of Gentiana dahurica (Gentianaceae) provides insights into gentiopicroside biosynthesis《DNA Research》
-22. Genomic insights into present local adaptation and future climate change vulnerability of a keystone forest tree species in East Asian 《BioRxiv》
-23. PolyReco: A Method to Automatically Label Collinear Regions and Recognize Polyploidy Events Based on the K S Dotplot 《Frontiers in Genetics》
-24. Reshuffling of the ancestral core-eudicot genome shaped chromatin topology and epigenetic modification in Panax 《Nature Communications》
-25. Deletion and tandem duplications of biosynthetic genes drive the diversity of triterpenoids in Aralia elata 《Nature Communications》
-
