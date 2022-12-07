@@ -56,5 +56,6 @@ class polyploidy_classification():
                         bkinfo.loc[index1,'diff']=h
                         bkinfo.loc[index1, self.classid[1]] = row2[4]
                         bkinfo.loc[index1, self.classid[1]+'_color'] = row2[3]
+        # bkinfo=bkinfo[(bkinfo[self.classid[1]+'_color']==bkinfo[self.classid[0]+'_color'])]
         bkinfo.to_csv(self.savefile, index=None)
         sys.exit(0)

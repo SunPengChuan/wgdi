@@ -265,13 +265,3 @@ def Rectangle(ax, loc, height, width, color, alpha):
     p = mpatches.Rectangle(
         loc, width, height, edgecolor=None, facecolor=color, alpha=alpha)
     ax.add_patch(p)
-
-
-def read_calassfication(file):
-    classification = pd.read_csv(file, sep="\t", header=None)
-    classification[0] = classification[0].astype(str)
-    classification[1] = classification[1].astype(int)
-    classification[2] = classification[2].astype(int)
-    classification[3] = classification[3].astype(str)
-    classification[4] = classification[4].astype(int)
-    return classification

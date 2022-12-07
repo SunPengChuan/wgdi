@@ -26,6 +26,7 @@ from wgdi.run_colliearity import mycollinearity
 from wgdi.trees import trees
 from wgdi.ancestral_karyotype import ancestral_karyotype
 from wgdi.ancestral_karyotype_repertoire import ancestral_karyotype_repertoire
+from wgdi.shared_fusion import shared_fusion
 
 parser = argparse.ArgumentParser(
     prog='wgdi', usage='%(prog)s [options]', epilog="", formatter_class=argparse.RawDescriptionHelpFormatter,)
@@ -34,7 +35,7 @@ WGDI(Whole-Genome Duplication Integrated analysis):  A user-friendly toolkit for
 
     https://wgdi.readthedocs.io/en/latest/
     -------------------------------------- '''
-parser.add_argument("-v", "--version", action='version', version='0.6.1')
+parser.add_argument("-v", "--version", action='version', version='0.6.2')
 parser.add_argument("-d", dest="dotplot",
                     help="Show homologous gene dotplot")
 parser.add_argument("-icl", dest="improvedcollinearity",
@@ -64,7 +65,9 @@ parser.add_argument("-ak", dest="ancestral_karyotype",
 parser.add_argument("-akr", dest="ancestral_karyotype_repertoire",
                     help="Incorporate genes from collinearity blocks into the ancestral karyotype repertoire")
 parser.add_argument("-km", dest="karyotype_mapping",
-                    help="Mapping from the known karyotype result to this species")                    
+                    help="Mapping from the known karyotype result to this species")
+parser.add_argument("-sf", dest="shared_fusion",
+                    help="Quickly find shared fusions between species")  
 parser.add_argument("-at", dest="alignmenttrees",
                     help="Collinear genes construct phylogenetic trees")
 parser.add_argument("-p", dest="pindex",
@@ -110,6 +113,7 @@ def module_to_run(argument, conf):
         'ancestral_karyotype': (ancestral_karyotype, conf, 'ancestral_karyotype'),
         'karyotype_mapping': (karyotype_mapping, conf, 'karyotype_mapping'),
         'ancestral_karyotype_repertoire': (ancestral_karyotype_repertoire, conf, 'ancestral_karyotype_repertoire'),
+        'shared_fusion': (shared_fusion, conf, 'shared_fusion'),
     }
     if argument == 'configure':
         run_configure()
@@ -140,6 +144,7 @@ def main():
                'ancestral_karyotype': 'ancestral_karyotype.conf',
                'ancestral_karyotype_repertoire': 'ancestral_karyotype_repertoire.conf',
                'karyotype_mapping': 'karyotype_mapping.conf',
+               'shared_fusion': 'shared_fusion.conf',
                }
     for arg in vars(args):
         value = getattr(args, arg)

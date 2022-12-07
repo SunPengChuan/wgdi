@@ -93,6 +93,7 @@ class block_ks():
         # sc = plt.scatter(df['loc1'], df['loc2'], s=float(self.markersize), c='dimgray',
         #                  alpha=0.7, edgecolors=None, linewidths=0, marker='o', vmin=self.area[0], vmax=self.area[1])
         cbar = fig.colorbar(sc, shrink=0.5, pad=0.03, fraction=0.1)
+        # cbar.ax.tick_params(labelsize=15) 
         align = dict(family='Arial', style='normal',
                      horizontalalignment="center", verticalalignment="center")
         cbar.set_label('Ks', labelpad=12.5, fontsize=18, **align)

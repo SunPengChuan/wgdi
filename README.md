@@ -14,8 +14,6 @@ WGDI (Whole-Genome Duplication Integrated analysis), a Python-based command-line
 
 WGDI supports three main workflows (polyploid inference, hierarchical inference of genomic homology, and ancestral chromosomal karyotyping) that can improve detection of WGD and characterization of related events. It incorporates a more sensitive and accurate collinearity detection algorithm than previous softwares, and can accelerate WGD-related karyotype research.
 
-WGDI outperforms similar tools in terms of efficiency, flexibility and scalability.
-
 ## Installation
 
 Python package and command line interface (IDLE) for the analysis of whole genome duplications (WGDI). WGDI can be deployed in Windows, Linux, and Mac OS operating systems and can be installed via pip and conda.
@@ -38,9 +36,9 @@ Documentation for installation along with a user tutorial, a default parameter f
 
 Here are some videos with simple examples of WGDI.
 
-###### [WGDI的简单使用（一）](https://www.bilibili.com/video/BV1qK4y1U7eK)
+###### [WGDI的简单使用（一）](https://www.bilibili.com/video/BV1qK4y1U7eK) or https://youtu.be/k-S6FVcBIQw
 
-###### [WGDI的简单使用（二）](https://www.bilibili.com/video/BV195411P7L1)
+###### [WGDI的简单使用（二）](https://www.bilibili.com/video/BV195411P7L1) or https://youtu.be/QiZYFYGclyE
 
 chatting group QQ : 966612552
 
@@ -51,6 +49,9 @@ If you use wgdi in your work, please cite:
 > Sun P., Jiao B., Yang Y., Shan L., Li T., Li X., Xi Z., Wang X., and Liu J. (2022). WGDI: A user-friendly toolkit for evolutionary analyses of whole-genome duplications and ancestral karyotypes. Mol. Plant. doi: https://doi.org/10.1016/j.molp.2022.10.018.
 
 ## News
+
+## 0.6.2
+* Added find shared fusions between species (-sf).
 
 ## 0.6.1
 
