@@ -50,6 +50,9 @@ If you use wgdi in your work, please cite:
 
 ## News
 
+## 0.6.3
+* Fixed some issues (-ks, -sf).
+
 ## 0.6.2
 * Added find shared fusions between species (-sf).
 

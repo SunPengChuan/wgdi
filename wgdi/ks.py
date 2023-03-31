@@ -20,8 +20,6 @@ class ks():
         self.prot_align_file = 'prot.aln'
         self.mrtrans = 'pair.mrtrans'
         self.pair_yn = 'pair.yn'
-        self.cds_file = 'cds'
-        self.pep_file = 'pep'
         for k, v in base_conf:
             setattr(self, str(k), v)
         for k, v in options:
@@ -58,10 +56,6 @@ class ks():
         return df
 
     def run(self):
-        path = os.getcwd()
-        if not os.path.exists(self.pep_file):
-            base.cds_to_pep(os.path.join(path, self.cds_file),
-                            os.path.join(path, self.pep_file))
         cds = SeqIO.to_dict(SeqIO.parse(self.cds_file, "fasta"))
         pep = SeqIO.to_dict(SeqIO.parse(self.pep_file, "fasta"))
         df_pairs = self.auto_file()
