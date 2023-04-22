@@ -39,9 +39,9 @@ class retain():
             spine.set_visible(False)
         plt.tick_params(top=False, bottom=False, left=False,
                         right=False, labelleft=False, labelbottom=False)
-        groups = self.retain.groupby(['chr'])
+        groups = self.retain.groupby('chr')
         for i in range(len(lens)):
-            group = groups.get_group(lens.index[i])
+            group = groups.get_group(lens.index.tolist()[i])
             for j in self.retain.columns[:-2]:
                 axs[i].plot(group['order'].values, group[j].values,
                             linestyle='-', color=self.colors[j-1], linewidth=1)

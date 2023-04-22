@@ -37,7 +37,8 @@ class align_dotplot():
         for k in alignment.columns:
             df = alignment[k].map(loc2)
             df.dropna(axis=0, how='any', inplace=True)
-            for index, row in df.iteritems():
+            
+            for index, row in df.items():
                 data.append([index, row, colors[i]])
             i += 1
         df = pd.DataFrame(data, columns=['loc1', 'loc2', 'color'])
@@ -120,7 +121,7 @@ class align_dotplot():
         gff2['uid']= gff2['chr']+'g'+gff2['order'].astype(str)
         gff1['id'] = gff1.index
         gff2['id'] = gff2.index
-        for cl, group in bkinfo.groupby([self.classid]):
+        for cl, group in bkinfo.groupby(self.classid):
             name = 'l'+cl
             gff1[name] = np.nan
             group = group.sort_values(by=['length'], ascending=[False])

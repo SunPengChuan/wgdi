@@ -73,7 +73,7 @@ class pindex():
         for i in range(len(columns)-1):
             for j in range(i+1, len(columns)):
                 b = []
-                for chr, group in alignment.groupby(['chr']):
+                for chr, group in alignment.groupby('chr'):
                     sub1 = group.loc[:, columns[i]].tolist()
                     sub2 = group.loc[:, columns[j]].tolist()
                     p = self.Pindex(sub1, sub2)

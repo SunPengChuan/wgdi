@@ -55,7 +55,7 @@ class karyotype_mapping():
         gff = gff[gff['chr'].isin(lens.index)]
         gff = gff[gff['color'].notnull()]
         ancestor = []
-        for chr, group in gff.groupby(['chr']):
+        for chr, group in gff.groupby('chr'):
             color, classid, arr = '', 1, []
             for index, row in group.iterrows():
                 if color == row['color'] and classid == row['classification']:
@@ -77,7 +77,7 @@ class karyotype_mapping():
                 ancestor.append(
                     [chr, min(arr), max(arr), color, classid, len(arr)])
         ancestor = pd.DataFrame(ancestor)
-        for chr, group in ancestor.groupby([0]):
+        for chr, group in ancestor.groupby(0):
             ancestor.loc[group.index[0], 1] = 1
             ancestor.loc[group.index[-1], 2] = lens[chr]
         ancestor[4] = ancestor[4].astype(int)

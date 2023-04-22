@@ -50,6 +50,9 @@ If you use wgdi in your work, please cite:
 
 ## News
 
+## 0.6.4
+* Fixed the problem caused by the Python version, now it is compatible with version 3.11.3.
+
 ## 0.6.3
 * Fixed some issues (-ks, -sf).
 
