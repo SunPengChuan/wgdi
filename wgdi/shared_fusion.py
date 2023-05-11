@@ -58,22 +58,24 @@ class shared_fusion():
                 ancestor_left[2] >= a) & (ancestor_left[1] <= b)]
             if len(d1) > 1:
                 bkinfo.loc[index, 'breakpoints1'] = 1
+                breaklength_max = 0
                 for index2, row2 in d1.iterrows():
                     length_in = len(
                         [k for k in range(a, b) if k in range(row2[1], row2[2])])
                     length_out = (b-a)-length_in
-                bkinfo.loc[index, 'break_length1'] = min(
-                    length_in, length_out)+1
+                    breaklength_max =breaklength_max  if breaklength_max > min(length_in, length_out)+1 else min(length_in, length_out)+1
+                bkinfo.loc[index, 'break_length1'] = breaklength_max
             #for species2
             c, d = sorted([row['start2'], row['end2']])
             d2 = ancestor_top[(ancestor_top[0] == row['chr2']) & (
                 ancestor_top[2] >= c) & (ancestor_top[1] <= d)]
             if len(d2) > 1:
                 bkinfo.loc[index, 'breakpoints2'] = 1
+                breaklength_max = 0
                 for index2, row2 in d2.iterrows():
                     length_in = len(
                         [k for k in range(c, d) if k in range(row2[1], row2[2])])
                     length_out = (d-c)-length_in
-                bkinfo.loc[index, 'break_length2'] = min(
-                    length_in, length_out)+1
+                    breaklength_max =breaklength_max  if breaklength_max > min(length_in, length_out)+1 else min(length_in, length_out)+1
+                bkinfo.loc[index, 'break_length2'] = breaklength_max
         return bkinfo

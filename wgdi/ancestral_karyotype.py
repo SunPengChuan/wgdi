@@ -38,7 +38,7 @@ class ancestral_karyotype():
         df = pd.DataFrame(data)
         pep = SeqIO.to_dict(SeqIO.parse(self.pep_file, "fasta"))
         df = df[df[6].isin(pep.keys())]
-        for name, group in df.groupby([0]):
+        for name, group in df.groupby(0):
             df.loc[group.index, 'order'] = list(range(1, len(group)+1))
             df.loc[group.index, 'newname'] = list(
                 [str(self.mark)+str(name)+'g'+str(i).zfill(5) for i in range(1, len(group)+1)])

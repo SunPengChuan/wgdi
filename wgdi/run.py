@@ -35,7 +35,7 @@ WGDI(Whole-Genome Duplication Integrated analysis):  A user-friendly toolkit for
 
     https://wgdi.readthedocs.io/en/latest/
     -------------------------------------- '''
-parser.add_argument("-v", "--version", action='version', version='0.6.4')
+parser.add_argument("-v", "--version", action='version', version='0.6.5')
 parser.add_argument("-d", dest="dotplot",
                     help="Show homologous gene dotplot")
 parser.add_argument("-icl", dest="improvedcollinearity",

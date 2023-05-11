@@ -10,7 +10,7 @@ required = ['pandas>=1.1.0', 'numpy', 'biopython', 'matplotlib', 'scipy']
 
 setup(
     name="wgdi",
-    version="0.6.4",
+    version="0.6.5",
     author="Pengchuan Sun",
     author_email="sunpengchuan@gmail.com",
     description="Whole Genome Duplication Identification",

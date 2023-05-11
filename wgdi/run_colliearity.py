@@ -75,6 +75,8 @@ class mycollinearity():
         blast['chr1'] = blast[0].map(gff1['chr'])
         blast['chr2'] = blast[1].map(gff2['chr'])
         print('The filtered homologous gene pairs are '+str(len(blast))+'.\n')
+        if len(len(blast))<1:
+            print('Stoped! \n\nIt may be that the id1 and id2 in the BLAST file do not match with (gff1,lens1) and (gff2, lens2).')
         total = []
         for (chr1, chr2), group in blast.groupby(['chr1', 'chr2']):
             total.append([chr1, chr2, group])
