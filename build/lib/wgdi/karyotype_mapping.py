@@ -21,8 +21,8 @@ class karyotype_mapping:
             setattr(self, k, v)
             print(f"{k} = {v}")
         
-        base.str_to_bool(self.blast_reverse)
-        base.str_to_bool(self.blockinfo_reverse)
+        self.blast_reverse = base.str_to_bool(self.blast_reverse)
+        self.blockinfo_reverse = base.str_to_bool(self.blockinfo_reverse)
         self.limit_length = int(self.limit_length)
 
     def karyotype_left(self, pairs, ancestor, gff1, gff2):
@@ -65,13 +65,18 @@ class karyotype_mapping:
         for chr, group in gff.groupby('chr'):
             color, class_id, arr = '', 1, []
             for _, row in group.iterrows():
-                if row['color'] == color and row['classification'] == class_id:
+                if color ==  row['color'] and class_id == row['classification']:
                     arr.append(row['order'])
                 else:
                     if len(arr) >= self.limit_length:
                         ancestor.append([chr, min(arr), max(arr), color, class_id, len(arr)])
                     color, class_id = row['color'], row['classification']
-                    arr = [row['order']]
+                    arr = []
+                    if len(ancestor) >= 1 and color == ancestor[-1][3] and class_id == ancestor[-1][4] and chr == ancestor[-1][0]:
+                        arr.append(ancestor[-1][1])
+                        arr += np.random.randint(ancestor[-1][1], ancestor[-1][2], size=ancestor[-1][5]-1).tolist()
+                        ancestor.pop()
+                    arr.append(row['order'])
             if len(arr) >= self.limit_length:
                 ancestor.append([chr, min(arr), max(arr), color, class_id, len(arr)])
 
@@ -81,7 +86,7 @@ class karyotype_mapping:
             ancestor.loc[group.index[0], 1] = 1
             ancestor.loc[group.index[-1], 2] = lens[chr]
         ancestor[4] = ancestor[4].astype(int)
-        return ancestor[[0, 1, 2, 3, 4]]
+        return ancestor[[0, 1, 2, 3, 4, 5]]
 
     def colinear_gene_pairs(self, bkinfo, gff1, gff2):
         gff1 = gff1.reset_index()
@@ -100,31 +105,49 @@ class karyotype_mapping:
                 b = gff2_indexed.loc[(row['chr2'], order2), 1]
                 data.append([a, b])
         return pd.DataFrame(data)
-
+    
     def new_ancestor(self, ancestor, gff1, gff2, blast):
         # Iterate through ancestor rows to adjust positions based on neighboring rows
         for i in range(1, len(ancestor)):
             if ancestor.iloc[i, 0] == ancestor.iloc[i-1, 0]:
                 area = ancestor.iloc[i, 1] - ancestor.iloc[i-1, 2]
-                if area == 1:
+                if area <= 5 and ancestor.iloc[i, 5] > 200:
                     ancestor.iloc[i-1, 2] = ancestor.iloc[i, 1] - 1
                 else:
-                    if hasattr(self, 'ancestor_top') or hasattr(self, 'ancestor_left'):
+                    if ancestor.iloc[i, 5] > 200:
                         index1 = gff1[(gff1['chr'] == ancestor.iloc[i, 0]) &
-                                      (gff1['order'] >= ancestor.iloc[i-1, 2]+1) &
-                                      (gff1['order'] <= ancestor.iloc[i, 1]-1)].index
-                        index2 = gff2[gff2['color'] == ancestor.iloc[i-1, 3]].index
-                        index3 = gff2[gff2['color'] == ancestor.iloc[i, 3]].index
+                                    (gff1['order'] >= ancestor.iloc[i-1, 2]+1) &
+                                    (gff1['order'] <= ancestor.iloc[i, 1]-1)].index
+                    else:
+                        index1 = gff1[(gff1['chr'] == ancestor.iloc[i, 0]) &
+                                    (gff1['order'] >= ancestor.iloc[i-1, 2]+1) &
+                                    (gff1['order'] <= ancestor.iloc[i, 2])].index
+                    index2 = gff2[gff2['color'] == ancestor.iloc[i-1, 3]].index
+                    index3 = gff2[gff2['color'] == ancestor.iloc[i, 3]].index
 
-                        newblast1 = blast[(blast[0].isin(index1)) & (blast[1].isin(index2))]
-                        newblast2 = blast[(blast[0].isin(index1)) & (blast[1].isin(index3))]
+                    newblast1 = blast[(blast[0].isin(index1)) & (blast[1].isin(index2))]
+                    newblast2 = blast[(blast[0].isin(index1)) & (blast[1].isin(index3))]
 
-                        if len(newblast1) >= len(newblast2):
-                            ancestor.iloc[i-1, 2] = ancestor.iloc[i, 1] - 1
-                        else:
-                            ancestor.iloc[i, 1] = ancestor.iloc[i-1, 2] + 1
+                    if len(newblast1) >= len(newblast2) and ancestor.iloc[i, 5] > 200:
+                        ancestor.iloc[i-1, 2] = ancestor.iloc[i, 1] - 1
+                    elif ancestor.iloc[i, 5] < 200:
+                        ancestor.iloc[i, 3] = ancestor.iloc[i-1, 3]
+                    else:
+                        ancestor.iloc[i, 1] = ancestor.iloc[i-1, 2] + 1
+        
+        ancestor['group'] = (ancestor[0].shift(1) != ancestor[0]) | (ancestor[3].shift(1) != ancestor[3]) | (ancestor[4].shift(1) != ancestor[4])
+        ancestor['group'] = ancestor['group'].cumsum()
 
-        return ancestor
+        # 使用groupby进行分组，并应用聚合函数
+        result = ancestor.groupby('group').agg({
+            0: 'first',
+            1: 'min',
+            2: 'max',
+            3: 'first',
+            4: 'first',
+        }).reset_index(drop=True)
+
+        return result
 
     def run(self):
         # Read and process block information
@@ -141,6 +164,7 @@ class karyotype_mapping:
         gff2 = base.newgff(self.gff2)
         lens = base.newlens(self.the_other_lens, self.position)
         blast = base.newblast(self.blast, int(self.score), float(self.evalue), gff1, gff2, self.blast_reverse)
+        # blast.drop_duplicates(subset=[0], keep='first', inplace=True)
 
         # Find colinear gene pairs
         pairs = self.colinear_gene_pairs(bkinfo, gff1, gff2)
@@ -153,9 +177,11 @@ class karyotype_mapping:
             ancestor = base.read_classification(self.ancestor_left)
             data = self.karyotype_left(pairs, ancestor, gff1, gff2)
         else:
-            data = gff2  # or gff1, depending on the context
+            print('Missing ancestor file.')
+            exit(0)
 
         # Map the data and create the final ancestor file
         the_other_ancestor_file = self.karyotype_map(data, lens)
+        # print(the_other_ancestor_file)
         the_other_ancestor_file = self.new_ancestor(the_other_ancestor_file, gff1, gff2, blast)
         the_other_ancestor_file.to_csv(self.the_other_ancestor_file, sep='\t', header=False, index=False)

@@ -78,7 +78,7 @@ class align_dotplot:
         bkinfo = self.process_blockinfo(lens1,lens2)
         align = self.alignment(gff1, gff2, bkinfo)
         alignment = align[gff1.columns[-len(bkinfo[self.classid].drop_duplicates()):]]
-        alignment.to_csv(self.savefile, header=True)
+        alignment.to_csv(self.savefile, header=False)
 
         # Create scatter plot
         df = self.pair_position(alignment, gff1['loc'], gff2['loc'], self.colors)
@@ -134,7 +134,7 @@ class align_dotplot:
                     dict(zip(gff2['uid'], gff2.index)))
 
                 gff1.loc[block['id1'].values, name] = block['id2'].values
-                gff1.loc[gff1.index.isin(area) & gff1[name].isna(), name] = '.'
+                gff1.loc[gff1.index.isin(area) & gff1[name].eq(''), name] = '.'
         return gff1
 
     def create_block_dataframe(self, row):
