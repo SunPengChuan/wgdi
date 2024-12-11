@@ -45,7 +45,6 @@ class fusion_positions_database:
 
         # Save filtered GFF data
         if sf_gff:
-            print('run')
             sf_gff = pd.DataFrame(sf_gff)
             sf_gff.rename(columns={3: 'start', 4: 'end', 5: 'strand'}, inplace=True)
             sf_gff['order'] = sf_gff[0].str[-3:].astype(int)

@@ -114,14 +114,14 @@ class trees():
     def align(self):
         if self.align_software == 'mafft':
             try:
-                command = [self.mafft_path,'--quiet', self.pair_pep_file, '>', self.prot_align_file]
+                command = [self.mafft_path,'--quiet', self.sequencefile, '>', self.alignfile]
                 subprocess.run(" ".join(command), shell=True, check=True)
             except subprocess.CalledProcessError as e:
                 print(f"Error while running MAFFT: {e}")
 
         if self.align_software == 'muscle':
             try:
-                command = [self.muscle_path,'-align', self.pair_pep_file, '-output', self.prot_align_file, '-quiet']
+                command = [self.muscle_path,'-align', self.sequencefile, '-output', self.alignfile, '-quiet']
                 subprocess.run(" ".join(command), shell=True, check=True)
             except subprocess.CalledProcessError as e:
                 print(f"Error while running Muscle: {e}")

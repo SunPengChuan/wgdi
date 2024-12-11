@@ -12,7 +12,7 @@ class karyotype_mapping:
         self.position = 'order'
         self.block_length = 5
         self.limit_length = 5
-        self.repeat_number = 10
+        self.repeat_number = 20
         self.score = 100
         self.evalue = 1e-5
 
@@ -111,34 +111,51 @@ class karyotype_mapping:
         for i in range(1, len(ancestor)):
             if ancestor.iloc[i, 0] == ancestor.iloc[i-1, 0]:
                 area = ancestor.iloc[i, 1] - ancestor.iloc[i-1, 2]
-                if area <= 5 and ancestor.iloc[i, 5] > 200:
+                if area <= 5:
                     ancestor.iloc[i-1, 2] = ancestor.iloc[i, 1] - 1
                 else:
-                    if ancestor.iloc[i, 5] > 200:
-                        index1 = gff1[(gff1['chr'] == ancestor.iloc[i, 0]) &
-                                    (gff1['order'] >= ancestor.iloc[i-1, 2]+1) &
-                                    (gff1['order'] <= ancestor.iloc[i, 1]-1)].index
-                    else:
-                        index1 = gff1[(gff1['chr'] == ancestor.iloc[i, 0]) &
-                                    (gff1['order'] >= ancestor.iloc[i-1, 2]+1) &
-                                    (gff1['order'] <= ancestor.iloc[i, 2])].index
+                    index1 = gff1[(gff1['chr'] == ancestor.iloc[i, 0]) &
+                                (gff1['order'] >= ancestor.iloc[i-1, 2]+1) &
+                                (gff1['order'] <= ancestor.iloc[i, 1]-1)].index
                     index2 = gff2[gff2['color'] == ancestor.iloc[i-1, 3]].index
                     index3 = gff2[gff2['color'] == ancestor.iloc[i, 3]].index
 
                     newblast1 = blast[(blast[0].isin(index1)) & (blast[1].isin(index2))]
                     newblast2 = blast[(blast[0].isin(index1)) & (blast[1].isin(index3))]
 
-                    if len(newblast1) >= len(newblast2) and ancestor.iloc[i, 5] > 200:
+                    if len(newblast1) >= len(newblast2):
                         ancestor.iloc[i-1, 2] = ancestor.iloc[i, 1] - 1
-                    elif ancestor.iloc[i, 5] < 200:
-                        ancestor.iloc[i, 3] = ancestor.iloc[i-1, 3]
                     else:
                         ancestor.iloc[i, 1] = ancestor.iloc[i-1, 2] + 1
+        for chr, group in ancestor.groupby(0):
+            if len(group) == 1:
+                continue
+            newgff1 = gff1[gff1['chr'] == chr]
+            for i in range(1, len(group)):
+                if group.iloc[i, 5] > 200:
+                    continue
+
+                index_left = newgff1[(newgff1['order'] >= group.iloc[i, 1]) &
+                                (newgff1['order'] <= group.iloc[i, 2])].index
+                blast_left = blast[blast[0].isin(index_left)]
+
+                index_prev = gff2[gff2['color'] == group.iloc[i-1, 3]].index
+                blast_prev = blast_left[blast_left[1].isin(index_prev)]
+
+                index_curr = gff2[gff2['color'] == group.iloc[i, 3]].index
+                blast_curr = blast_left[blast_left[1].isin(index_curr)]
+
+                if len(blast_curr) <= len(blast_prev):
+                    ancestor.loc[group.index[i],3] = ancestor.loc[group.index[i]-1,3]
+
+                if i < len(group)-1:
+                    index_next = gff2[gff2['color'] == group.iloc[i+1, 3]].index
+                    blast_next = blast_left[blast_left[1].isin(index_next)]
+                    if len(blast_next) > max(len(blast_prev),len(blast_curr)):
+                        ancestor.loc[group.index[i],3] = ancestor.loc[group.index[i]+1,3]
         
         ancestor['group'] = (ancestor[0].shift(1) != ancestor[0]) | (ancestor[3].shift(1) != ancestor[3]) | (ancestor[4].shift(1) != ancestor[4])
         ancestor['group'] = ancestor['group'].cumsum()
-
-        # 使用groupby进行分组，并应用聚合函数
         result = ancestor.groupby('group').agg({
             0: 'first',
             1: 'min',
@@ -182,6 +199,5 @@ class karyotype_mapping:
 
         # Map the data and create the final ancestor file
         the_other_ancestor_file = self.karyotype_map(data, lens)
-        # print(the_other_ancestor_file)
         the_other_ancestor_file = self.new_ancestor(the_other_ancestor_file, gff1, gff2, blast)
         the_other_ancestor_file.to_csv(self.the_other_ancestor_file, sep='\t', header=False, index=False)
