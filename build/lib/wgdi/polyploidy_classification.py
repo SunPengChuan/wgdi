@@ -4,12 +4,14 @@ import wgdi.base as base
 
 class polyploidy_classification:
     def __init__(self, options):
-        self.same_protochromose = False
+        self.same_protochromosome = False
+        self.same_subgenome = False
         for k, v in options:
             setattr(self, str(k), v)
             print(f"{k} = {v}")
         
-        self.same_protochromose = base.str_to_bool(self.same_protochromose)
+        self.same_protochromosome = base.str_to_bool(self.same_protochromosome)
+        self.same_subgenome = base.str_to_bool(self.same_subgenome)
         
         # Initialize classid with a default value if not provided
         self.classid = [str(k) for k in getattr(self, 'classid', 'class1,class2').split(',')]
@@ -64,10 +66,10 @@ class polyploidy_classification:
                         bkinfo.loc[index1, self.classid[1] + '_color'] = row2[3]
 
         # Uncomment if you want to filter rows where both colors match
-        if self.same_protochromose == True:
-            bkinfo = bkinfo[
-                (bkinfo[self.classid[1] + '_color'] == bkinfo[self.classid[0] + '_color']) &
-                (bkinfo[self.classid[1]] == bkinfo[self.classid[0]])]
+        if self.same_protochromosome == True:
+            bkinfo = bkinfo[bkinfo[self.classid[1] + '_color'] == bkinfo[self.classid[0] + '_color']]
+        if self.same_subgenome == True:
+            bkinfo = bkinfo[bkinfo[self.classid[1]] == bkinfo[self.classid[0]]]  
 
         # Save the result to a CSV file
         bkinfo.to_csv(self.savefile, index=False)

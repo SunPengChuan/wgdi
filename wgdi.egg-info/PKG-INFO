@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: wgdi
-Version: 0.71
+Version: 0.7.2
 Summary: Whole Genome Duplication Identification
 Home-page: https://github.com/SunPengChuan/wgdi
 Author: Pengchuan Sun
@@ -30,9 +30,19 @@ Requires-Dist: scipy
 
 ## Description
 
-WGDI (Whole-Genome Duplication Integrated analysis), a Python-based command-line tool that facilitates comprehensive analysis of recursive polyploidizations and cross-species genome alignments.
+**WGDI (Whole-Genome Duplication Integrated analysis)** is a Python-based command-line tool designed to simplify the analysis of whole-genome duplications (WGD) and cross-species genome alignments. It offers three main workflows that enhance the detection and study of WGD events:
 
-WGDI supports three main workflows (polyploid inference, hierarchical inference of genomic homology, and ancestral chromosomal karyotyping) that can improve detection of WGD and characterization of related events. It incorporates a more sensitive and accurate collinearity detection algorithm than previous softwares, and can accelerate WGD-related karyotype research.
+## Key Features
+
+### 1. Polyploid Inference
+- Identifies and confirms polyploid events with high accuracy.
+
+### 2. Genomic Homology Inference
+- Traces the evolutionary history of duplicated regions across species, with a focus on distinguishing subgenomes. 
+
+### 3. Ancestral Karyotyping
+- Reconstructs protochromosomes and traces common chromosomal rearrangements to understand chromosome evolution. 
+
 
 ## Installation
 
@@ -69,6 +79,13 @@ If you use wgdi in your work, please cite:
 > Sun P., Jiao B., Yang Y., Shan L., Li T., Li X., Xi Z., Wang X., and Liu J. (2022). WGDI: A user-friendly toolkit for evolutionary analyses of whole-genome duplications and ancestral karyotypes. Mol. Plant. doi: https://doi.org/10.1016/j.molp.2022.10.018.
 
 ## News
+
+## 0.7.1
+* Added extract the fusion positions dataset (-fpd).
+* Added determine whether these fusion events occur in other genomes (-fd).
+* Improved the karyotype_mapping (-km) effect.
+* Fixed the problem caused by the Python version, now it is compatible with version 3.12.
+
 
 ## 0.6.5
 * Fixed some issues (-sf).
@@ -110,7 +127,7 @@ If you use wgdi in your work, please cite:
 * Add ancestral karyotype repertoire (-akr)
 
 ## 0.5.4
-* Improved the alignmenttrees (-km) effect.
+* Improved the karyotype_mapping (-km) effect.
 * little change (-at).
 
 ## 0.5.3
