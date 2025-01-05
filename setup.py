@@ -6,14 +6,14 @@ from setuptools import find_packages, setup
 with open("README.md", "r", encoding='utf-8') as fh:
     long_description = fh.read()
 
-required = ['pandas>=1.1.0', 'numpy', 'biopython', 'matplotlib', 'scipy']
+required = ['pandas>=1.1.0', 'numpy', 'biopython', 'matplotlib', 'scipy', 'tabulate']
 
 setup(
     name="wgdi",
-    version="0.8.0",
+    version="0.74",
     author="Pengchuan Sun",
     author_email="sunpengchuan@gmail.com",
-    description="Whole Genome Duplication Identification",
+    description="A user-friendly toolkit for evolutionary analyses of whole-genome duplications and ancestral karyotypes",
     license="BSD License",
     long_description=long_description,
     long_description_content_type="text/markdown",

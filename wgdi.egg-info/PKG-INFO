@@ -1,7 +1,7 @@
 Metadata-Version: 2.1
 Name: wgdi
-Version: 0.8.0
-Summary: Whole Genome Duplication Identification
+Version: 0.74
+Summary: A user-friendly toolkit for evolutionary analyses of whole-genome duplications and ancestral karyotypes
 Home-page: https://github.com/SunPengChuan/wgdi
 Author: Pengchuan Sun
 Author-email: sunpengchuan@gmail.com
@@ -17,6 +17,7 @@ Requires-Dist: numpy
 Requires-Dist: biopython
 Requires-Dist: matplotlib
 Requires-Dist: scipy
+Requires-Dist: tabulate
 
 # WGDI
 

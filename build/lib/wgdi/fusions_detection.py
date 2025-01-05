@@ -1,5 +1,5 @@
 import pandas as pd
-
+from tabulate import tabulate
 
 class fusions_detection:
     def __init__(self, options):
@@ -20,16 +20,39 @@ class fusions_detection:
         
         # Iterate over each row in the position dataframe
         for index, row in position.iterrows():
-            group = bkinfo[bkinfo['chr2'] == index].copy()
-            group = group[group['density2'] >= self.density]
-            df = group['block2'].str.split('_', expand=True).stack().astype(int)
-            group['greater'] = (df > row[0]).groupby(level=0).sum()
-            group['less'] = (df < row[0]).groupby(level=0).sum()
-            group = group[(group['greater'] >= self.min_genes_per_side) & (group['less'] >= self.min_genes_per_side)]
-            newbkinfo = pd.concat([newbkinfo, group])
+            # Filter the bkinfo dataframe based on chr2 and density
+            filtered_group = bkinfo[(bkinfo['chr2'] == index) & (bkinfo['density2'] >= self.density)].copy()
+            # Split the block2 column and stack the resulting series
+            df = filtered_group['block2'].str.split('_', expand=True).stack().astype(int)
+            # Count the number of genes greater and less than the current position
+            filtered_group['greater'] = (df > row[0]).groupby(level=0).sum()
+            filtered_group['less'] = (df < row[0]).groupby(level=0).sum()
+            # Filter the group based on the minimum number of genes per side
+            filtered_group = filtered_group[(filtered_group['greater'] >= self.min_genes_per_side) & (filtered_group['less'] >= self.min_genes_per_side)]
+            # Concatenate the filtered group with the newbkinfo dataframe
+            newbkinfo = pd.concat([newbkinfo, filtered_group])
 
         # Get and print the shared fusion positions
-        shared_fusion_positions = newbkinfo['chr2'].unique()
-        print("\nThe following are the shared fusion breakpoints:")
-        print(", ".join(shared_fusion_positions))
         newbkinfo.to_csv(self.filtered_blockinfo, header=True, index=False)
+
+        non_overlap_counts = newbkinfo.groupby('chr2').apply(self.count_non_overlapping)
+        data = [(chr2, count) for chr2, count in non_overlap_counts.items()]
+        print("\nThe following are the shared fusion breakpoints and counts:")
+        print(tabulate(data, headers=["Fusion Breakpoint", "Count"], tablefmt="github"))
+
+    def count_non_overlapping(self, group):
+        if len(group) == 1:
+            return 1
+        grouped = group.groupby('chr1')
+        total_count = 0
+        for chr1, chr_group in grouped:
+            chr_group = chr_group.sort_values(by='start1').reset_index(drop=True)
+            count = 0
+            current_end = -1 
+            for _, row in chr_group.iterrows():
+                start1, end1 = row['start1'], row['end1']
+                if start1 > current_end:
+                    count += 1
+                    current_end = end1 
+            total_count += count
+        return total_count

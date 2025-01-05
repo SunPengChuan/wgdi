@@ -36,13 +36,13 @@ parser = argparse.ArgumentParser(
 )
 
 parser.description = '''\
-WGDI(Whole-Genome Duplication Integrated analysis): A user-friendly toolkit for evolutionary analyses of whole-genome duplications and ancestral karyotypes.
+WGDI(Whole-Genome Duplication Integrated): A user-friendly toolkit for evolutionary analyses of whole-genome duplications and ancestral karyotypes.
 
     https://wgdi.readthedocs.io/en/latest/
     -------------------------------------- 
 '''
 
-parser.add_argument("-v", "--version", action='version', version='0.8.0')
+parser.add_argument("-v", "--version", action='version', version='0.74')
 parser.add_argument("-d", dest="dotplot", help="Show homologous gene dotplot")
 parser.add_argument("-icl", dest="improvedcollinearity", help="Improved version of ColinearScan ")
 parser.add_argument("-ks", dest="calks", help="Calculate Ka/Ks for homologous gene pairs by YN00")

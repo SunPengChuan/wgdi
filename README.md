@@ -60,6 +60,10 @@ If you use wgdi in your work, please cite:
 
 ## News
 
+## 0.74
+* Improved the the fusion positions dataset (-fpd).
+* Fixed some issues (-pc).
+
 ## 0.7.1
 * Added extract the fusion positions dataset (-fpd).
 * Added determine whether these fusion events occur in other genomes (-fd).
