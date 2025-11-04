@@ -61,7 +61,7 @@ If you use wgdi in your work, please cite:
 ## News
 
 ## 0.75
-* Fixed some issues (-fpd).
+* Fixed some issues (-fpd, -km).
 * Introduced a threads parameter for the iqtree command within alignmenttrees (-at).
 
 ## 0.74
