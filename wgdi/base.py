@@ -172,7 +172,8 @@ def cds_to_pep(cds_file, pep_file, fmt='fasta'):
 def newblast(file, score, evalue, gene_loc1, gene_loc2, reverse):
     """Filter BLAST results based on score, evalue, and gene locations."""
     blast = pd.read_csv(file, sep="\t", header=None)
-    if reverse == True:
+    
+    if reverse == 'true':
         blast[[0, 1]] = blast[[1, 0]]
     blast = blast[(blast[11] >= score) & (blast[10] < evalue) & (blast[1] != blast[0])]
     blast = blast[(blast[0].isin(gene_loc1.index)) & (blast[1].isin(gene_loc2.index))]

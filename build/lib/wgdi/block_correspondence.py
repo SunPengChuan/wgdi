@@ -23,6 +23,7 @@ class block_correspondence():
         self.ks_area = [float(k) for k in getattr(self, 'ks_area', '-1,3').split(',')]
         self.homo = [float(k) for k in self.homo.split(',')]
         self.tandem_ratio = float(self.tandem_ratio)
+        self.tandem = base.str_to_bool(self.tandem)
 
     def run(self):
         lens1 = base.newlens(self.lens1, self.position)

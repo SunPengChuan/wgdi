@@ -4,17 +4,15 @@ from Bio import SeqIO
 
 class fusion_positions_database:
     def __init__(self, options):
-        self.NumGeneSetsPerSide = 100
         for k, v in options:
             setattr(self, k, v)
             print(f'{k} = {v}')
-        self.NumGeneSetsPerSide = int(self.NumGeneSetsPerSide)
 
     def run(self):
         # Load and remove duplicates from data
         gff = pd.read_csv(self.gff, sep="\t", header=None, dtype={0: str, 5: int}).drop_duplicates()
         pep = SeqIO.to_dict(SeqIO.parse(self.pep, "fasta"))
-        df = pd.read_csv(self.fusion_positions, sep="\t", header=None, dtype={0: str, 1: int}).drop_duplicates()
+        df = pd.read_csv(self.fusion_positions, sep="\t", header=None, dtype={0: str, 1: int, 2:int, 3:str}).drop_duplicates()
         
         # Load ancestral sequence file if it exists
         seqs = SeqIO.to_dict(SeqIO.parse(self.ancestor_pep, "fasta")) if os.path.exists(self.ancestor_pep) else {}
@@ -23,11 +21,12 @@ class fusion_positions_database:
 
         # Process fusion positions
         for _, row in df.iterrows():
-            newchr = row[2]
+            newchr = row[3]
             newgff = gff[(gff[0] == row[0]) & 
-                         (gff[5] >= row[1] - self.NumGeneSetsPerSide) & 
-                         (gff[5] < row[1] + self.NumGeneSetsPerSide)].copy()
+                         (gff[5] >= row[1] - row[2]) & 
+                         (gff[5] < row[1] + row[2])].copy()
             newgff['id'] = [f"{newchr}s{str(row[0]).zfill(2)}g{str(i).zfill(3)}" for i in range(1, len(newgff) + 1)]
+
             sf_position = row[1] - newgff.iloc[0, 5]
             sf_lens.append([newchr, sf_position, len(newgff)])
             

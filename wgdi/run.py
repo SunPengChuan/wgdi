@@ -42,7 +42,7 @@ WGDI(Whole-Genome Duplication Integrated): A user-friendly toolkit for evolution
     -------------------------------------- 
 '''
 
-parser.add_argument("-v", "--version", action='version', version='0.74')
+parser.add_argument("-v", "--version", action='version', version='0.75')
 parser.add_argument("-d", dest="dotplot", help="Show homologous gene dotplot")
 parser.add_argument("-icl", dest="improvedcollinearity", help="Improved version of ColinearScan ")
 parser.add_argument("-ks", dest="calks", help="Calculate Ka/Ks for homologous gene pairs by YN00")

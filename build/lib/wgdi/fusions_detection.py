@@ -31,10 +31,12 @@ class fusions_detection:
             filtered_group = filtered_group[(filtered_group['greater'] >= self.min_genes_per_side) & (filtered_group['less'] >= self.min_genes_per_side)]
             # Concatenate the filtered group with the newbkinfo dataframe
             newbkinfo = pd.concat([newbkinfo, filtered_group])
+        if len(newbkinfo) ==0:
+            print("\nNo shared fusion breakpoints detected")
+            exit(0)
 
         # Get and print the shared fusion positions
         newbkinfo.to_csv(self.filtered_blockinfo, header=True, index=False)
-
         non_overlap_counts = newbkinfo.groupby('chr2').apply(self.count_non_overlapping)
         data = [(chr2, count) for chr2, count in non_overlap_counts.items()]
         print("\nThe following are the shared fusion breakpoints and counts:")

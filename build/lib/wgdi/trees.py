@@ -17,6 +17,7 @@ class trees():
         self.alignfile = ''
         self.align_trimming = ''
         self.trimming = 'trimal'
+        self.threads = '1'
         self.minimum = 4
         self.tree_software = 'iqtree'
         self.delete_detail = True
@@ -150,7 +151,7 @@ class trees():
         try:
             if self.tree_software.upper() == 'IQTREE':
                 args = [self.iqtree_path, '-s', self.align_trimming,
-                        '-m', self.model, '--quiet']
+                        '-m', self.model, '-T', self.threads, '--quiet']
                 command = ' '.join(args)
                 os.system(command)
                 os.rename(self.align_trimming+'.treefile', self.treefile)

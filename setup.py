@@ -10,7 +10,7 @@ required = ['pandas>=1.1.0', 'numpy', 'biopython', 'matplotlib', 'scipy', 'tabul
 
 setup(
     name="wgdi",
-    version="0.74",
+    version="0.75",
     author="Pengchuan Sun",
     author_email="sunpengchuan@gmail.com",
     description="A user-friendly toolkit for evolutionary analyses of whole-genome duplications and ancestral karyotypes",

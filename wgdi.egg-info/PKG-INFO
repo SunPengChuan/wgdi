@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: wgdi
-Version: 0.74
+Version: 0.75
 Summary: A user-friendly toolkit for evolutionary analyses of whole-genome duplications and ancestral karyotypes
 Home-page: https://github.com/SunPengChuan/wgdi
 Author: Pengchuan Sun
@@ -80,6 +80,14 @@ If you use wgdi in your work, please cite:
 > Sun P., Jiao B., Yang Y., Shan L., Li T., Li X., Xi Z., Wang X., and Liu J. (2022). WGDI: A user-friendly toolkit for evolutionary analyses of whole-genome duplications and ancestral karyotypes. Mol. Plant. doi: https://doi.org/10.1016/j.molp.2022.10.018.
 
 ## News
+
+## 0.75
+* Fixed some issues (-fpd).
+* Introduced a threads parameter for the iqtree command within alignmenttrees (-at).
+
+## 0.74
+* Improved the the fusion positions dataset (-fpd).
+* Fixed some issues (-pc).
 
 ## 0.7.1
 * Added extract the fusion positions dataset (-fpd).

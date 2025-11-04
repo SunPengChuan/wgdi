@@ -4,6 +4,7 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import wgdi.base as base
 from scipy import stats
 
 
@@ -26,6 +27,7 @@ class ksfigure():
             self.title = ''
         self.figsize = [float(k) for k in self.figsize.split(',')]
         self.area = [float(k) for k in self.area.split(',')]
+        self.shadow = base.str_to_bool(self.shadow)
 
     def Gaussian_distribution(self, t, k):
         y = np.zeros(len(t))

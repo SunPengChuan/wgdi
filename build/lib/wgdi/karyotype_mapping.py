@@ -193,6 +193,8 @@ class karyotype_mapping:
         elif hasattr(self, 'ancestor_left'):
             ancestor = base.read_classification(self.ancestor_left)
             data = self.karyotype_left(pairs, ancestor, gff1, gff2)
+            gff1, gff2 = gff2, gff1
+            blast.iloc[:, :2] = blast.iloc[:, [1, 0]].to_numpy()
         else:
             print('Missing ancestor file.')
             exit(0)
