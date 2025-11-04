@@ -134,10 +134,36 @@ class ks:
         if kaks is None:
             return []
 
+        # kaks_new = [
+        #     kaks[k[0]][k[1]]['NG86']['dN'], kaks[k[0]][k[1]]['NG86']['dS'],
+        #     kaks[k[0]][k[1]]['YN00']['dN'], kaks[k[0]][k[1]]['YN00']['dS']
+        # ]
+        # Traceback (most recent call last):
+        #   File "/public/home/pengyuanying/.conda/envs/bwa/bin/wgdi", line 10, in <module>
+        #     sys.exit(main())
+        #              ^^^^^^
+        #   File "/public/home/pengyuanying/.conda/envs/bwa/lib/python3.12/site-packages/wgdi/run.py", line 160, in main
+        #     module_to_run(arg, value)
+        #   File "/public/home/pengyuanying/.conda/envs/bwa/lib/python3.12/site-packages/wgdi/run.py", line 115, in module_to_run
+        #     run_subprogram(program, conf, name)
+        #   File "/public/home/pengyuanying/.conda/envs/bwa/lib/python3.12/site-packages/wgdi/run.py", line 76, in run_subprogram
+        #     r.run()
+        #   File "/public/home/pengyuanying/.conda/envs/bwa/lib/python3.12/site-packages/wgdi/ks.py", line 109, in run
+        #     kaks = self.pair_kaks(['gene1', 'gene2'])
+        #            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        #   File "/public/home/pengyuanying/.conda/envs/bwa/lib/python3.12/site-packages/wgdi/ks.py", line 139, in pair_kaks
+        #     kaks[k[0]][k[1]]['YN00']['dN'], kaks[k[0]][k[1]]['YN00']['dS']
+        #     ~~~~~~~~~~~~~~~~^^^^^^^^
+        # KeyError: 'YN00'
+
         kaks_new = [
-            kaks[k[0]][k[1]]['NG86']['dN'], kaks[k[0]][k[1]]['NG86']['dS'],
-            kaks[k[0]][k[1]]['YN00']['dN'], kaks[k[0]][k[1]]['YN00']['dS']
-        ]
+             kaks.get(k[0], {}).get(k[1], {}).get('NG86', {}).get('dN'),
+             kaks.get(k[0], {}).get(k[1], {}).get('NG86', {}).get('dS'),
+             kaks.get(k[0], {}).get(k[1], {}).get('YN00', {}).get('dN'),
+             kaks.get(k[0], {}).get(k[1], {}).get('YN00', {}).get('dS')
+         ]
+        if any(val is None for val in kaks_new):
+            return []
         return kaks_new
 
     def align(self):
